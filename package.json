@@ -1,6 +1,6 @@
 {
   "name": "webpack-sources",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Source code handling classes for webpack",
   "main": "./lib/index.js",
   "scripts": {
@@ -12,7 +12,6 @@
     "beautify": "beautify-rewrite lib/**.js test/**.js",
     "precover": "npm run lint && npm run beautify-lint",
     "cover": "istanbul cover node_modules/mocha/bin/_mocha",
-    "travis": "npm run cover -- --report lcovonly",
     "publish-patch": "npm test && npm version patch && git push && git push --tags && npm publish"
   },
   "dependencies": {
