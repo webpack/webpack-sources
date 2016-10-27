@@ -12,13 +12,15 @@
     "beautify": "beautify-rewrite lib/**.js test/**.js",
     "precover": "npm run lint && npm run beautify-lint",
     "cover": "istanbul cover node_modules/mocha/bin/_mocha",
-    "publish-patch": "npm test && npm version patch && git push && git push --tags && npm publish"
+    "publish-patch": "npm test && npm version patch && git push && git push --tags && npm publish",
+    "build": "tsc -p . || true"
   },
   "dependencies": {
-    "source-map": "~0.5.3",
-    "source-list-map": "~0.1.7"
+    "source-list-map": "~0.1.7",
+    "source-map": "~0.5.3"
   },
   "devDependencies": {
+    "@types/node": "^6.0.46",
     "beautify-lint": "^1.0.3",
     "codecov.io": "^0.1.6",
     "coveralls": "^2.11.6",
@@ -27,7 +29,9 @@
     "istanbul": "^0.4.1",
     "js-beautify": "^1.5.10",
     "mocha": "^2.3.4",
-    "should": "^8.0.2"
+    "should": "^8.0.2",
+    "tslint": "^3.15.1",
+    "typescript": "^2.0.6"
   },
   "files": [
     "lib/"
