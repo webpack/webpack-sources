@@ -12,7 +12,10 @@ abstract class Source {
         return null;
     }
 
-    sourceAndMap(options) {
+    sourceAndMap(options?): {
+        source: string
+        map: string
+    } {
         return {
             source: this.source(),
             map: this.map()
@@ -28,15 +31,15 @@ abstract class Source {
         return null
     }
 
-    node(options) {
+    node(options?) {
         return null
     }
 
-    listNode(options) {
+    listNode(options?) {
         return null
     }
 
-    listMap(options) {
+    listMap(options?) {
         return null
     }
 }

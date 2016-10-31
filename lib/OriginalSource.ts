@@ -19,7 +19,7 @@ function isSplitter(c) {
     return false;
 }
 
-function _splitCode(code) {
+function _splitCode(code: string) {
     const result = [];
     let i = 0;
     let j = 0;
@@ -40,7 +40,7 @@ class OriginalSource extends Source {
     _value: string
     _name: string
 
-    constructor(value, name) {
+    constructor(value: string, name: string) {
         super();
         this._value = value;
         this._name = name;
@@ -50,7 +50,7 @@ class OriginalSource extends Source {
         return this._value;
     }
 
-    node(options: { columns: boolean } = {}) {
+    node(options: { columns?: boolean } = {}) {
         const value = this._value;
         const name = this._name;
         const lines = value.split('\n');

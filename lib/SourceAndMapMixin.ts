@@ -3,7 +3,7 @@
  Author Tobias Koppers @sokra
  */
 export = function mixinSourceAndMap(proto) {
-    proto.map = function (options: { columns: boolean } = {}) {
+    proto.map = function (options: { columns?: boolean } = {}) {
         if (options.columns === false) {
             return this.listMap(options).toStringWithSourceMap({
                 file: 'x'
@@ -15,7 +15,7 @@ export = function mixinSourceAndMap(proto) {
         }).map.toJSON();
     };
 
-    proto.sourceAndMap = function (options: { columns: boolean } = {}) {
+    proto.sourceAndMap = function (options: { columns?: boolean } = {}) {
         if (options.columns === false) {
             // console.log(this.listMap(options).debugInfo());
             return this.listMap(options).toStringWithSourceMap({

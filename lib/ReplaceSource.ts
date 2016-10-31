@@ -5,7 +5,6 @@
 import Source = require('./Source');
 
 import { SourceNode, SourceMapConsumer } from 'source-map'
-import { SourceListMap, fromStringWithSourceMap } from 'source-list-map'
 
 class ReplaceSource extends Source {
     _source: Source
@@ -19,21 +18,21 @@ class ReplaceSource extends Source {
         this.replacements = [];
     }
 
-    replace(start, end, newValue) {
+    replace(start: number, end: number, newValue: string) {
         if (typeof newValue !== 'string') {
             throw new Error(`insertion must be a string, but is a ${typeof newValue}`);
         }
         this.replacements.push([start, end, newValue, this.replacements.length]);
     }
 
-    insert(pos, newValue) {
+    insert(pos: number, newValue: string) {
         if (typeof newValue !== 'string') {
             throw new Error(`insertion must be a string, but is a ${typeof newValue}: ${newValue}`);
         }
         this.replacements.push([pos, pos - 1, newValue, this.replacements.length]);
     }
 
-    source(options) {
+    source() {
         return this._replaceString(this._source.source());
     }
 
@@ -47,7 +46,7 @@ class ReplaceSource extends Source {
         });
     }
 
-    _replaceString(str) {
+    _replaceString(str: string) {
         if (typeof str !== 'string') {
             throw new Error(`str must be a string, but is a ${typeof str}: ${str}`);
         }
@@ -121,7 +120,7 @@ class ReplaceSource extends Source {
         return map;
     }
 
-    _replacementToSourceNode(oldNode, newString) {
+    _replacementToSourceNode(oldNode: SourceNode, newString) {
         const map = oldNode.toStringWithSourceMap({
             file: '?'
         }).map;

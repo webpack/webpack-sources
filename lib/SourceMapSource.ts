@@ -13,7 +13,7 @@ class SourceMapSource extends Source {
     _originalSource: Source
     _innerSourceMap: any
 
-    constructor(value, name, sourceMap, originalSource, innerSourceMap) {
+    constructor(value: string, name: string, sourceMap: any, originalSource: Source, innerSourceMap: any) {
         super();
         this._value = value;
         this._name = name;
@@ -26,7 +26,7 @@ class SourceMapSource extends Source {
         return this._value;
     }
 
-    node(options) {
+    node() {
         let innerSourceMap = this._innerSourceMap;
         let sourceMap = this._sourceMap;
         if (innerSourceMap) {
@@ -41,7 +41,7 @@ class SourceMapSource extends Source {
         return SourceNode.fromStringWithSourceMap(this._value, new SourceMapConsumer(sourceMap));
     }
 
-    listMap(options) {
+    listMap(options: { module?: boolean }) {
         if (options.module === false) {
             return new SourceListMap(this._value, this._name, this._value);
         }

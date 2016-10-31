@@ -8,7 +8,7 @@ import { SourceNode } from 'source-map'
 
 class PrefixSource extends Source {
     _source: Source | string
-    _prefix: string
+    _prefix: Source | string
 
     constructor(prefix, source) {
         super();
@@ -23,14 +23,14 @@ class PrefixSource extends Source {
     }
 
     node(options) {
-        const node = this._source.node(options);
+        const node = (<Source>this._source).node(options);
         const append = [this._prefix];
         return new SourceNode(null, null, null, [cloneAndPrefix(node, this._prefix, append)]);
     }
 
     listMap(options) {
         const prefix = this._prefix;
-        const map = this._source.listMap(options);
+        const map = (<Source>this._source).listMap(options);
         map.mapGeneratedCode(code => prefix + code.replace(/\n(.)/g, '\n' + prefix + '$1'));
         return map;
     }
@@ -55,7 +55,7 @@ export = PrefixSource;
 
 require('./SourceAndMapMixin')(PrefixSource.prototype);
 
-function cloneAndPrefix(node, prefix, append) {
+function cloneAndPrefix(node, prefix, append): (string | SourceNode) {
     if (typeof node === 'string') {
         let result = node.replace(/\n(.)/g, `\n${prefix}$1`);
         if (append.length > 0) {

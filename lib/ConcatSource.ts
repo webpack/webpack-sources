@@ -29,7 +29,10 @@ class ConcatSource extends Source {
 
     node(options) {
         const node = new SourceNode(null, null, null,
-            this.children.map(item => typeof item === 'string' ? item : item.node(options)));
+            this.children.map(
+                item => typeof item === 'string' ? item : item.node(options)
+            )
+        );
         return node;
     }
 
@@ -47,7 +50,7 @@ class ConcatSource extends Source {
     }
 
     updateHash(hash) {
-        this.children.forEach(item => {
+        this.children.forEach((item: Source) => {
             item.updateHash(hash);
         });
     }
