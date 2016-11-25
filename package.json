@@ -29,6 +29,9 @@
     "mocha": "^2.3.4",
     "should": "^8.0.2"
   },
+  "files": [
+    "lib/"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/webpack/webpack-sources.git"
