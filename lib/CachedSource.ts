@@ -3,16 +3,21 @@
  Author Tobias Koppers @sokra
  */
 import Source = require('./Source')
+import { RawSourceMap } from 'source-map'
+import { Hash } from 'crypto'
+import { SourceListMap, SourceNode } from 'source-list-map'
 
 class CachedSource {
     _source: Source
     _cachedSource: string
     _cachedSize: number
-    _cachedMaps: any
-    node: (options) => any
-    listMap: (options) => any
+    _cachedMaps: {
+        [prop: string]: RawSourceMap
+    }
+    node: (options) => SourceNode
+    listMap: (options) => SourceListMap
 
-    constructor(source) {
+    constructor(source: Source) {
         this._source = source;
         this._cachedSource = undefined;
         this._cachedSize = undefined;
@@ -88,7 +93,7 @@ class CachedSource {
         return this._cachedMaps[key] = this._source.map();
     }
 
-    updateHash(hash) {
+    updateHash(hash: Hash) {
         this._source.updateHash(hash);
     }
 }

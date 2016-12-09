@@ -2,18 +2,19 @@
  MIT License http://www.opensource.org/licenses/mit-license.php
  Author Tobias Koppers @sokra
  */
-import { SourceNode, SourceMapConsumer, SourceMapGenerator } from 'source-map'
+import { SourceNode, SourceMapConsumer, SourceMapGenerator, RawSourceMap } from 'source-map'
 import { SourceListMap, fromStringWithSourceMap } from 'source-list-map'
 import Source = require('./Source');
+import { Hash } from 'crypto'
 
 class SourceMapSource extends Source {
     _value: string
     _name: string
-    _sourceMap: any
-    _originalSource: Source
-    _innerSourceMap: any
+    _sourceMap: SourceMapGenerator | RawSourceMap
+    _originalSource: string
+    _innerSourceMap: RawSourceMap
 
-    constructor(value: string, name: string, sourceMap: any, originalSource: Source, innerSourceMap: any) {
+    constructor(value: string, name: string, sourceMap: SourceMapGenerator | RawSourceMap, originalSource: string, innerSourceMap?: RawSourceMap) {
         super();
         this._value = value;
         this._name = name;
@@ -30,12 +31,13 @@ class SourceMapSource extends Source {
         let innerSourceMap = this._innerSourceMap;
         let sourceMap = this._sourceMap;
         if (innerSourceMap) {
+            // todo: here may be some problem?
             sourceMap = SourceMapGenerator.fromSourceMap(new SourceMapConsumer(sourceMap));
             if (this._originalSource) {
                 sourceMap.setSourceContent(this._name, this._originalSource);
             }
-            innerSourceMap = new SourceMapConsumer(innerSourceMap);
-            sourceMap.applySourceMap(innerSourceMap, this._name);
+            const innerSourceMapConsumer = new SourceMapConsumer(innerSourceMap);
+            sourceMap.applySourceMap(innerSourceMapConsumer, this._name);
             sourceMap = sourceMap.toJSON();
         }
         return SourceNode.fromStringWithSourceMap(this._value, new SourceMapConsumer(sourceMap));
@@ -50,7 +52,7 @@ class SourceMapSource extends Source {
             : this._sourceMap);
     }
 
-    updateHash(hash) {
+    updateHash(hash: Hash) {
         hash.update(this._value);
         if (this._originalSource) {
             hash.update(this._originalSource);

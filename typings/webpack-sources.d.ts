@@ -4,7 +4,8 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
 declare module 'webpack-sources' {
-    import { SourceNode } from 'source-map'
+    import { Hash } from 'crypto'
+    import { SourceNode, RawSourceMap, SourceMapGenerator } from 'source-map'
     import { SourceListMap } from 'source-list-map'
 
     export abstract class Source {
@@ -14,10 +15,10 @@ declare module 'webpack-sources' {
 
         sourceAndMap(options?: any): {
             source: string;
-            map: string;
+            map: RawSourceMap;
         };
 
-        updateHash(hash: any): void;
+        updateHash(hash: Hash): void;
 
         source(options?: any): string;
 
@@ -29,22 +30,24 @@ declare module 'webpack-sources' {
     }
 
     interface SourceAndMapMixin {
-        map(options: { columns?: boolean }): string
+        map(options: { columns?: boolean }): RawSourceMap;
         sourceAndMap(options: { columns?: boolean }): {
-            source: string,
-            map: string
-        }
+            source: string;
+            map: RawSourceMap;
+        };
     }
 
     export class CachedSource {
         _source: Source;
         _cachedSource: string;
         _cachedSize: number;
-        _cachedMaps: any;
-        node: (options) => any;
-        listMap: (options) => any;
+        _cachedMaps: {
+            [prop: string]: RawSourceMap
+        };
+        node: (options: any) => SourceNode;
+        listMap: (options: any) => SourceListMap;
 
-        constructor(source: any);
+        constructor(source: Source);
 
         source(): string;
 
@@ -52,20 +55,20 @@ declare module 'webpack-sources' {
 
         sourceAndMap(options: any): {
             source: string;
-            map: any;
+            map: RawSourceMap;
         };
 
-        map(options: any): any;
+        map(options: any): RawSourceMap;
 
-        updateHash(hash: any): void;
+        updateHash(hash: Hash): void;
     }
 
     export class ConcatSource extends Source implements SourceAndMapMixin {
         children: (string | Source)[];
 
-        constructor(...args: any[]);
+        constructor(...args: (string | Source)[]);
 
-        add(item: any): void;
+        add(item: string | Source): void;
 
         source(): string;
 
@@ -75,7 +78,7 @@ declare module 'webpack-sources' {
 
         listMap(options: any): SourceListMap;
 
-        updateHash(hash: any): void;
+        updateHash(hash: Hash): void;
     }
 
     export class LineToLineMappedSource extends Source implements SourceAndMapMixin {
@@ -83,7 +86,7 @@ declare module 'webpack-sources' {
         _name: string;
         _originalSource: string;
 
-        constructor(value: any, name: any, originalSource: any);
+        constructor(value: string, name: string, originalSource: string);
 
         source(): string;
 
@@ -91,7 +94,7 @@ declare module 'webpack-sources' {
 
         listMap(options: any): SourceListMap;
 
-        updateHash(hash: any): void;
+        updateHash(hash: Hash): void;
     }
 
     export class OriginalSource extends Source implements SourceAndMapMixin {
@@ -110,38 +113,38 @@ declare module 'webpack-sources' {
 
         listMap(options: any): SourceListMap;
 
-        updateHash(hash: any): void;
+        updateHash(hash: Hash): void;
     }
 
     export class PrefixSource extends Source implements SourceAndMapMixin {
         _source: Source | string;
         _prefix: Source | string;
 
-        constructor(prefix: any, source: any);
+        constructor(prefix: Source | string, source: Source | string);
 
         source(): string;
-
-        node(options: any): SourceNode;
-
-        listMap(options: any): any;
-
-        updateHash(hash: any): void;
-    }
-
-    export class RawSource extends Source {
-        _value: string;
-
-        constructor(value: any);
-
-        source(): string;
-
-        map(options: any): any;
 
         node(options: any): SourceNode;
 
         listMap(options: any): SourceListMap;
 
-        updateHash(hash: any): void;
+        updateHash(hash: Hash): void;
+    }
+
+    export class RawSource extends Source {
+        _value: string;
+
+        constructor(value: string);
+
+        source(): string;
+
+        map(options: any): null;
+
+        node(options: any): SourceNode;
+
+        listMap(options: any): SourceListMap;
+
+        updateHash(hash: Hash): void;
     }
 
     export class ReplaceSource extends Source implements SourceAndMapMixin {
@@ -149,7 +152,7 @@ declare module 'webpack-sources' {
         _name: string;
         replacements: any[][];
 
-        constructor(source: any, name: any);
+        constructor(source: Source, name: string);
 
         replace(start: number, end: number, newValue: string): void;
 
@@ -163,23 +166,27 @@ declare module 'webpack-sources' {
 
         node(options: any): SourceNode;
 
-        listMap(options: any): any;
+        listMap(options: any): SourceListMap;
 
-        _replacementToSourceNode(oldNode: SourceNode, newString: any): any;
+        _replacementToSourceNode(oldNode: SourceNode, newString: string): string | SourceNode;
 
-        _splitSourceNode(node: any, position: any): any;
+        _splitSourceNode(node: SourceNode, position: SourceNode[]): SourceNode[];
+        _splitSourceNode(node: string, position: number): number;
 
-        _splitString(str: any, position: any): any[];
+        _splitString(str: string, position: number): string[];
     }
 
     export class SourceMapSource extends Source implements SourceAndMapMixin {
         _value: string;
         _name: string;
-        _sourceMap: any;
-        _originalSource: Source;
-        _innerSourceMap: any;
+        _sourceMap: SourceMapGenerator | RawSourceMap;
+        _originalSource: string;
+        _innerSourceMap: RawSourceMap;
 
-        constructor(value: string, name: string, sourceMap: any, originalSource: Source, innerSourceMap: any);
+        constructor(
+            value: string, name: string, sourceMap: SourceMapGenerator | RawSourceMap, originalSource: string,
+            innerSourceMap?: RawSourceMap
+        );
 
         source(): string;
 
@@ -191,6 +198,6 @@ declare module 'webpack-sources' {
             }
         ): SourceListMap;
 
-        updateHash(hash: any): void;
+        updateHash(hash: Hash): void;
     }
 }

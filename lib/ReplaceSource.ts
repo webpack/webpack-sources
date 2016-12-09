@@ -11,7 +11,7 @@ class ReplaceSource extends Source {
     _name: string
     replacements: any[][]
 
-    constructor(source, name) {
+    constructor(source: Source, name: string) {
         super();
         this._source = source;
         this._name = name;
@@ -120,7 +120,7 @@ class ReplaceSource extends Source {
         return map;
     }
 
-    _replacementToSourceNode(oldNode: SourceNode, newString) {
+    _replacementToSourceNode(oldNode: SourceNode, newString: string): string | SourceNode {
         const map = oldNode.toStringWithSourceMap({
             file: '?'
         }).map;
@@ -136,8 +136,11 @@ class ReplaceSource extends Source {
         }
     }
 
-    _splitSourceNode(node, position) {
-        if (typeof node === 'string') {
+    _splitSourceNode(node: SourceNode, position: SourceNode[]): SourceNode[]
+    _splitSourceNode(node: string, position: number): number
+
+    _splitSourceNode(node: any, position: any): any {
+        if (typeof node === 'string' && typeof position === 'number') {
             if (node.length <= position) {
                 return position - node.length;
             }
@@ -158,7 +161,7 @@ class ReplaceSource extends Source {
         }
     }
 
-    _splitString(str, position) {
+    _splitString(str: string, position: number) {
         return position <= 0 ? ['', str] : [str.substr(0, position), str.substr(position)];
     }
 }

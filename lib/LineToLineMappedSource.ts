@@ -5,13 +5,14 @@
 import { SourceNode } from 'source-map'
 import { SourceListMap } from 'source-list-map'
 import Source = require('./Source');
+import { Hash } from 'crypto'
 
 class LineToLineMappedSource extends Source {
     _value: string
     _name: string
     _originalSource: string
 
-    constructor(value, name, originalSource) {
+    constructor(value: string, name: string, originalSource: string) {
         super();
         this._value = value;
         this._name = name;
@@ -38,7 +39,7 @@ class LineToLineMappedSource extends Source {
         return new SourceListMap(this._value, this._name, this._originalSource);
     }
 
-    updateHash(hash) {
+    updateHash(hash: Hash) {
         hash.update(this._value);
         hash.update(this._originalSource);
     }

@@ -2,15 +2,16 @@
  MIT License http://www.opensource.org/licenses/mit-license.php
  Author Tobias Koppers @sokra
  */
-import Source = require('./Source');
-
 import { SourceNode } from 'source-map'
+import Source = require('./Source');
+import { SourceListMap } from 'source-list-map'
+import { Hash } from 'crypto'
 
 class PrefixSource extends Source {
     _source: Source | string
     _prefix: Source | string
 
-    constructor(prefix, source) {
+    constructor(prefix: Source | string, source: Source | string) {
         super();
         this._source = source;
         this._prefix = prefix;
@@ -28,14 +29,14 @@ class PrefixSource extends Source {
         return new SourceNode(null, null, null, [cloneAndPrefix(node, this._prefix, append)]);
     }
 
-    listMap(options) {
+    listMap(options): SourceListMap {
         const prefix = this._prefix;
         const map = (<Source>this._source).listMap(options);
         map.mapGeneratedCode(code => prefix + code.replace(/\n(.)/g, '\n' + prefix + '$1'));
         return map;
     }
 
-    updateHash(hash) {
+    updateHash(hash: Hash) {
         if (typeof this._source === 'string') {
             hash.update(this._source);
         }

@@ -6,11 +6,12 @@ import Source = require('./Source');
 
 import { SourceNode } from 'source-map'
 import { SourceListMap } from 'source-list-map'
+import { Hash } from 'crypto'
 
 class RawSource extends Source {
     _value: string
 
-    constructor(value) {
+    constructor(value: string) {
         super();
         this._value = value;
     }
@@ -31,7 +32,7 @@ class RawSource extends Source {
         return new SourceListMap(this._value);
     }
 
-    updateHash(hash) {
+    updateHash(hash: Hash) {
         hash.update(this._value);
     }
 }

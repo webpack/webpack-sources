@@ -5,6 +5,7 @@
 import { SourceNode } from 'source-map'
 import { SourceListMap } from 'source-list-map'
 import Source = require('./Source');
+import { Hash } from 'crypto'
 
 function isSplitter(c) {
     switch (c) {
@@ -78,7 +79,7 @@ class OriginalSource extends Source {
         return new SourceListMap(this._value, this._name, this._value);
     }
 
-    updateHash(hash) {
+    updateHash(hash: Hash) {
         hash.update(this._value);
     }
 }

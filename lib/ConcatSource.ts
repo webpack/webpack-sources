@@ -4,17 +4,18 @@
  */
 import { SourceNode } from 'source-map'
 import { SourceListMap } from 'source-list-map'
+import { Hash } from 'crypto'
 import Source = require('./Source');
 
 class ConcatSource extends Source {
     children: (string | Source)[]
 
-    constructor(...args) {
+    constructor(...args: (string | Source)[]) {
         super();
         this.children = args;
     }
 
-    add(item) {
+    add(item: string | Source) {
         this.children.push(item);
     }
 
@@ -49,9 +50,14 @@ class ConcatSource extends Source {
         return map;
     }
 
-    updateHash(hash) {
+    updateHash(hash: Hash) {
         this.children.forEach((item: Source) => {
-            item.updateHash(hash);
+            if (typeof item === 'string') {
+                hash.update(item);
+            }
+            else {
+                item.updateHash(hash);
+            }
         });
     }
 }
