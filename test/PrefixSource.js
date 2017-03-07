@@ -62,7 +62,10 @@ describe("PrefixSource", function() {
 			new ConcatSource(
 				new OriginalSource("console.log('test');\n", "consoleA.js"),
 				new OriginalSource("\nconsole.log('test1');\n\n", "consoleB.js"),
-				new OriginalSource("\nconsole.log('test2');\n", "consoleC.js")
+				new OriginalSource("\nconsole.log('test2');\n", "consoleC.js"),
+				new OriginalSource("console.log('test3');", "consoleD.js"),
+				new OriginalSource("\n", "empty.js"),
+				new OriginalSource("console.log('test4');", "consoleE.js")
 			)
 		);
 
