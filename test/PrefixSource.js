@@ -69,6 +69,17 @@ describe("PrefixSource", function() {
 			)
 		);
 
-		source.source().should.be.eql(source.sourceAndMap().source);
+		var actualSource = source.source();
+		var expectedSource = [
+			"\tconsole.log('test');\n",
+			"\t\n\tconsole.log('test1');\n\t\n",
+			"\t\n\tconsole.log('test2');\n",
+			"\tconsole.log('test3');",
+			"\n\t",
+			"console.log('test4');"
+		].join("")
+
+		actualSource.should.be.eql(expectedSource);
+		actualSource.should.be.eql(source.sourceAndMap().source);
 	});
 });
