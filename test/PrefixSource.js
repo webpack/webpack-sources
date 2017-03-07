@@ -2,6 +2,7 @@ var should = require("should");
 var PrefixSource = require("../lib/PrefixSource");
 var RawSource = require("../lib/RawSource");
 var OriginalSource = require("../lib/OriginalSource");
+var ConcatSource = require('../lib/ConcatSource');
 
 describe("PrefixSource", function() {
 	it("should prefix a source", function() {
@@ -53,5 +54,32 @@ describe("PrefixSource", function() {
 			source: expectedSource,
 			map: expectedMap2
 		});
+	});
+
+	it('should have consistent source/sourceAndMap behavior', function() {
+		var source = new PrefixSource(
+			"\t",
+			new ConcatSource(
+				new OriginalSource("console.log('test');\n", "consoleA.js"),
+				new OriginalSource("\nconsole.log('test1');\n\n", "consoleB.js"),
+				new OriginalSource("\nconsole.log('test2');\n", "consoleC.js"),
+				new OriginalSource("console.log('test3');", "consoleD.js"),
+				new OriginalSource("\n", "empty.js"),
+				new OriginalSource("console.log('test4');", "consoleE.js")
+			)
+		);
+
+		var actualSource = source.source();
+		var expectedSource = [
+			"\tconsole.log('test');\n",
+			"\t\n\tconsole.log('test1');\n\t\n",
+			"\t\n\tconsole.log('test2');\n",
+			"\tconsole.log('test3');",
+			"\n\t",
+			"console.log('test4');"
+		].join("")
+
+		actualSource.should.be.eql(expectedSource);
+		actualSource.should.be.eql(source.sourceAndMap().source);
 	});
 });
