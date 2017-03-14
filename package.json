@@ -15,8 +15,8 @@
     "publish-patch": "npm test && npm version patch && git push && git push --tags && npm publish"
   },
   "dependencies": {
-    "source-map": "~0.5.3",
-    "source-list-map": "^1.0.1"
+    "source-list-map": "^1.0.1",
+    "source-map": "~0.5.3"
   },
   "devDependencies": {
     "beautify-lint": "^1.0.3",
@@ -27,7 +27,8 @@
     "istanbul": "^0.4.1",
     "js-beautify": "^1.5.10",
     "mocha": "^2.3.4",
-    "should": "^8.0.2"
+    "should": "^8.0.2",
+    "standard-version": "^4.0.0"
   },
   "files": [
     "lib/"
