@@ -1,9 +1,24 @@
 sudo: false
 language: node_js
-node_js:
-  - "4.0"
-  - "5.0"
-  - node
+
+branches:
+  only:
+    - master
+
+matrix:
+  include:
+    - os: linux
+      node_js: "7"
+    - os: linux
+      node_js: "6"
+    - os: linux
+      node_js: "4.3"
+    - os: osx
+      node_js: "7"
+  allow_failures:
+    - os: osx
+  fast_finish: true
+
 script: npm run travis
 
 after_success:
