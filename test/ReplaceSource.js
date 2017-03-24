@@ -5,7 +5,7 @@ var OriginalSource = require("../lib/OriginalSource");
 
 describe("ReplaceSource", function() {
 	it("should replace correctly", function() {
-		var line1, line2, line3, line4, line5;
+		var line1, line2, line3, line4, line5, line6;
 		var source = new ReplaceSource(
 			new OriginalSource([
 				line1 = "Hello World!",
