@@ -8,13 +8,13 @@ branches:
 matrix:
   include:
     - os: linux
-      node_js: "7"
+      node_js: "8"
     - os: linux
       node_js: "6"
     - os: linux
       node_js: "4.3"
     - os: osx
-      node_js: "7"
+      node_js: "8"
   allow_failures:
     - os: osx
   fast_finish: true
