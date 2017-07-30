@@ -73,4 +73,75 @@ describe("ReplaceSource", function() {
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
 		resultListMap.map.mappings.should.be.eql("AAAA,cACA");
 	});
+
+	it("should prepend items correctly", function() {
+		var source = new ReplaceSource(
+			new OriginalSource("Line 1", "file.txt")
+		);
+		source.insert(-1, "Line 0\n");
+		var resultText = source.source();
+		var resultMap = source.sourceAndMap({
+			columns: true
+		});
+		var resultListMap = source.sourceAndMap({
+			columns: false
+		});
+		resultText.should.be.eql("Line 0\nLine 1");
+		resultMap.source.should.be.eql(resultText);
+		resultListMap.source.should.be.eql(resultText);
+		resultListMap.map.file.should.be.eql(resultMap.map.file);
+		resultListMap.map.version.should.be.eql(resultMap.map.version);
+		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
+		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
+		resultMap.map.mappings.should.be.eql("AAAA;AAAA");
+	});
+
+	it("should prepend items with replace at start correctly", function() {
+		var source = new ReplaceSource(
+			new OriginalSource([
+				"Line 1",
+				"Line 2"
+			].join("\n"), "file.txt")
+		);
+		source.insert(-1, "Line 0\n");
+		source.replace(0, 5, "Hello");
+		var resultText = source.source();
+		var resultMap = source.sourceAndMap({
+			columns: true
+		});
+		var resultListMap = source.sourceAndMap({
+			columns: false
+		});
+		resultText.should.be.eql("Line 0\nHello\nLine 2");
+		resultMap.source.should.be.eql(resultText);
+		resultListMap.source.should.be.eql(resultText);
+		resultListMap.map.file.should.be.eql(resultMap.map.file);
+		resultListMap.map.version.should.be.eql(resultMap.map.version);
+		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
+		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
+		resultMap.map.mappings.should.be.eql(";AAAA;AACA");
+	});
+
+	it("should append items correctly", function() {
+		var line1;
+		var source = new ReplaceSource(
+			new OriginalSource(line1 = "Line 1", "file.txt")
+		);
+		source.insert(line1.length + 1, "\nLine 2");
+		var resultText = source.source();
+		var resultMap = source.sourceAndMap({
+			columns: true
+		});
+		var resultListMap = source.sourceAndMap({
+			columns: false
+		});
+		resultText.should.be.eql("Line 1\nLine 2");
+		resultMap.source.should.be.eql(resultText);
+		resultListMap.source.should.be.eql(resultText);
+		resultListMap.map.file.should.be.eql(resultMap.map.file);
+		resultListMap.map.version.should.be.eql(resultMap.map.version);
+		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
+		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
+		resultMap.map.mappings.should.be.eql("AAAA,M");
+	});
 });
