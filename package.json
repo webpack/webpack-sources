@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "source-list-map": "^2.0.0",
-    "source-map": "~0.5.3"
+    "source-map": "~0.6.1"
   },
   "devDependencies": {
     "beautify-lint": "^1.0.3",
