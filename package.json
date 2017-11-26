@@ -1,6 +1,6 @@
 {
   "name": "webpack-sources",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Source code handling classes for webpack",
   "main": "./lib/index.js",
   "scripts": {
