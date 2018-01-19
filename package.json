@@ -12,7 +12,8 @@
     "beautify": "beautify-rewrite lib/**.js test/**.js",
     "precover": "npm run lint && npm run beautify-lint",
     "cover": "istanbul cover node_modules/mocha/bin/_mocha",
-    "publish-patch": "npm test && npm version patch && git push && git push --tags && npm publish"
+    "publish-patch":
+      "npm test && npm version patch && git push && git push --tags && npm publish"
   },
   "dependencies": {
     "source-list-map": "^2.0.0",
@@ -29,17 +30,15 @@
     "mocha": "^3.4.2",
     "should": "^11.2.1"
   },
-  "files": [
-    "lib/"
-  ],
+  "files": ["lib/"],
+  "engines": {
+    "node": ">=6.11.5"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/webpack/webpack-sources.git"
   },
-  "keywords": [
-    "webpack",
-    "source-map"
-  ],
+  "keywords": ["webpack", "source-map"],
   "author": "Tobias Koppers @sokra",
   "license": "MIT",
   "bugs": {
