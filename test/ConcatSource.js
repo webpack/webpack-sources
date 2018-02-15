@@ -103,4 +103,23 @@ describe("ConcatSource", function() {
 		var digest = hash.digest('hex')
 		digest.should.be.eql('c7172c1aa78e1ab61b365fadb9b6f192a770c2b91c8b5c65314b4911431a1a31')
 	})
+
+	it('should be able to add in chain', function() {
+		var source = new ConcatSource(
+			new RawSource("Hello World\n"),
+			new OriginalSource("console.log('test');\nconsole.log('test2');\n", "console.js")
+		);
+		source.add("console.log('string');\n")
+			.add("console.log('string2')");
+
+		var expectedSource = [
+			"Hello World",
+			"console.log('test');",
+			"console.log('test2');",
+			"console.log('string');",
+			"console.log('string2')",
+		].join("\n");
+		source.size().should.be.eql(100);
+		source.source().should.be.eql(expectedSource);
+	})
 });
