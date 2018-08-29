@@ -44,7 +44,8 @@ describe("ReplaceSource", function() {
 		resultListMap.map.version.should.be.eql(resultMap.map.version);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultListMap.map.mappings.should.be.eql("AAAA;AACA;AAAA;AAAA;AAIA,KACA");
+		resultMap.map.mappings.should.be.eql("AAAA;AACA;AAAA;AAAA;AAIA,KACA");
+		resultListMap.map.mappings.should.be.eql(resultMap.map.mappings);
 	});
 
 	it("should replace multiple items correctly", function() {
@@ -71,13 +72,15 @@ describe("ReplaceSource", function() {
 		resultListMap.map.version.should.be.eql(resultMap.map.version);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultListMap.map.mappings.should.be.eql("AAAA,cACA");
+		resultMap.map.mappings.should.be.eql("AAAA,cACA");
+		resultListMap.map.mappings.should.be.eql(resultMap.map.mappings);
 	});
 
 	it("should prepend items correctly", function() {
 		var source = new ReplaceSource(
 			new OriginalSource("Line 1", "file.txt")
 		);
+		source.insert(-1, "Line -1\n");
 		source.insert(-1, "Line 0\n");
 		var resultText = source.source();
 		var resultMap = source.sourceAndMap({
@@ -86,14 +89,15 @@ describe("ReplaceSource", function() {
 		var resultListMap = source.sourceAndMap({
 			columns: false
 		});
-		resultText.should.be.eql("Line 0\nLine 1");
+		resultText.should.be.eql("Line -1\nLine 0\nLine 1");
 		resultMap.source.should.be.eql(resultText);
 		resultListMap.source.should.be.eql(resultText);
 		resultListMap.map.file.should.be.eql(resultMap.map.file);
 		resultListMap.map.version.should.be.eql(resultMap.map.version);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultMap.map.mappings.should.be.eql("AAAA;AAAA");
+		resultMap.map.mappings.should.be.eql("AAAA;AAAA;AAAA");
+		resultListMap.map.mappings.should.be.eql(resultMap.map.mappings);
 	});
 
 	it("should prepend items with replace at start correctly", function() {
@@ -119,15 +123,16 @@ describe("ReplaceSource", function() {
 		resultListMap.map.version.should.be.eql(resultMap.map.version);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultMap.map.mappings.should.be.eql(";AAAA;AACA");
+		resultMap.map.mappings.should.be.eql("AAAA;AAAA;AACA");
+		resultListMap.map.mappings.should.be.eql(resultMap.map.mappings);
 	});
 
 	it("should append items correctly", function() {
 		var line1;
 		var source = new ReplaceSource(
-			new OriginalSource(line1 = "Line 1", "file.txt")
+			new OriginalSource(line1 = "Line 1\n", "file.txt")
 		);
-		source.insert(line1.length + 1, "\nLine 2");
+		source.insert(line1.length + 1, "Line 2\n");
 		var resultText = source.source();
 		var resultMap = source.sourceAndMap({
 			columns: true
@@ -135,13 +140,14 @@ describe("ReplaceSource", function() {
 		var resultListMap = source.sourceAndMap({
 			columns: false
 		});
-		resultText.should.be.eql("Line 1\nLine 2");
+		resultText.should.be.eql("Line 1\nLine 2\n");
 		resultMap.source.should.be.eql(resultText);
 		resultListMap.source.should.be.eql(resultText);
 		resultListMap.map.file.should.be.eql(resultMap.map.file);
 		resultListMap.map.version.should.be.eql(resultMap.map.version);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultMap.map.mappings.should.be.eql("AAAA,M");
+		resultMap.map.mappings.should.be.eql("AAAA");
+		resultListMap.map.mappings.should.be.eql("AAAA;;");
 	});
 });
