@@ -27,7 +27,8 @@
     "istanbul": "^0.4.1",
     "js-beautify": "^1.5.10",
     "mocha": "^3.4.2",
-    "should": "^11.2.1"
+    "should": "^11.2.1",
+    "sourcemap-validator": "^1.1.0"
   },
   "files": [
     "lib/"

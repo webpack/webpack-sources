@@ -2,6 +2,7 @@ var should = require("should");
 var ReplaceSource = require("../lib/ReplaceSource");
 var RawSource = require("../lib/RawSource");
 var OriginalSource = require("../lib/OriginalSource");
+var validate = require('sourcemap-validator');
 
 describe("ReplaceSource", function() {
 	it("should replace correctly", function() {
@@ -153,5 +154,24 @@ describe("ReplaceSource", function() {
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
 		resultMap.map.mappings.should.be.eql("AAAA");
 		resultListMap.map.mappings.should.be.eql("AAAA;;");
+	});
+
+	it("should produce correct source map", function() {
+		var bootstrapCode = '   var hello\n   var world\n';
+
+		should(function() {
+			var source = new ReplaceSource(new OriginalSource(bootstrapCode, "file.js"));
+			source.replace(7, 11, 'h', 'incorrect');
+			source.replace(20, 24, 'w', 'identifiers');
+			var resultMap = source.sourceAndMap();
+			validate(resultMap.source, JSON.stringify(resultMap.map));
+		}).throw();
+
+		var source = new ReplaceSource(new OriginalSource(bootstrapCode, "file.js"));
+		source.replace(7, 11, 'h', 'hello');
+		source.replace(20, 24, 'w', 'world');
+		var resultMap = source.sourceAndMap();
+		validate(resultMap.source, JSON.stringify(resultMap.map));
+
 	});
 });
