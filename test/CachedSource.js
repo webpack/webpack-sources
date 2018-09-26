@@ -11,10 +11,28 @@ describe("CachedSource", function() {
 		cachedSource.size().should.be.eql(256);
 	});
 
+	it("should return the correct size for cached binary sources", function() {
+		var source = new OriginalSource(new ArrayBuffer(256), "file.wasm");
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.source();
+		cachedSource.size().should.be.eql(256);
+		cachedSource.size().should.be.eql(256);
+	});
+
 	it("should return the correct size for text files", function() {
 		var source = new OriginalSource("TestTestTest", "file.js");
 		var cachedSource = new CachedSource(source);
 
+		cachedSource.size().should.be.eql(12);
+		cachedSource.size().should.be.eql(12);
+	});
+
+	it("should return the correct size for cached text files", function() {
+		var source = new OriginalSource("TestTestTest", "file.js");
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.source();
 		cachedSource.size().should.be.eql(12);
 		cachedSource.size().should.be.eql(12);
 	});
