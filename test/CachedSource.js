@@ -8,5 +8,14 @@ describe("CachedSource", function() {
 		var cachedSource = new CachedSource(source);
 
 		cachedSource.size().should.be.eql(256);
+		cachedSource.size().should.be.eql(256);
+	});
+
+	it("should return the correct size for text files", function() {
+		var source = new OriginalSource("TestTestTest", "file.js");
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.size().should.be.eql(12);
+		cachedSource.size().should.be.eql(12);
 	});
 });
