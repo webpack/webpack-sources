@@ -56,4 +56,9 @@ describe("OriginalSource", function() {
 
 		resultMap.mappings.should.be.eql("AAAA;AACA;AACA");
 	});
+
+	it("should return the correct size for binary files", function() {
+		var source = new OriginalSource(new ArrayBuffer(256), "file.wasm");
+		source.size().should.be.eql(256);
+	});
 });
