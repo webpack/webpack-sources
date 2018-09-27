@@ -61,4 +61,9 @@ describe("OriginalSource", function() {
 		var source = new OriginalSource(new ArrayBuffer(256), "file.wasm");
 		source.size().should.be.eql(256);
 	});
+
+	it("should return the correct size for unicode files", function() {
+		var source = new OriginalSource("😋", "file.js");
+		source.size().should.be.eql(4);
+	});
 });

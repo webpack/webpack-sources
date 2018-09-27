@@ -36,4 +36,21 @@ describe("CachedSource", function() {
 		cachedSource.size().should.be.eql(12);
 		cachedSource.size().should.be.eql(12);
 	});
+
+	it("should return the correct size for unicode files", function() {
+		var source = new OriginalSource("😋", "file.js");
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.size().should.be.eql(4);
+		cachedSource.size().should.be.eql(4);
+	});
+
+	it("should return the correct size for cached unicode files", function() {
+		var source = new OriginalSource("😋", "file.js");
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.source();
+		cachedSource.size().should.be.eql(4);
+		cachedSource.size().should.be.eql(4);
+	});
 });
