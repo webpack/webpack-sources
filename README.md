@@ -13,7 +13,7 @@ All methods should be considered as expensive as they may need to do computation
 #### `source`
 
 ``` js
-Source.prototype.source() -> String
+Source.prototype.source() -> String | ArrayBuffer
 ```
 
 Returns the represented source code as string.
