@@ -165,7 +165,7 @@ new PrefixSource(
 
 ## `ConcatSource`
 
-Concatenate mulitple `Source`s or strings to a single source.
+Concatenate multiple `Source`s or strings to a single source.
 
 ``` js
 new ConcatSource(
