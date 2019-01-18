@@ -1,10 +1,59 @@
-var should = require("should");
+require("should");
 var CachedSource = require("../lib/CachedSource");
-var OriginalSource = require('../lib/OriginalSource');
+var OriginalSource = require("../lib/OriginalSource");
+var RawSource = require("../lib/RawSource");
+var Source = require("../lib/Source");
+
+class TrackedSource extends Source {
+	constructor(source) {
+		super();
+		this._innerSource = source;
+		this.sizeCalled = 0;
+		this.sourceCalled = 0;
+		this.bufferCalled = 0;
+		this.mapCalled = 0;
+		this.sourceAndMapCalled = 0;
+	}
+
+	getCalls() {
+		return {
+			size: this.sizeCalled,
+			source: this.sourceCalled,
+			buffer: this.bufferCalled,
+			map: this.mapCalled,
+			sourceAndMap: this.sourceAndMapCalled
+		};
+	}
+
+	size() {
+		this.sizeCalled++;
+		return this._innerSource.size();
+	}
+
+	source() {
+		this.sourceCalled++;
+		return this._innerSource.source();
+	}
+
+	buffer() {
+		this.bufferCalled++;
+		return this._innerSource.buffer();
+	}
+
+	map(options) {
+		this.mapCalled++;
+		return this._innerSource.map(options);
+	}
+
+	sourceAndMap(options) {
+		this.sourceAndMapCalled++;
+		return this._innerSource.sourceAndMap(options);
+	}
+}
 
 describe("CachedSource", function() {
 	it("should return the correct size for binary files", function() {
-		var source = new OriginalSource(new ArrayBuffer(256), "file.wasm");
+		var source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
 		var cachedSource = new CachedSource(source);
 
 		cachedSource.size().should.be.eql(256);
@@ -12,7 +61,7 @@ describe("CachedSource", function() {
 	});
 
 	it("should return the correct size for cached binary sources", function() {
-		var source = new OriginalSource(new ArrayBuffer(256), "file.wasm");
+		var source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
 		var cachedSource = new CachedSource(source);
 
 		cachedSource.source();
@@ -52,5 +101,135 @@ describe("CachedSource", function() {
 		cachedSource.source();
 		cachedSource.size().should.be.eql(4);
 		cachedSource.size().should.be.eql(4);
+	});
+
+	it("should use the source cache for all other calls", function() {
+		var source = new TrackedSource(
+			new OriginalSource("TestTestTest", "file.js")
+		);
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.source().should.be.eql("TestTestTest");
+		cachedSource.size().should.be.eql(12);
+		cachedSource
+			.buffer()
+			.toString("utf-8")
+			.should.be.eql("TestTestTest");
+		source.getCalls().should.be.eql({
+			size: 0,
+			source: 1,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 0
+		});
+	});
+	it("should use the source cache for all other calls", function() {
+		var source = new TrackedSource(
+			new OriginalSource("TestTestTest", "file.js")
+		);
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.source().should.be.eql("TestTestTest");
+		cachedSource.source().should.be.eql("TestTestTest");
+		cachedSource.size().should.be.eql(12);
+		cachedSource.size().should.be.eql(12);
+		cachedSource
+			.buffer()
+			.toString("utf-8")
+			.should.be.eql("TestTestTest");
+		cachedSource
+			.buffer()
+			.toString("utf-8")
+			.should.be.eql("TestTestTest");
+		cachedSource.sourceAndMap().source.should.be.eql("TestTestTest");
+		cachedSource.sourceAndMap().map.should.have.type("object");
+		cachedSource.map().should.have.type("object");
+		cachedSource.map().should.have.type("object");
+		source.getCalls().should.be.eql({
+			size: 0,
+			source: 1,
+			buffer: 0,
+			map: 1,
+			sourceAndMap: 0
+		});
+	});
+	it("should not use buffer for source", function() {
+		var source = new TrackedSource(
+			new OriginalSource("TestTestTest", "file.js")
+		);
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.size().should.be.eql(12);
+		cachedSource.size().should.be.eql(12);
+		cachedSource
+			.buffer()
+			.toString("utf-8")
+			.should.be.eql("TestTestTest");
+		cachedSource
+			.buffer()
+			.toString("utf-8")
+			.should.be.eql("TestTestTest");
+		cachedSource.source().should.be.eql("TestTestTest");
+		cachedSource.source().should.be.eql("TestTestTest");
+		source.getCalls().should.be.eql({
+			size: 1,
+			source: 1,
+			buffer: 1,
+			map: 0,
+			sourceAndMap: 0
+		});
+	});
+	it("should use map for sourceAndMap", function() {
+		var source = new TrackedSource(
+			new OriginalSource("TestTestTest", "file.js")
+		);
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.map().should.have.type("object");
+		cachedSource.map().should.have.type("object");
+		cachedSource.sourceAndMap().source.should.be.eql("TestTestTest");
+		cachedSource.sourceAndMap().map.should.have.type("object");
+		cachedSource.size().should.be.eql(12);
+		cachedSource.size().should.be.eql(12);
+		cachedSource
+			.buffer()
+			.toString("utf-8")
+			.should.be.eql("TestTestTest");
+		cachedSource
+			.buffer()
+			.toString("utf-8")
+			.should.be.eql("TestTestTest");
+		cachedSource.source().should.be.eql("TestTestTest");
+		cachedSource.source().should.be.eql("TestTestTest");
+		source.getCalls().should.be.eql({
+			size: 0,
+			source: 1,
+			buffer: 0,
+			map: 1,
+			sourceAndMap: 0
+		});
+	});
+	it("should use binary source for buffer", function() {
+		var buffer = Buffer.from(new Array(256));
+		var source = new TrackedSource(new RawSource(buffer, "file.wasm"));
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.sourceAndMap().source.should.be.equal(buffer);
+		cachedSource.sourceAndMap().source.should.be.equal(buffer);
+		cachedSource
+			.sourceAndMap()
+			.should.have.property("map")
+			.be.equal(null);
+		cachedSource.buffer().should.be.equal(buffer);
+		cachedSource.buffer().should.be.equal(buffer);
+		cachedSource.source().should.be.equal(buffer);
+		cachedSource.source().should.be.equal(buffer);
+		source.getCalls().should.be.eql({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1
+		});
 	});
 });
