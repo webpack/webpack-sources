@@ -43,7 +43,7 @@ The `options` object can contain the following keys:
 
 ``` js
 Source.prototype.sourceAndMap(options: Object) -> {
-	code: String,
+	source: String,
 	map: Object
 }
 ```
@@ -181,7 +181,7 @@ new ConcatSource(
 ConcatSource.prototype.add(item: Source | String)
 ```
 
-Adds an item to the source.	
+Adds an item to the source.
 
 ## `ReplaceSource`
 

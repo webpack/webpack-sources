@@ -1,4 +1,5 @@
 var should = require("should");
+var validate = require('sourcemap-validator');
 var OriginalSource = require("../lib/OriginalSource");
 
 describe("OriginalSource", function() {
@@ -21,7 +22,7 @@ describe("OriginalSource", function() {
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultMap.map.sourcesContent.should.be.eql(["Line1\n\nLine3\n"]);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultMap.map.mappings.should.be.eql("AAAA;;AAEA");
+		resultMap.map.mappings.should.be.eql("AAAA,KAAK;AACL;AACA,KAAK");
 		resultListMap.map.mappings.should.be.eql("AAAA;AACA;AACA;");
 	});
 
@@ -65,5 +66,19 @@ describe("OriginalSource", function() {
 	it("should return the correct size for unicode files", function() {
 		var source = new OriginalSource("😋", "file.js");
 		source.size().should.be.eql(4);
+	});
+
+	it.only("pass sourcemap-validator checks", function() {
+		var source = new OriginalSource(" \tvar installedModules = {};\n", "file.js");
+		var resultText = source.source();
+		var resultMap = source.sourceAndMap({
+			columns: true
+		}).map;
+		var resultListMap = source.sourceAndMap({
+			columns: false
+		}).map;
+
+		validate(resultText, JSON.stringify(resultMap));
+		validate(resultText, JSON.stringify(resultListMap));
 	});
 });

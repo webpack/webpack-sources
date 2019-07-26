@@ -45,7 +45,7 @@ describe("ConcatSource", function() {
 		var expectedMap2 = {
 			version: 3,
 			file: "x",
-			mappings: ";AAAA;AACA;ACDA",
+			mappings: ";AAAA,OAAO,CAAC,GAAG,EAAE,IAAI;AACjB,OAAO,CAAC,GAAG,EAAE,KAAK;ACDlB,MAAM",
 			names: [],
 			sources: [
 				"console.js",

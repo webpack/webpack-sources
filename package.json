@@ -28,7 +28,7 @@
     "js-beautify": "^1.5.10",
     "mocha": "^3.4.2",
     "should": "^11.2.1",
-    "sourcemap-validator": "^1.1.0"
+    "sourcemap-validator": "^1.1.1"
   },
   "files": [
     "lib/"

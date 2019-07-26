@@ -40,7 +40,7 @@ describe("PrefixSource", function() {
 		var expectedMap2 = {
 			version: 3,
 			file: "x",
-			mappings: "AAAA,qBAAoB;AACpB",
+			mappings: "AAAA,QAAO,CAAC,GAAG,EAAE,IAAI,GAAG,OAAO,CAAC,GAAG,EAAE,KAAK;AACtC,QAAO,CAAC,GAAG,EAAE,MAAM",
 			names: [],
 			sources: [
 				"console.js"

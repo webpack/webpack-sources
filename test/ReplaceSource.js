@@ -45,7 +45,7 @@ describe("ReplaceSource", function() {
 		resultListMap.map.version.should.be.eql(resultMap.map.version);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultMap.map.mappings.should.be.eql("AAAA,CAAC,EAAI,KAAE,IAAC;AACR,CAAC;AAAA;AAAA;AAID,IAAI,CACJ");
+		resultMap.map.mappings.should.be.eql("AAAA,CAAC,EAAI,IAAC,CAAC,IAAC,GAAG;AACX,CAAC;AAAA;AAAA;AAID,IAAI,CACJ");
 		resultListMap.map.mappings.should.be.eql("AAAA;AACA;AAAA;AAAA;AAIA,KACA");
 	});
 
@@ -74,7 +74,7 @@ describe("ReplaceSource", function() {
 		resultListMap.map.version.should.be.eql(resultMap.map.version);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultMap.map.mappings.should.be.eql("AAAA,WAAE,GACE");
+		resultMap.map.mappings.should.be.eql("AAAA,WAAE,GACE,CAAC");
 		resultListMap.map.mappings.should.be.eql("AAAA,cACA");
 	});
 
@@ -99,7 +99,7 @@ describe("ReplaceSource", function() {
 		resultListMap.map.version.should.be.eql(resultMap.map.version);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultMap.map.mappings.should.be.eql("AAAA;AAAA;AAAA");
+		resultMap.map.mappings.should.be.eql("AAAA;AAAA;AAAA,IAAI,CAAC");
 		resultListMap.map.mappings.should.be.eql("AAAA;AAAA;AAAA");
 	});
 
@@ -127,7 +127,7 @@ describe("ReplaceSource", function() {
 		resultListMap.map.version.should.be.eql(resultMap.map.version);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultMap.map.mappings.should.be.eql("AAAA;AAAA,KAAM;AACN");
+		resultMap.map.mappings.should.be.eql("AAAA;AAAA,KAAM;AACN,IAAI,CAAC");
 		resultListMap.map.mappings.should.be.eql("AAAA;AAAA;AACA");
 	});
 
@@ -152,7 +152,7 @@ describe("ReplaceSource", function() {
 		resultListMap.map.version.should.be.eql(resultMap.map.version);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
-		resultMap.map.mappings.should.be.eql("AAAA");
+		resultMap.map.mappings.should.be.eql("AAAA,IAAI,CAAC,CAAC");
 		resultListMap.map.mappings.should.be.eql("AAAA;;");
 	});
 
