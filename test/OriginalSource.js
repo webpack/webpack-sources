@@ -68,7 +68,7 @@ describe("OriginalSource", function() {
 		source.size().should.be.eql(4);
 	});
 
-	it.only("pass sourcemap-validator checks", function() {
+	it("pass sourcemap-validator checks", function() {
 		var source = new OriginalSource(" \tvar installedModules = {};\n", "file.js");
 		var resultText = source.source();
 		var resultMap = source.sourceAndMap({
