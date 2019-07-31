@@ -1,3 +1,4 @@
+var should = require("should");
 var SourceMapSource = require("../lib/SourceMapSource");
 var OriginalSource = require("../lib/OriginalSource");
 var ConcatSource = require("../lib/ConcatSource");
