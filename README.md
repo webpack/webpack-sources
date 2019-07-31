@@ -102,7 +102,8 @@ new SourceMapSource(
 	name: String,
 	sourceMap: Object | String,
 	originalSource?: String,
-	innerSourceMap?: Object | String
+	innerSourceMap?: Object | String,
+	removeOriginalSource?: boolean
 )
 ```
 
@@ -111,6 +112,11 @@ new SourceMapSource(
 - `sourceMap`: The SourceMap for the source code.
 - `originalSource`: The source code of the original file. Can be omitted if the `sourceMap` already contains the original source code.
 - `innerSourceMap`: The SourceMap for the `originalSource`/`name`.
+- `removeOriginalSource`: Removes the source code for `name` from the final map, keeping only the deeper mappings for that file.
+
+The `SourceMapSource` supports "identity" mappings for the `innerSourceMap`.
+When original source matches generated source for a mapping it's assumed to be mapped char by char allowing to keep finer mappings from `sourceMap`.
+
 
 ## `CachedSource`
 
@@ -155,6 +161,9 @@ Adds an item to the source.
 ## `ReplaceSource`
 
 Decorates a `Source` with replacements and insertions of source code.
+
+The `ReplaceSource` supports "identity" mappings for child source.
+When original source matches generated source for a mapping it's assumed to be mapped char by char allowing to split mappings at replacements/insertions.
 
 ### Public methods
 
