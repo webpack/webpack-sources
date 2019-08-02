@@ -17,10 +17,10 @@ describe("SourceMapSource", function() {
 
 		var source = new SourceNode(null, null, null, [
 			"Translated: ",
-			new SourceNode(1, 0, "text", "Hallo", "hello"),
+			new SourceNode(1, 0, "text", "Hallo", "Hello"),
 			" ",
-			new SourceNode(1, 6, "text", "Welt\n"),
-			new SourceNode(2, 0, "text", "ist ein"),
+			new SourceNode(1, 6, "text", "Welt\n", "World"),
+			new SourceNode(2, 0, "text", "ist ein", "nope"),
 			" test ",
 			new SourceNode(2, 10, "text", "Text\n"),
 			new SourceNode(3, 0, "text", "Anderer"),
@@ -46,9 +46,10 @@ describe("SourceMapSource", function() {
 
 		sourceMapSource1.map().should.be.eql({
 			file: "x",
-			mappings: "YAAAA,K,CAAM;AACN,O,MAAU;ACCV,O,CAAM",
+			mappings: "YAAAA,K,CAAMC;AACN,O,MAAU;ACCV,O,CAAM",
 			names: [
-				"hello"
+				"Hello",
+				"World"
 			],
 			sources: [
 				"hello-world.txt",
@@ -63,9 +64,10 @@ describe("SourceMapSource", function() {
 
 		sourceMapSource2.map().should.be.eql({
 			file: "x",
-			mappings: "YAAAA,K,CAAM;AACN,O,MAAU",
+			mappings: "YAAAA,K,CAAMC;AACN,O,MAAU",
 			names: [
-				"hello"
+				"Hello",
+				"World"
 			],
 			sources: [
 				"hello-world.txt"
