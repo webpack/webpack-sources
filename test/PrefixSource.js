@@ -82,4 +82,20 @@ describe("PrefixSource", function() {
 		actualSource.should.be.eql(expectedSource);
 		actualSource.should.be.eql(source.sourceAndMap().source);
 	});
+
+	it("should handle newlines correctly", () => {
+		var source = new PrefixSource(
+			"*",
+			new ConcatSource(
+				"Line",
+				" and more\n",
+				"double nl\n\n",
+				"nl\nline\nin\nline\n",
+				"\nstart with nl",
+				"\n\n\nempty lines"
+			)
+		);
+
+		source.sourceAndMap().source.should.be.eql(source.source());
+	});
 });
