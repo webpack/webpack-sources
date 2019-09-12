@@ -232,4 +232,43 @@ describe("CachedSource", function() {
 			sourceAndMap: 1
 		});
 	});
+	it("should use an old webpack-sources Source", function() {
+		var buffer = Buffer.from(new Array(256));
+		var source = new TrackedSource(new RawSource(buffer, "file.wasm"));
+		source.buffer = undefined;
+		var cachedSource = new CachedSource(source);
+
+		cachedSource.buffer().should.be.equal(buffer);
+		cachedSource.buffer().should.be.equal(buffer);
+		cachedSource.source().should.be.equal(buffer);
+		cachedSource.source().should.be.equal(buffer);
+		source.getCalls().should.be.eql({
+			size: 0,
+			source: 1,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 0
+		});
+	});
+	it("should use an old webpack-sources Source", function() {
+		var string = "Hello World";
+		var source = new TrackedSource(new RawSource(string, "file.txt"));
+		source.buffer = undefined;
+		var cachedSource = new CachedSource(source);
+
+		const buffer = cachedSource.buffer();
+
+		Buffer.isBuffer(buffer).should.be.eql(true);
+		buffer.toString("utf-8").should.be.equal(string);
+		cachedSource.buffer().should.be.equal(buffer);
+		cachedSource.source().should.be.equal(string);
+		cachedSource.source().should.be.equal(string);
+		source.getCalls().should.be.eql({
+			size: 0,
+			source: 1,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 0
+		});
+	});
 });
