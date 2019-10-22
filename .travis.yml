@@ -14,14 +14,14 @@ matrix:
     - os: linux
       node_js: "6"
     - os: osx
-      node_js: "8"
+      node_js: "10"
   allow_failures:
     - os: osx
   fast_finish: true
 
-script: npm run travis
+script: yarn travis
 
 after_success:
   - cat ./coverage/lcov.info | node_modules/.bin/coveralls --verbose
-  - cat ./coverage/coverage.json | node_modules/codecov.io/bin/codecov.io.js
+  - bash <(curl -s https://codecov.io/bash) -X gcov
   - rm -rf ./coverage

@@ -1,38 +1,40 @@
 {
   "name": "webpack-sources",
-  "version": "1.4.3",
+  "version": "2.0.0-beta.4",
   "description": "Source code handling classes for webpack",
   "main": "./lib/index.js",
   "scripts": {
-    "pretest": "npm run lint && npm run beautify-lint",
+    "pretest": "yarn lint",
     "test": "mocha --full-trace --check-leaks",
-    "travis": "npm run cover -- --report lcovonly",
+    "travis": "yarn cover --report lcovonly",
     "lint": "eslint lib test",
-    "beautify-lint": "beautify-lint lib/**.js test/**.js",
-    "beautify": "beautify-rewrite lib/**.js test/**.js",
-    "precover": "npm run lint && npm run beautify-lint",
-    "cover": "istanbul cover node_modules/mocha/bin/_mocha",
-    "publish-patch": "npm test && npm version patch && git push && git push --tags && npm publish"
+    "precover": "yarn lint",
+    "cover": "istanbul cover node_modules/mocha/bin/_mocha"
   },
   "dependencies": {
-    "source-list-map": "^2.0.0",
+    "source-list-map": "^2.0.1",
     "source-map": "~0.6.1"
   },
   "devDependencies": {
-    "beautify-lint": "^1.0.3",
-    "codecov.io": "^0.1.6",
-    "coveralls": "^2.11.6",
-    "eslint": "^4.18.2",
+    "coveralls": "^3.0.2",
+    "eslint": "^5.12.0",
+    "eslint-config-prettier": "^3.5.0",
+    "eslint-plugin-mocha": "^5.2.1",
+    "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-nodeca": "^1.0.3",
+    "eslint-plugin-prettier": "^3.0.1",
     "istanbul": "^0.4.1",
-    "js-beautify": "^1.5.10",
-    "mocha": "^3.4.2",
-    "should": "^11.2.1",
+    "mocha": "^5.2.0",
+    "prettier": "^1.15.3",
+    "should": "^13.2.3",
     "sourcemap-validator": "^1.1.0"
   },
   "files": [
     "lib/"
   ],
+  "engines": {
+    "node": ">=6.11.5"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/webpack/webpack-sources.git"

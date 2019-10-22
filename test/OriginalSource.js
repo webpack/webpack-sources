@@ -1,4 +1,4 @@
-var should = require("should");
+require("should");
 var OriginalSource = require("../lib/OriginalSource");
 
 describe("OriginalSource", function() {
@@ -20,7 +20,9 @@ describe("OriginalSource", function() {
 		resultMap.map.sources.should.be.eql(["file.js"]);
 		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
 		resultMap.map.sourcesContent.should.be.eql(["Line1\n\nLine3\n"]);
-		resultListMap.map.sourcesContent.should.be.eql(resultMap.map.sourcesContent);
+		resultListMap.map.sourcesContent.should.be.eql(
+			resultMap.map.sourcesContent
+		);
 		resultMap.map.mappings.should.be.eql("AAAA;;AAEA");
 		resultListMap.map.mappings.should.be.eql("AAAA;AACA;AACA;");
 	});
@@ -48,17 +50,20 @@ describe("OriginalSource", function() {
 
 	it("should omit mappings for columns with node", function() {
 		var source = new OriginalSource("Line1\n\nLine3\n", "file.js");
-		var resultMap = source.node({
-			columns: false
-		}).toStringWithSourceMap({
-			file: "x"
-		}).map.toJSON();
+		var resultMap = source
+			.node({
+				columns: false
+			})
+			.toStringWithSourceMap({
+				file: "x"
+			})
+			.map.toJSON();
 
 		resultMap.mappings.should.be.eql("AAAA;AACA;AACA");
 	});
 
 	it("should return the correct size for binary files", function() {
-		var source = new OriginalSource(new ArrayBuffer(256), "file.wasm");
+		var source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
 		source.size().should.be.eql(256);
 	});
 
