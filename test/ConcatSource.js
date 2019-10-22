@@ -106,7 +106,7 @@ describe("ConcatSource", function() {
 		source.updateHash(hash);
 		var digest = hash.digest("hex");
 		digest.should.be.eql(
-			"0e5b2346acd8a051ae833aa61f7b4e748d014e6943799c8923cff2586960e388"
+			"6c643373ded24bdfff3337162ab254797a7ab6108bcb34e9f4575dd0d00b5bb0"
 		);
 	});
 });
