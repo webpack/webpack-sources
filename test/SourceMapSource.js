@@ -70,5 +70,20 @@ describe("SourceMapSource", function() {
 			sourcesContent: [innerSourceCode],
 			version: 3
 		});
+
+		var hash = require("crypto").createHash("sha256");
+		sourceMapSource1.updateHash(hash);
+		var digest = hash.digest("hex");
+		digest.should.be.eql(
+			"c46f63c0329381f89b8882d60964808e95380dbac726c343a765200355875147"
+		);
+
+		const clone = new SourceMapSource(...sourceMapSource1.getArgsAsBuffers());
+		clone.sourceAndMap().should.be.eql(sourceMapSource1.sourceAndMap());
+
+		var hash2 = require("crypto").createHash("sha256");
+		clone.updateHash(hash2);
+		var digest2 = hash2.digest("hex");
+		digest2.should.be.eql(digest);
 	});
 });
