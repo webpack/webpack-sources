@@ -72,7 +72,12 @@ describe("ConcatSource", function() {
 				"console.js"
 			)
 		);
-		source.add("console.log('string')");
+		const innerSource = new ConcatSource("(", "'string'", ")");
+		innerSource.buffer(); // force optimization
+		source.add("console");
+		source.add(".");
+		source.add("log");
+		source.add(innerSource);
 		var expectedSource = [
 			"Hello World",
 			"console.log('test');",
@@ -88,6 +93,7 @@ describe("ConcatSource", function() {
 		};
 		source.size().should.be.eql(76);
 		source.source().should.be.eql(expectedSource);
+		source.buffer().should.be.eql(Buffer.from(expectedSource, "utf-8"));
 		source
 			.map({
 				columns: false
@@ -106,7 +112,28 @@ describe("ConcatSource", function() {
 		source.updateHash(hash);
 		var digest = hash.digest("hex");
 		digest.should.be.eql(
-			"6c643373ded24bdfff3337162ab254797a7ab6108bcb34e9f4575dd0d00b5bb0"
+			"183e6e9393eddb8480334aebeebb3366d6cce0124bc429c6e9246cc216167cb2"
 		);
+
+		var hash2 = require("crypto").createHash("sha256");
+		const source2 = new ConcatSource(
+			"Hello World\n",
+			new OriginalSource(
+				"console.log('test');\nconsole.log('test2');\n",
+				"console.js"
+			),
+			"console.log('string')"
+		);
+		source2.updateHash(hash2);
+		hash2.digest("hex").should.be.eql(digest);
+
+		const clone = new ConcatSource();
+		clone.addAllSkipOptimizing(source.getChildren());
+
+		clone.source().should.be.eql(source.source());
+
+		var hash3 = require("crypto").createHash("sha256");
+		clone.updateHash(hash3);
+		hash3.digest("hex").should.be.eql(digest);
 	});
 });

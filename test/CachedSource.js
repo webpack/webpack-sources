@@ -211,7 +211,7 @@ describe("CachedSource", function() {
 	});
 	it("should use binary source for buffer", function() {
 		var buffer = Buffer.from(new Array(256));
-		var source = new TrackedSource(new RawSource(buffer, "file.wasm"));
+		var source = new TrackedSource(new RawSource(buffer));
 		var cachedSource = new CachedSource(source);
 
 		cachedSource.sourceAndMap().source.should.be.equal(buffer);
@@ -234,7 +234,7 @@ describe("CachedSource", function() {
 	});
 	it("should use an old webpack-sources Source", function() {
 		var buffer = Buffer.from(new Array(256));
-		var source = new TrackedSource(new RawSource(buffer, "file.wasm"));
+		var source = new TrackedSource(new RawSource(buffer));
 		source.buffer = undefined;
 		var cachedSource = new CachedSource(source);
 
@@ -252,7 +252,7 @@ describe("CachedSource", function() {
 	});
 	it("should use an old webpack-sources Source", function() {
 		var string = "Hello World";
-		var source = new TrackedSource(new RawSource(string, "file.txt"));
+		var source = new TrackedSource(new RawSource(string));
 		source.buffer = undefined;
 		var cachedSource = new CachedSource(source);
 
