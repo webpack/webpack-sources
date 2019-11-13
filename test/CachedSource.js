@@ -271,4 +271,23 @@ describe("CachedSource", function() {
 			sourceAndMap: 0
 		});
 	});
+
+	it("should allow to store and restore cached data", () => {
+		const source = new CachedSource(
+			new OriginalSource("Hello World", "test.txt")
+		);
+
+		// fill up cache
+		source.source();
+		source.map({});
+		source.size();
+
+		const clone = new CachedSource(null, source.getCachedData());
+
+		clone.source().should.be.eql(source.source());
+		clone.buffer().should.be.eql(source.buffer());
+		clone.size().should.be.eql(source.size());
+		clone.map({}).should.be.eql(source.map({}));
+		clone.sourceAndMap({}).should.be.eql(source.sourceAndMap({}));
+	});
 });
