@@ -272,7 +272,7 @@ describe("CachedSource", function() {
 		});
 	});
 
-	it("should allow to store and restore cached data", () => {
+	it("should allow to store and restore cached data (with SourceMap)", () => {
 		const source = new CachedSource(
 			new OriginalSource("Hello World", "test.txt")
 		);
@@ -288,6 +288,23 @@ describe("CachedSource", function() {
 		clone.buffer().should.be.eql(source.buffer());
 		clone.size().should.be.eql(source.size());
 		clone.map({}).should.be.eql(source.map({}));
+		clone.sourceAndMap({}).should.be.eql(source.sourceAndMap({}));
+	});
+
+	it("should allow to store and restore cached data (without SourceMap)", () => {
+		const source = new CachedSource(new RawSource("Hello World"));
+
+		// fill up cache
+		source.source();
+		source.map({});
+		source.size();
+
+		const clone = new CachedSource(null, source.getCachedData());
+
+		clone.source().should.be.eql(source.source());
+		clone.buffer().should.be.eql(source.buffer());
+		clone.size().should.be.eql(source.size());
+		(clone.map({}) === null).should.be.true();
 		clone.sourceAndMap({}).should.be.eql(source.sourceAndMap({}));
 	});
 });
