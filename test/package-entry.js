@@ -12,7 +12,8 @@ describe("package-entry", () => {
 			"RawSource",
 			"ReplaceSource",
 			"SizeOnlySource",
-			"SourceMapSource"
+			"SourceMapSource",
+			"CompatSource"
 		]) {
 			expect(require("../")[name]).toBe(require("../lib/" + name));
 			expect(require("../")[name]).toBe(require("../lib/" + name));
