@@ -1,17 +1,17 @@
-var PrefixSource = require("../").PrefixSource;
-var OriginalSource = require("../").OriginalSource;
-var ConcatSource = require("../").ConcatSource;
+const PrefixSource = require("../").PrefixSource;
+const OriginalSource = require("../").OriginalSource;
+const ConcatSource = require("../").ConcatSource;
 
 describe("PrefixSource", () => {
 	it("should prefix a source", () => {
-		var source = new PrefixSource(
+		const source = new PrefixSource(
 			"\t",
 			new OriginalSource(
 				"console.log('test');console.log('test2');\nconsole.log('test22');\n",
 				"console.js"
 			)
 		);
-		var expectedMap1 = {
+		const expectedMap1 = {
 			version: 3,
 			file: "x",
 			mappings: "AAAA;AACA;",
@@ -20,7 +20,7 @@ describe("PrefixSource", () => {
 				"console.log('test');console.log('test2');\nconsole.log('test22');\n"
 			]
 		};
-		var expectedSource = [
+		const expectedSource = [
 			"\tconsole.log('test');console.log('test2');",
 			"\tconsole.log('test22');",
 			""
@@ -40,7 +40,7 @@ describe("PrefixSource", () => {
 			source: expectedSource,
 			map: expectedMap1
 		});
-		var expectedMap2 = {
+		const expectedMap2 = {
 			version: 3,
 			file: "x",
 			mappings: "CAAA,oBAAoB;CACpB",
@@ -58,7 +58,7 @@ describe("PrefixSource", () => {
 	});
 
 	it("should have consistent source/sourceAndMap behavior", () => {
-		var source = new PrefixSource(
+		const source = new PrefixSource(
 			"\t",
 			new ConcatSource(
 				new OriginalSource("console.log('test');\n", "consoleA.js"),
@@ -70,8 +70,8 @@ describe("PrefixSource", () => {
 			)
 		);
 
-		var actualSource = source.source();
-		var expectedSource = [
+		const actualSource = source.source();
+		const expectedSource = [
 			"\tconsole.log('test');\n",
 			"\t\n\tconsole.log('test1');\n\t\n",
 			"\t\n\tconsole.log('test2');\n",
@@ -85,7 +85,7 @@ describe("PrefixSource", () => {
 	});
 
 	it("should handle newlines correctly", () => {
-		var source = new PrefixSource(
+		const source = new PrefixSource(
 			"*",
 			new ConcatSource(
 				"Line",

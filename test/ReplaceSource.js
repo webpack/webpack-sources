@@ -1,11 +1,11 @@
-var ReplaceSource = require("../").ReplaceSource;
-var OriginalSource = require("../").OriginalSource;
-var validate = require("sourcemap-validator");
+const ReplaceSource = require("../").ReplaceSource;
+const OriginalSource = require("../").OriginalSource;
+const validate = require("sourcemap-validator");
 
 describe("ReplaceSource", () => {
 	it("should replace correctly", () => {
-		var line1, line2, line3, line4, line5;
-		var source = new ReplaceSource(
+		let line1, line2, line3, line4, line5;
+		const source = new ReplaceSource(
 			new OriginalSource(
 				[
 					(line1 = "Hello World!"),
@@ -19,8 +19,8 @@ describe("ReplaceSource", () => {
 				"file.txt"
 			)
 		);
-		var startLine3 = line1.length + line2.length + 2;
-		var startLine6 =
+		const startLine3 = line1.length + line2.length + 2;
+		const startLine6 =
 			startLine3 + line3.length + line4.length + line5.length + 3;
 		source.replace(
 			startLine3,
@@ -32,13 +32,13 @@ describe("ReplaceSource", () => {
 		source.replace(7, 7, "0000");
 		source.insert(line1.length + 2, "\n Multi Line\n");
 		source.replace(startLine6 + 4, startLine6 + 4, " ");
-		var originalSource = source.original();
-		var originalText = originalSource.source();
-		var resultText = source.source();
-		var resultMap = source.sourceAndMap({
+		const originalSource = source.original();
+		const originalText = originalSource.source();
+		const resultText = source.source();
+		const resultMap = source.sourceAndMap({
 			columns: true
 		});
-		var resultListMap = source.sourceAndMap({
+		const resultListMap = source.sourceAndMap({
 			columns: false
 		});
 
@@ -62,17 +62,17 @@ describe("ReplaceSource", () => {
 	});
 
 	it("should replace multiple items correctly", () => {
-		var line1;
-		var source = new ReplaceSource(
+		let line1;
+		const source = new ReplaceSource(
 			new OriginalSource([(line1 = "Hello"), "World!"].join("\n"), "file.txt")
 		);
 		source.insert(0, "Message: ");
 		source.replace(2, line1.length + 4, "y A");
-		var resultText = source.source();
-		var resultMap = source.sourceAndMap({
+		const resultText = source.source();
+		const resultMap = source.sourceAndMap({
 			columns: true
 		});
-		var resultListMap = source.sourceAndMap({
+		const resultListMap = source.sourceAndMap({
 			columns: false
 		});
 
@@ -90,14 +90,14 @@ describe("ReplaceSource", () => {
 	});
 
 	it("should prepend items correctly", () => {
-		var source = new ReplaceSource(new OriginalSource("Line 1", "file.txt"));
+		const source = new ReplaceSource(new OriginalSource("Line 1", "file.txt"));
 		source.insert(-1, "Line -1\n");
 		source.insert(-1, "Line 0\n");
-		var resultText = source.source();
-		var resultMap = source.sourceAndMap({
+		const resultText = source.source();
+		const resultMap = source.sourceAndMap({
 			columns: true
 		});
-		var resultListMap = source.sourceAndMap({
+		const resultListMap = source.sourceAndMap({
 			columns: false
 		});
 
@@ -115,16 +115,16 @@ describe("ReplaceSource", () => {
 	});
 
 	it("should prepend items with replace at start correctly", () => {
-		var source = new ReplaceSource(
+		const source = new ReplaceSource(
 			new OriginalSource(["Line 1", "Line 2"].join("\n"), "file.txt")
 		);
 		source.insert(-1, "Line 0\n");
 		source.replace(0, 5, "Hello");
-		var resultText = source.source();
-		var resultMap = source.sourceAndMap({
+		const resultText = source.source();
+		const resultMap = source.sourceAndMap({
 			columns: true
 		});
-		var resultListMap = source.sourceAndMap({
+		const resultListMap = source.sourceAndMap({
 			columns: false
 		});
 
@@ -142,16 +142,16 @@ describe("ReplaceSource", () => {
 	});
 
 	it("should append items correctly", () => {
-		var line1;
-		var source = new ReplaceSource(
+		let line1;
+		const source = new ReplaceSource(
 			new OriginalSource((line1 = "Line 1\n"), "file.txt")
 		);
 		source.insert(line1.length + 1, "Line 2\n");
-		var resultText = source.source();
-		var resultMap = source.sourceAndMap({
+		const resultText = source.source();
+		const resultMap = source.sourceAndMap({
 			columns: true
 		});
-		var resultListMap = source.sourceAndMap({
+		const resultListMap = source.sourceAndMap({
 			columns: false
 		});
 
@@ -169,24 +169,24 @@ describe("ReplaceSource", () => {
 	});
 
 	it("should produce correct source map", () => {
-		var bootstrapCode = "   var hello\n   var world\n";
+		const bootstrapCode = "   var hello\n   var world\n";
 
 		expect(function () {
-			var source = new ReplaceSource(
+			const source = new ReplaceSource(
 				new OriginalSource(bootstrapCode, "file.js")
 			);
 			source.replace(7, 11, "h", "incorrect");
 			source.replace(20, 24, "w", "identifiers");
-			var resultMap = source.sourceAndMap();
+			const resultMap = source.sourceAndMap();
 			validate(resultMap.source, JSON.stringify(resultMap.map));
 		}).toThrowError();
 
-		var source = new ReplaceSource(
+		const source = new ReplaceSource(
 			new OriginalSource(bootstrapCode, "file.js")
 		);
 		source.replace(7, 11, "h", "hello");
 		source.replace(20, 24, "w", "world");
-		var resultMap = source.sourceAndMap();
+		const resultMap = source.sourceAndMap();
 		validate(resultMap.source, JSON.stringify(resultMap.map));
 	});
 });

@@ -1,13 +1,13 @@
-var OriginalSource = require("../").OriginalSource;
+const OriginalSource = require("../").OriginalSource;
 
 describe("OriginalSource", () => {
 	it("should handle multiline string", () => {
-		var source = new OriginalSource("Line1\n\nLine3\n", "file.js");
-		var resultText = source.source();
-		var resultMap = source.sourceAndMap({
+		const source = new OriginalSource("Line1\n\nLine3\n", "file.js");
+		const resultText = source.source();
+		const resultMap = source.sourceAndMap({
 			columns: true
 		});
-		var resultListMap = source.sourceAndMap({
+		const resultListMap = source.sourceAndMap({
 			columns: false
 		});
 
@@ -27,12 +27,12 @@ describe("OriginalSource", () => {
 	});
 
 	it("should handle empty string", () => {
-		var source = new OriginalSource("", "file.js");
-		var resultText = source.source();
-		var resultMap = source.sourceAndMap({
+		const source = new OriginalSource("", "file.js");
+		const resultText = source.source();
+		const resultMap = source.sourceAndMap({
 			columns: true
 		});
-		var resultListMap = source.sourceAndMap({
+		const resultListMap = source.sourceAndMap({
 			columns: false
 		});
 
@@ -48,8 +48,8 @@ describe("OriginalSource", () => {
 	});
 
 	it("should omit mappings for columns with node", () => {
-		var source = new OriginalSource("Line1\n\nLine3\n", "file.js");
-		var resultMap = source
+		const source = new OriginalSource("Line1\n\nLine3\n", "file.js");
+		const resultMap = source
 			.node({
 				columns: false
 			})
@@ -62,12 +62,12 @@ describe("OriginalSource", () => {
 	});
 
 	it("should return the correct size for binary files", () => {
-		var source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
+		const source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
 		expect(source.size()).toBe(256);
 	});
 
 	it("should return the correct size for unicode files", () => {
-		var source = new OriginalSource("😋", "file.js");
+		const source = new OriginalSource("😋", "file.js");
 		expect(source.size()).toBe(4);
 	});
 });

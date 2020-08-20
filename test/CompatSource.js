@@ -1,10 +1,10 @@
-var CompatSource = require("../").CompatSource;
-var RawSource = require("../").RawSource;
+const CompatSource = require("../").CompatSource;
+const RawSource = require("../").RawSource;
 
 describe("CompatSource", () => {
 	it("should emulate all methods", () => {
-		var CONTENT = "Line1\n\nLine3\n";
-		var source = CompatSource.from({
+		const CONTENT = "Line1\n\nLine3\n";
+		const source = CompatSource.from({
 			source() {
 				return CONTENT;
 			},

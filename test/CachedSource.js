@@ -1,7 +1,7 @@
-var CachedSource = require("../").CachedSource;
-var OriginalSource = require("../").OriginalSource;
-var RawSource = require("../").RawSource;
-var Source = require("../").Source;
+const CachedSource = require("../").CachedSource;
+const OriginalSource = require("../").OriginalSource;
+const RawSource = require("../").RawSource;
+const Source = require("../").Source;
 
 class TrackedSource extends Source {
 	constructor(source) {
@@ -52,16 +52,16 @@ class TrackedSource extends Source {
 
 describe("CachedSource", () => {
 	it("should return the correct size for binary files", () => {
-		var source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
-		var cachedSource = new CachedSource(source);
+		const source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
+		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.size()).toBe(256);
 		expect(cachedSource.size()).toBe(256);
 	});
 
 	it("should return the correct size for cached binary sources", () => {
-		var source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
-		var cachedSource = new CachedSource(source);
+		const source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
+		const cachedSource = new CachedSource(source);
 
 		cachedSource.source();
 		expect(cachedSource.size()).toBe(256);
@@ -69,16 +69,16 @@ describe("CachedSource", () => {
 	});
 
 	it("should return the correct size for text files", () => {
-		var source = new OriginalSource("TestTestTest", "file.js");
-		var cachedSource = new CachedSource(source);
+		const source = new OriginalSource("TestTestTest", "file.js");
+		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.size()).toBe(12);
 		expect(cachedSource.size()).toBe(12);
 	});
 
 	it("should return the correct size for cached text files", () => {
-		var source = new OriginalSource("TestTestTest", "file.js");
-		var cachedSource = new CachedSource(source);
+		const source = new OriginalSource("TestTestTest", "file.js");
+		const cachedSource = new CachedSource(source);
 
 		cachedSource.source();
 		expect(cachedSource.size()).toBe(12);
@@ -86,16 +86,16 @@ describe("CachedSource", () => {
 	});
 
 	it("should return the correct size for unicode files", () => {
-		var source = new OriginalSource("😋", "file.js");
-		var cachedSource = new CachedSource(source);
+		const source = new OriginalSource("😋", "file.js");
+		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.size()).toBe(4);
 		expect(cachedSource.size()).toBe(4);
 	});
 
 	it("should return the correct size for cached unicode files", () => {
-		var source = new OriginalSource("😋", "file.js");
-		var cachedSource = new CachedSource(source);
+		const source = new OriginalSource("😋", "file.js");
+		const cachedSource = new CachedSource(source);
 
 		cachedSource.source();
 		expect(cachedSource.size()).toBe(4);
@@ -103,10 +103,10 @@ describe("CachedSource", () => {
 	});
 
 	it("should use the source cache for all other calls", () => {
-		var source = new TrackedSource(
+		const source = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js")
 		);
-		var cachedSource = new CachedSource(source);
+		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.source()).toBe("TestTestTest");
 		expect(cachedSource.size()).toBe(12);
@@ -120,10 +120,10 @@ describe("CachedSource", () => {
 		});
 	});
 	it("should use the source cache for all other calls", () => {
-		var source = new TrackedSource(
+		const source = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js")
 		);
-		var cachedSource = new CachedSource(source);
+		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.source()).toBe("TestTestTest");
 		expect(cachedSource.source()).toBe("TestTestTest");
@@ -144,10 +144,10 @@ describe("CachedSource", () => {
 		});
 	});
 	it("should not use buffer for source", () => {
-		var source = new TrackedSource(
+		const source = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js")
 		);
-		var cachedSource = new CachedSource(source);
+		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.size()).toBe(12);
 		expect(cachedSource.size()).toBe(12);
@@ -164,10 +164,10 @@ describe("CachedSource", () => {
 		});
 	});
 	it("should use map for sourceAndMap", () => {
-		var source = new TrackedSource(
+		const source = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js")
 		);
-		var cachedSource = new CachedSource(source);
+		const cachedSource = new CachedSource(source);
 
 		expect(typeof cachedSource.map()).toBe("object");
 		expect(typeof cachedSource.map()).toBe("object");
@@ -188,9 +188,9 @@ describe("CachedSource", () => {
 		});
 	});
 	it("should use binary source for buffer", () => {
-		var buffer = Buffer.from(new Array(256));
-		var source = new TrackedSource(new RawSource(buffer));
-		var cachedSource = new CachedSource(source);
+		const buffer = Buffer.from(new Array(256));
+		const source = new TrackedSource(new RawSource(buffer));
+		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.sourceAndMap().source).toBe(buffer);
 		expect(cachedSource.sourceAndMap().source).toBe(buffer);
@@ -208,10 +208,10 @@ describe("CachedSource", () => {
 		});
 	});
 	it("should use an old webpack-sources Source", () => {
-		var buffer = Buffer.from(new Array(256));
-		var source = new TrackedSource(new RawSource(buffer));
+		const buffer = Buffer.from(new Array(256));
+		const source = new TrackedSource(new RawSource(buffer));
 		source.buffer = undefined;
-		var cachedSource = new CachedSource(source);
+		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.buffer()).toBe(buffer);
 		expect(cachedSource.buffer()).toBe(buffer);
@@ -226,10 +226,10 @@ describe("CachedSource", () => {
 		});
 	});
 	it("should use an old webpack-sources Source", () => {
-		var string = "Hello World";
-		var source = new TrackedSource(new RawSource(string));
+		const string = "Hello World";
+		const source = new TrackedSource(new RawSource(string));
 		source.buffer = undefined;
-		var cachedSource = new CachedSource(source);
+		const cachedSource = new CachedSource(source);
 
 		const buffer = cachedSource.buffer();
 
