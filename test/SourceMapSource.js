@@ -3,8 +3,8 @@ var OriginalSource = require("../").OriginalSource;
 var ConcatSource = require("../").ConcatSource;
 var SourceNode = require("source-map").SourceNode;
 
-describe("SourceMapSource", function() {
-	it("map correctly", function() {
+describe("SourceMapSource", () => {
+	it("map correctly", () => {
 		var innerSourceCode = ["Hello World", "is a test string"].join("\n") + "\n";
 		var innerSource = new ConcatSource(
 			new OriginalSource(innerSourceCode, "hello-world.txt"),
@@ -50,10 +50,10 @@ describe("SourceMapSource", function() {
 			"ist ein test Text",
 			"Anderer Text"
 		].join("\n");
-		sourceMapSource1.source().should.be.eql(expectedContent);
-		sourceMapSource2.source().should.be.eql(expectedContent);
+		expect(sourceMapSource1.source()).toEqual(expectedContent);
+		expect(sourceMapSource2.source()).toEqual(expectedContent);
 
-		sourceMapSource1.map().should.be.eql({
+		expect(sourceMapSource1.map()).toEqual({
 			file: "x",
 			mappings: "YAAAA,K,CAAMC;AACN,O,MAAU;ACCV,O,CAAM",
 			names: ["Hello", "World"],
@@ -62,7 +62,7 @@ describe("SourceMapSource", function() {
 			version: 3
 		});
 
-		sourceMapSource2.map().should.be.eql({
+		expect(sourceMapSource2.map()).toEqual({
 			file: "x",
 			mappings: "YAAAA,K,CAAMC;AACN,O,MAAU",
 			names: ["Hello", "World"],
@@ -74,16 +74,16 @@ describe("SourceMapSource", function() {
 		var hash = require("crypto").createHash("sha256");
 		sourceMapSource1.updateHash(hash);
 		var digest = hash.digest("hex");
-		digest.should.be.eql(
+		expect(digest).toBe(
 			"c46f63c0329381f89b8882d60964808e95380dbac726c343a765200355875147"
 		);
 
 		const clone = new SourceMapSource(...sourceMapSource1.getArgsAsBuffers());
-		clone.sourceAndMap().should.be.eql(sourceMapSource1.sourceAndMap());
+		expect(clone.sourceAndMap()).toEqual(sourceMapSource1.sourceAndMap());
 
 		var hash2 = require("crypto").createHash("sha256");
 		clone.updateHash(hash2);
 		var digest2 = hash2.digest("hex");
-		digest2.should.be.eql(digest);
+		expect(digest2).toEqual(digest);
 	});
 });

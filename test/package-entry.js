@@ -1,8 +1,8 @@
-describe("package-entry", function() {
-	it("should not throw SyntaxError", function() {
+describe("package-entry", () => {
+	it("should not throw SyntaxError", () => {
 		require("../");
 	});
-	it("should expose Sources", function() {
+	it("should expose Sources", () => {
 		for (const name of [
 			"Source",
 			"CachedSource",
@@ -14,8 +14,8 @@ describe("package-entry", function() {
 			"SizeOnlySource",
 			"SourceMapSource"
 		]) {
-			require("../")[name].should.be.equal(require("../lib/" + name));
-			require("../")[name].should.be.equal(require("../lib/" + name));
+			expect(require("../")[name]).toBe(require("../lib/" + name));
+			expect(require("../")[name]).toBe(require("../lib/" + name));
 		}
 	});
 });

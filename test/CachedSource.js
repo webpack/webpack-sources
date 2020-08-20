@@ -1,4 +1,3 @@
-require("should");
 var CachedSource = require("../").CachedSource;
 var OriginalSource = require("../").OriginalSource;
 var RawSource = require("../").RawSource;
@@ -51,71 +50,68 @@ class TrackedSource extends Source {
 	}
 }
 
-describe("CachedSource", function() {
-	it("should return the correct size for binary files", function() {
+describe("CachedSource", () => {
+	it("should return the correct size for binary files", () => {
 		var source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
 		var cachedSource = new CachedSource(source);
 
-		cachedSource.size().should.be.eql(256);
-		cachedSource.size().should.be.eql(256);
+		expect(cachedSource.size()).toBe(256);
+		expect(cachedSource.size()).toBe(256);
 	});
 
-	it("should return the correct size for cached binary sources", function() {
+	it("should return the correct size for cached binary sources", () => {
 		var source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
 		var cachedSource = new CachedSource(source);
 
 		cachedSource.source();
-		cachedSource.size().should.be.eql(256);
-		cachedSource.size().should.be.eql(256);
+		expect(cachedSource.size()).toBe(256);
+		expect(cachedSource.size()).toBe(256);
 	});
 
-	it("should return the correct size for text files", function() {
+	it("should return the correct size for text files", () => {
 		var source = new OriginalSource("TestTestTest", "file.js");
 		var cachedSource = new CachedSource(source);
 
-		cachedSource.size().should.be.eql(12);
-		cachedSource.size().should.be.eql(12);
+		expect(cachedSource.size()).toBe(12);
+		expect(cachedSource.size()).toBe(12);
 	});
 
-	it("should return the correct size for cached text files", function() {
+	it("should return the correct size for cached text files", () => {
 		var source = new OriginalSource("TestTestTest", "file.js");
 		var cachedSource = new CachedSource(source);
 
 		cachedSource.source();
-		cachedSource.size().should.be.eql(12);
-		cachedSource.size().should.be.eql(12);
+		expect(cachedSource.size()).toBe(12);
+		expect(cachedSource.size()).toBe(12);
 	});
 
-	it("should return the correct size for unicode files", function() {
+	it("should return the correct size for unicode files", () => {
 		var source = new OriginalSource("😋", "file.js");
 		var cachedSource = new CachedSource(source);
 
-		cachedSource.size().should.be.eql(4);
-		cachedSource.size().should.be.eql(4);
+		expect(cachedSource.size()).toBe(4);
+		expect(cachedSource.size()).toBe(4);
 	});
 
-	it("should return the correct size for cached unicode files", function() {
+	it("should return the correct size for cached unicode files", () => {
 		var source = new OriginalSource("😋", "file.js");
 		var cachedSource = new CachedSource(source);
 
 		cachedSource.source();
-		cachedSource.size().should.be.eql(4);
-		cachedSource.size().should.be.eql(4);
+		expect(cachedSource.size()).toBe(4);
+		expect(cachedSource.size()).toBe(4);
 	});
 
-	it("should use the source cache for all other calls", function() {
+	it("should use the source cache for all other calls", () => {
 		var source = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js")
 		);
 		var cachedSource = new CachedSource(source);
 
-		cachedSource.source().should.be.eql("TestTestTest");
-		cachedSource.size().should.be.eql(12);
-		cachedSource
-			.buffer()
-			.toString("utf-8")
-			.should.be.eql("TestTestTest");
-		source.getCalls().should.be.eql({
+		expect(cachedSource.source()).toBe("TestTestTest");
+		expect(cachedSource.size()).toBe(12);
+		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(source.getCalls()).toEqual({
 			size: 0,
 			source: 1,
 			buffer: 0,
@@ -123,29 +119,23 @@ describe("CachedSource", function() {
 			sourceAndMap: 0
 		});
 	});
-	it("should use the source cache for all other calls", function() {
+	it("should use the source cache for all other calls", () => {
 		var source = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js")
 		);
 		var cachedSource = new CachedSource(source);
 
-		cachedSource.source().should.be.eql("TestTestTest");
-		cachedSource.source().should.be.eql("TestTestTest");
-		cachedSource.size().should.be.eql(12);
-		cachedSource.size().should.be.eql(12);
-		cachedSource
-			.buffer()
-			.toString("utf-8")
-			.should.be.eql("TestTestTest");
-		cachedSource
-			.buffer()
-			.toString("utf-8")
-			.should.be.eql("TestTestTest");
-		cachedSource.sourceAndMap().source.should.be.eql("TestTestTest");
-		cachedSource.sourceAndMap().map.should.have.type("object");
-		cachedSource.map().should.have.type("object");
-		cachedSource.map().should.have.type("object");
-		source.getCalls().should.be.eql({
+		expect(cachedSource.source()).toBe("TestTestTest");
+		expect(cachedSource.source()).toBe("TestTestTest");
+		expect(cachedSource.size()).toBe(12);
+		expect(cachedSource.size()).toBe(12);
+		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(cachedSource.sourceAndMap().source).toBe("TestTestTest");
+		expect(typeof cachedSource.sourceAndMap().map).toBe("object");
+		expect(typeof cachedSource.map()).toBe("object");
+		expect(typeof cachedSource.map()).toBe("object");
+		expect(source.getCalls()).toEqual({
 			size: 0,
 			source: 1,
 			buffer: 0,
@@ -153,25 +143,19 @@ describe("CachedSource", function() {
 			sourceAndMap: 0
 		});
 	});
-	it("should not use buffer for source", function() {
+	it("should not use buffer for source", () => {
 		var source = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js")
 		);
 		var cachedSource = new CachedSource(source);
 
-		cachedSource.size().should.be.eql(12);
-		cachedSource.size().should.be.eql(12);
-		cachedSource
-			.buffer()
-			.toString("utf-8")
-			.should.be.eql("TestTestTest");
-		cachedSource
-			.buffer()
-			.toString("utf-8")
-			.should.be.eql("TestTestTest");
-		cachedSource.source().should.be.eql("TestTestTest");
-		cachedSource.source().should.be.eql("TestTestTest");
-		source.getCalls().should.be.eql({
+		expect(cachedSource.size()).toBe(12);
+		expect(cachedSource.size()).toBe(12);
+		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(cachedSource.source()).toBe("TestTestTest");
+		expect(cachedSource.source()).toBe("TestTestTest");
+		expect(source.getCalls()).toEqual({
 			size: 1,
 			source: 1,
 			buffer: 1,
@@ -179,29 +163,23 @@ describe("CachedSource", function() {
 			sourceAndMap: 0
 		});
 	});
-	it("should use map for sourceAndMap", function() {
+	it("should use map for sourceAndMap", () => {
 		var source = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js")
 		);
 		var cachedSource = new CachedSource(source);
 
-		cachedSource.map().should.have.type("object");
-		cachedSource.map().should.have.type("object");
-		cachedSource.sourceAndMap().source.should.be.eql("TestTestTest");
-		cachedSource.sourceAndMap().map.should.have.type("object");
-		cachedSource.size().should.be.eql(12);
-		cachedSource.size().should.be.eql(12);
-		cachedSource
-			.buffer()
-			.toString("utf-8")
-			.should.be.eql("TestTestTest");
-		cachedSource
-			.buffer()
-			.toString("utf-8")
-			.should.be.eql("TestTestTest");
-		cachedSource.source().should.be.eql("TestTestTest");
-		cachedSource.source().should.be.eql("TestTestTest");
-		source.getCalls().should.be.eql({
+		expect(typeof cachedSource.map()).toBe("object");
+		expect(typeof cachedSource.map()).toBe("object");
+		expect(cachedSource.sourceAndMap().source).toBe("TestTestTest");
+		expect(typeof cachedSource.sourceAndMap().map).toBe("object");
+		expect(cachedSource.size()).toBe(12);
+		expect(cachedSource.size()).toBe(12);
+		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(cachedSource.source()).toBe("TestTestTest");
+		expect(cachedSource.source()).toBe("TestTestTest");
+		expect(source.getCalls()).toEqual({
 			size: 0,
 			source: 1,
 			buffer: 0,
@@ -209,22 +187,19 @@ describe("CachedSource", function() {
 			sourceAndMap: 0
 		});
 	});
-	it("should use binary source for buffer", function() {
+	it("should use binary source for buffer", () => {
 		var buffer = Buffer.from(new Array(256));
 		var source = new TrackedSource(new RawSource(buffer));
 		var cachedSource = new CachedSource(source);
 
-		cachedSource.sourceAndMap().source.should.be.equal(buffer);
-		cachedSource.sourceAndMap().source.should.be.equal(buffer);
-		cachedSource
-			.sourceAndMap()
-			.should.have.property("map")
-			.be.equal(null);
-		cachedSource.buffer().should.be.equal(buffer);
-		cachedSource.buffer().should.be.equal(buffer);
-		cachedSource.source().should.be.equal(buffer);
-		cachedSource.source().should.be.equal(buffer);
-		source.getCalls().should.be.eql({
+		expect(cachedSource.sourceAndMap().source).toBe(buffer);
+		expect(cachedSource.sourceAndMap().source).toBe(buffer);
+		expect(cachedSource.sourceAndMap()).toHaveProperty("map", null);
+		expect(cachedSource.buffer()).toBe(buffer);
+		expect(cachedSource.buffer()).toBe(buffer);
+		expect(cachedSource.source()).toBe(buffer);
+		expect(cachedSource.source()).toBe(buffer);
+		expect(source.getCalls()).toEqual({
 			size: 0,
 			source: 0,
 			buffer: 0,
@@ -232,17 +207,17 @@ describe("CachedSource", function() {
 			sourceAndMap: 1
 		});
 	});
-	it("should use an old webpack-sources Source", function() {
+	it("should use an old webpack-sources Source", () => {
 		var buffer = Buffer.from(new Array(256));
 		var source = new TrackedSource(new RawSource(buffer));
 		source.buffer = undefined;
 		var cachedSource = new CachedSource(source);
 
-		cachedSource.buffer().should.be.equal(buffer);
-		cachedSource.buffer().should.be.equal(buffer);
-		cachedSource.source().should.be.equal(buffer);
-		cachedSource.source().should.be.equal(buffer);
-		source.getCalls().should.be.eql({
+		expect(cachedSource.buffer()).toBe(buffer);
+		expect(cachedSource.buffer()).toBe(buffer);
+		expect(cachedSource.source()).toBe(buffer);
+		expect(cachedSource.source()).toBe(buffer);
+		expect(source.getCalls()).toEqual({
 			size: 0,
 			source: 1,
 			buffer: 0,
@@ -250,7 +225,7 @@ describe("CachedSource", function() {
 			sourceAndMap: 0
 		});
 	});
-	it("should use an old webpack-sources Source", function() {
+	it("should use an old webpack-sources Source", () => {
 		var string = "Hello World";
 		var source = new TrackedSource(new RawSource(string));
 		source.buffer = undefined;
@@ -258,12 +233,12 @@ describe("CachedSource", function() {
 
 		const buffer = cachedSource.buffer();
 
-		Buffer.isBuffer(buffer).should.be.eql(true);
-		buffer.toString("utf-8").should.be.equal(string);
-		cachedSource.buffer().should.be.equal(buffer);
-		cachedSource.source().should.be.equal(string);
-		cachedSource.source().should.be.equal(string);
-		source.getCalls().should.be.eql({
+		expect(Buffer.isBuffer(buffer)).toBe(true);
+		expect(buffer.toString("utf-8")).toBe(string);
+		expect(cachedSource.buffer()).toBe(buffer);
+		expect(cachedSource.source()).toBe(string);
+		expect(cachedSource.source()).toBe(string);
+		expect(source.getCalls()).toEqual({
 			size: 0,
 			source: 1,
 			buffer: 0,
@@ -284,11 +259,11 @@ describe("CachedSource", function() {
 
 		const clone = new CachedSource(null, source.getCachedData());
 
-		clone.source().should.be.eql(source.source());
-		clone.buffer().should.be.eql(source.buffer());
-		clone.size().should.be.eql(source.size());
-		clone.map({}).should.be.eql(source.map({}));
-		clone.sourceAndMap({}).should.be.eql(source.sourceAndMap({}));
+		expect(clone.source()).toEqual(source.source());
+		expect(clone.buffer()).toEqual(source.buffer());
+		expect(clone.size()).toEqual(source.size());
+		expect(clone.map({})).toEqual(source.map({}));
+		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
 	});
 
 	it("should allow to store and restore cached data (without SourceMap)", () => {
@@ -301,10 +276,10 @@ describe("CachedSource", function() {
 
 		const clone = new CachedSource(null, source.getCachedData());
 
-		clone.source().should.be.eql(source.source());
-		clone.buffer().should.be.eql(source.buffer());
-		clone.size().should.be.eql(source.size());
-		(clone.map({}) === null).should.be.true();
-		clone.sourceAndMap({}).should.be.eql(source.sourceAndMap({}));
+		expect(clone.source()).toEqual(source.source());
+		expect(clone.buffer()).toEqual(source.buffer());
+		expect(clone.size()).toEqual(source.size());
+		expect(clone.map({}) === null).toBe(true);
+		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
 	});
 });

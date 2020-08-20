@@ -1,10 +1,9 @@
-require("should");
 var PrefixSource = require("../").PrefixSource;
 var OriginalSource = require("../").OriginalSource;
 var ConcatSource = require("../").ConcatSource;
 
-describe("PrefixSource", function() {
-	it("should prefix a source", function() {
+describe("PrefixSource", () => {
+	it("should prefix a source", () => {
 		var source = new PrefixSource(
 			"\t",
 			new OriginalSource(
@@ -26,21 +25,21 @@ describe("PrefixSource", function() {
 			"\tconsole.log('test22');",
 			""
 		].join("\n");
-		source.size().should.be.eql(67);
-		source.source().should.be.eql(expectedSource);
-		source
-			.map({
+		expect(source.size()).toBe(67);
+		expect(source.source()).toEqual(expectedSource);
+		expect(
+			source.map({
 				columns: false
 			})
-			.should.be.eql(expectedMap1);
-		source
-			.sourceAndMap({
+		).toEqual(expectedMap1);
+		expect(
+			source.sourceAndMap({
 				columns: false
 			})
-			.should.be.eql({
-				source: expectedSource,
-				map: expectedMap1
-			});
+		).toEqual({
+			source: expectedSource,
+			map: expectedMap1
+		});
 		var expectedMap2 = {
 			version: 3,
 			file: "x",
@@ -51,14 +50,14 @@ describe("PrefixSource", function() {
 				"console.log('test');console.log('test2');\nconsole.log('test22');\n"
 			]
 		};
-		source.map().should.be.eql(expectedMap2);
-		source.sourceAndMap().should.be.eql({
+		expect(source.map()).toEqual(expectedMap2);
+		expect(source.sourceAndMap()).toEqual({
 			source: expectedSource,
 			map: expectedMap2
 		});
 	});
 
-	it("should have consistent source/sourceAndMap behavior", function() {
+	it("should have consistent source/sourceAndMap behavior", () => {
 		var source = new PrefixSource(
 			"\t",
 			new ConcatSource(
@@ -81,8 +80,8 @@ describe("PrefixSource", function() {
 			"console.log('test4');"
 		].join("");
 
-		actualSource.should.be.eql(expectedSource);
-		actualSource.should.be.eql(source.sourceAndMap().source);
+		expect(actualSource).toEqual(expectedSource);
+		expect(actualSource).toEqual(source.sourceAndMap().source);
 	});
 
 	it("should handle newlines correctly", () => {
@@ -98,6 +97,6 @@ describe("PrefixSource", function() {
 			)
 		);
 
-		source.sourceAndMap().source.should.be.eql(source.source());
+		expect(source.sourceAndMap().source).toEqual(source.source());
 	});
 });

@@ -1,10 +1,9 @@
-var should = require("should");
 var ReplaceSource = require("../").ReplaceSource;
 var OriginalSource = require("../").OriginalSource;
 var validate = require("sourcemap-validator");
 
-describe("ReplaceSource", function() {
-	it("should replace correctly", function() {
+describe("ReplaceSource", () => {
+	it("should replace correctly", () => {
 		var line1, line2, line3, line4, line5;
 		var source = new ReplaceSource(
 			new OriginalSource(
@@ -43,26 +42,26 @@ describe("ReplaceSource", function() {
 			columns: false
 		});
 
-		originalSource.should.be.eql(source._source);
-		originalText.should.be.eql(
+		expect(originalSource).toEqual(source._source);
+		expect(originalText).toBe(
 			"Hello World!\n{}\nLine 3\nLine 4\nLine 5\nLast\nLine"
 		);
-		resultText.should.be.eql("Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line");
-		resultMap.source.should.be.eql(resultText);
-		resultListMap.source.should.be.eql(resultText);
-		resultListMap.map.file.should.be.eql(resultMap.map.file);
-		resultListMap.map.version.should.be.eql(resultMap.map.version);
-		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
-		resultListMap.map.sourcesContent.should.be.eql(
+		expect(resultText).toBe("Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line");
+		expect(resultMap.source).toEqual(resultText);
+		expect(resultListMap.source).toEqual(resultText);
+		expect(resultListMap.map.file).toEqual(resultMap.map.file);
+		expect(resultListMap.map.version).toEqual(resultMap.map.version);
+		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
+		expect(resultListMap.map.sourcesContent).toEqual(
 			resultMap.map.sourcesContent
 		);
-		resultMap.map.mappings.should.be.eql(
+		expect(resultMap.map.mappings).toBe(
 			"AAAA,CAAC,EAAI,KAAE,IAAC;AACR,CAAC;AAAA;AAAA;AAID,IAAI,CACJ"
 		);
-		resultListMap.map.mappings.should.be.eql("AAAA;AACA;AAAA;AAAA;AAIA,KACA");
+		expect(resultListMap.map.mappings).toBe("AAAA;AACA;AAAA;AAAA;AAIA,KACA");
 	});
 
-	it("should replace multiple items correctly", function() {
+	it("should replace multiple items correctly", () => {
 		var line1;
 		var source = new ReplaceSource(
 			new OriginalSource([(line1 = "Hello"), "World!"].join("\n"), "file.txt")
@@ -77,20 +76,20 @@ describe("ReplaceSource", function() {
 			columns: false
 		});
 
-		resultText.should.be.eql("Message: Hey Ad!");
-		resultMap.source.should.be.eql(resultText);
-		resultListMap.source.should.be.eql(resultText);
-		resultListMap.map.file.should.be.eql(resultMap.map.file);
-		resultListMap.map.version.should.be.eql(resultMap.map.version);
-		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
-		resultListMap.map.sourcesContent.should.be.eql(
+		expect(resultText).toBe("Message: Hey Ad!");
+		expect(resultMap.source).toEqual(resultText);
+		expect(resultListMap.source).toEqual(resultText);
+		expect(resultListMap.map.file).toEqual(resultMap.map.file);
+		expect(resultListMap.map.version).toEqual(resultMap.map.version);
+		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
+		expect(resultListMap.map.sourcesContent).toEqual(
 			resultMap.map.sourcesContent
 		);
-		resultMap.map.mappings.should.be.eql("AAAA,WAAE,GACE");
-		resultListMap.map.mappings.should.be.eql("AAAA,cACA");
+		expect(resultMap.map.mappings).toBe("AAAA,WAAE,GACE");
+		expect(resultListMap.map.mappings).toBe("AAAA,cACA");
 	});
 
-	it("should prepend items correctly", function() {
+	it("should prepend items correctly", () => {
 		var source = new ReplaceSource(new OriginalSource("Line 1", "file.txt"));
 		source.insert(-1, "Line -1\n");
 		source.insert(-1, "Line 0\n");
@@ -102,20 +101,20 @@ describe("ReplaceSource", function() {
 			columns: false
 		});
 
-		resultText.should.be.eql("Line -1\nLine 0\nLine 1");
-		resultMap.source.should.be.eql(resultText);
-		resultListMap.source.should.be.eql(resultText);
-		resultListMap.map.file.should.be.eql(resultMap.map.file);
-		resultListMap.map.version.should.be.eql(resultMap.map.version);
-		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
-		resultListMap.map.sourcesContent.should.be.eql(
+		expect(resultText).toBe("Line -1\nLine 0\nLine 1");
+		expect(resultMap.source).toEqual(resultText);
+		expect(resultListMap.source).toEqual(resultText);
+		expect(resultListMap.map.file).toEqual(resultMap.map.file);
+		expect(resultListMap.map.version).toEqual(resultMap.map.version);
+		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
+		expect(resultListMap.map.sourcesContent).toEqual(
 			resultMap.map.sourcesContent
 		);
-		resultMap.map.mappings.should.be.eql("AAAA;AAAA;AAAA");
-		resultListMap.map.mappings.should.be.eql("AAAA;AAAA;AAAA");
+		expect(resultMap.map.mappings).toBe("AAAA;AAAA;AAAA");
+		expect(resultListMap.map.mappings).toBe("AAAA;AAAA;AAAA");
 	});
 
-	it("should prepend items with replace at start correctly", function() {
+	it("should prepend items with replace at start correctly", () => {
 		var source = new ReplaceSource(
 			new OriginalSource(["Line 1", "Line 2"].join("\n"), "file.txt")
 		);
@@ -129,20 +128,20 @@ describe("ReplaceSource", function() {
 			columns: false
 		});
 
-		resultText.should.be.eql("Line 0\nHello\nLine 2");
-		resultMap.source.should.be.eql(resultText);
-		resultListMap.source.should.be.eql(resultText);
-		resultListMap.map.file.should.be.eql(resultMap.map.file);
-		resultListMap.map.version.should.be.eql(resultMap.map.version);
-		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
-		resultListMap.map.sourcesContent.should.be.eql(
+		expect(resultText).toBe("Line 0\nHello\nLine 2");
+		expect(resultMap.source).toEqual(resultText);
+		expect(resultListMap.source).toEqual(resultText);
+		expect(resultListMap.map.file).toEqual(resultMap.map.file);
+		expect(resultListMap.map.version).toEqual(resultMap.map.version);
+		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
+		expect(resultListMap.map.sourcesContent).toEqual(
 			resultMap.map.sourcesContent
 		);
-		resultMap.map.mappings.should.be.eql("AAAA;AAAA,KAAM;AACN");
-		resultListMap.map.mappings.should.be.eql("AAAA;AAAA;AACA");
+		expect(resultMap.map.mappings).toBe("AAAA;AAAA,KAAM;AACN");
+		expect(resultListMap.map.mappings).toBe("AAAA;AAAA;AACA");
 	});
 
-	it("should append items correctly", function() {
+	it("should append items correctly", () => {
 		var line1;
 		var source = new ReplaceSource(
 			new OriginalSource((line1 = "Line 1\n"), "file.txt")
@@ -156,23 +155,23 @@ describe("ReplaceSource", function() {
 			columns: false
 		});
 
-		resultText.should.be.eql("Line 1\nLine 2\n");
-		resultMap.source.should.be.eql(resultText);
-		resultListMap.source.should.be.eql(resultText);
-		resultListMap.map.file.should.be.eql(resultMap.map.file);
-		resultListMap.map.version.should.be.eql(resultMap.map.version);
-		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
-		resultListMap.map.sourcesContent.should.be.eql(
+		expect(resultText).toBe("Line 1\nLine 2\n");
+		expect(resultMap.source).toEqual(resultText);
+		expect(resultListMap.source).toEqual(resultText);
+		expect(resultListMap.map.file).toEqual(resultMap.map.file);
+		expect(resultListMap.map.version).toEqual(resultMap.map.version);
+		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
+		expect(resultListMap.map.sourcesContent).toEqual(
 			resultMap.map.sourcesContent
 		);
-		resultMap.map.mappings.should.be.eql("AAAA");
-		resultListMap.map.mappings.should.be.eql("AAAA;;");
+		expect(resultMap.map.mappings).toBe("AAAA");
+		expect(resultListMap.map.mappings).toBe("AAAA;;");
 	});
 
-	it("should produce correct source map", function() {
+	it("should produce correct source map", () => {
 		var bootstrapCode = "   var hello\n   var world\n";
 
-		should(function() {
+		expect(function () {
 			var source = new ReplaceSource(
 				new OriginalSource(bootstrapCode, "file.js")
 			);
@@ -180,7 +179,7 @@ describe("ReplaceSource", function() {
 			source.replace(20, 24, "w", "identifiers");
 			var resultMap = source.sourceAndMap();
 			validate(resultMap.source, JSON.stringify(resultMap.map));
-		}).throw();
+		}).toThrowError();
 
 		var source = new ReplaceSource(
 			new OriginalSource(bootstrapCode, "file.js")

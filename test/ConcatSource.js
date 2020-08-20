@@ -1,10 +1,9 @@
-require("should");
 var ConcatSource = require("../").ConcatSource;
 var RawSource = require("../").RawSource;
 var OriginalSource = require("../").OriginalSource;
 
-describe("ConcatSource", function() {
-	it("should concat two sources", function() {
+describe("ConcatSource", () => {
+	it("should concat two sources", () => {
 		var source = new ConcatSource(
 			new RawSource("Hello World\n"),
 			new OriginalSource(
@@ -30,21 +29,21 @@ describe("ConcatSource", function() {
 			"Hello2",
 			""
 		].join("\n");
-		source.size().should.be.eql(62);
-		source.source().should.be.eql(expectedSource);
-		source
-			.map({
+		expect(source.size()).toBe(62);
+		expect(source.source()).toEqual(expectedSource);
+		expect(
+			source.map({
 				columns: false
 			})
-			.should.be.eql(expectedMap1);
-		source
-			.sourceAndMap({
+		).toEqual(expectedMap1);
+		expect(
+			source.sourceAndMap({
 				columns: false
 			})
-			.should.be.eql({
-				source: expectedSource,
-				map: expectedMap1
-			});
+		).toEqual({
+			source: expectedSource,
+			map: expectedMap1
+		});
 
 		var expectedMap2 = {
 			version: 3,
@@ -57,14 +56,14 @@ describe("ConcatSource", function() {
 				"Hello2\n"
 			]
 		};
-		source.map().should.be.eql(expectedMap2);
-		source.sourceAndMap().should.be.eql({
+		expect(source.map()).toEqual(expectedMap2);
+		expect(source.sourceAndMap()).toEqual({
 			source: expectedSource,
 			map: expectedMap2
 		});
 	});
 
-	it("should be able to handle strings for all methods", function() {
+	it("should be able to handle strings for all methods", () => {
 		var source = new ConcatSource(
 			new RawSource("Hello World\n"),
 			new OriginalSource(
@@ -91,27 +90,27 @@ describe("ConcatSource", function() {
 			sources: ["console.js"],
 			sourcesContent: ["console.log('test');\nconsole.log('test2');\n"]
 		};
-		source.size().should.be.eql(76);
-		source.source().should.be.eql(expectedSource);
-		source.buffer().should.be.eql(Buffer.from(expectedSource, "utf-8"));
-		source
-			.map({
+		expect(source.size()).toBe(76);
+		expect(source.source()).toEqual(expectedSource);
+		expect(source.buffer()).toEqual(Buffer.from(expectedSource, "utf-8"));
+		expect(
+			source.map({
 				columns: false
 			})
-			.should.be.eql(expectedMap1);
-		source
-			.sourceAndMap({
+		).toEqual(expectedMap1);
+		expect(
+			source.sourceAndMap({
 				columns: false
 			})
-			.should.be.eql({
-				source: expectedSource,
-				map: expectedMap1
-			});
+		).toEqual({
+			source: expectedSource,
+			map: expectedMap1
+		});
 
 		var hash = require("crypto").createHash("sha256");
 		source.updateHash(hash);
 		var digest = hash.digest("hex");
-		digest.should.be.eql(
+		expect(digest).toBe(
 			"183e6e9393eddb8480334aebeebb3366d6cce0124bc429c6e9246cc216167cb2"
 		);
 
@@ -125,15 +124,15 @@ describe("ConcatSource", function() {
 			"console.log('string')"
 		);
 		source2.updateHash(hash2);
-		hash2.digest("hex").should.be.eql(digest);
+		expect(hash2.digest("hex")).toEqual(digest);
 
 		const clone = new ConcatSource();
 		clone.addAllSkipOptimizing(source.getChildren());
 
-		clone.source().should.be.eql(source.source());
+		expect(clone.source()).toEqual(source.source());
 
 		var hash3 = require("crypto").createHash("sha256");
 		clone.updateHash(hash3);
-		hash3.digest("hex").should.be.eql(digest);
+		expect(hash3.digest("hex")).toEqual(digest);
 	});
 });

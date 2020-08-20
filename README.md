@@ -12,7 +12,7 @@ All methods should be considered as expensive as they may need to do computation
 
 #### `source`
 
-```js
+```typescript
 Source.prototype.source() -> String | Buffer
 ```
 
@@ -20,7 +20,7 @@ Returns the represented source code as string or Buffer (for binary Sources).
 
 #### `buffer`
 
-```js
+```typescript
 Source.prototype.buffer() -> Buffer
 ```
 
@@ -28,7 +28,7 @@ Returns the represented source code as Buffer. Strings are converted to utf-8.
 
 #### `size`
 
-```js
+```typescript
 Source.prototype.size() -> Number
 ```
 
@@ -36,7 +36,7 @@ Returns the size in bytes of the represented source code.
 
 #### `map`
 
-```js
+```typescript
 Source.prototype.map(options?: Object) -> Object | null
 ```
 
@@ -49,7 +49,7 @@ The `options` object can contain the following keys:
 
 #### `sourceAndMap`
 
-```js
+```typescript
 Source.prototype.sourceAndMap(options?: Object) -> {
 	source: String | Buffer,
 	map: Object
@@ -62,7 +62,7 @@ See `map()` for `options`.
 
 #### `updateHash`
 
-```js
+```typescript
 Source.prototype.updateHash(hash: Hash) -> void
 ```
 
@@ -72,7 +72,7 @@ Updates the provided `Hash` object with the content of the represented source co
 
 Represents source code without SourceMap.
 
-```js
+```typescript
 new RawSource(sourceCode: String)
 ```
 
@@ -80,7 +80,7 @@ new RawSource(sourceCode: String)
 
 Represents source code, which is a copy of the original file.
 
-```js
+```typescript
 new OriginalSource(
 	sourceCode: String,
 	name: String
@@ -96,7 +96,7 @@ OriginalSource tries to create column mappings if requested, by splitting the so
 
 Represents source code with SourceMap, optionally having an additional SourceMap for the original source.
 
-```js
+```typescript
 new SourceMapSource(
 	sourceCode: String,
 	name: String,
@@ -117,13 +117,12 @@ new SourceMapSource(
 The `SourceMapSource` supports "identity" mappings for the `innerSourceMap`.
 When original source matches generated source for a mapping it's assumed to be mapped char by char allowing to keep finer mappings from `sourceMap`.
 
-
 ## `CachedSource`
 
 Decorates a `Source` and caches returned results of `map`, `source`, `buffer`, `size` and `sourceAndMap` in memory. `updateHash` is not cached.
 It tries to reused cached results from other methods to avoid calculations, i. e. when `source` is already cached, calling `size` will get the size from the cached source, calling `sourceAndMap` will only call `map` on the wrapped Source.
 
-```js
+```typescript
 new CachedSource(source: Source)
 ```
 
@@ -131,7 +130,7 @@ new CachedSource(source: Source)
 
 Prefix every line of the decorated `Source` with a provided string.
 
-```js
+```typescript
 new PrefixSource(
 	prefix: String,
 	source: Source
@@ -142,7 +141,7 @@ new PrefixSource(
 
 Concatenate multiple `Source`s or strings to a single source.
 
-```js
+```typescript
 new ConcatSource(
 	...items?: Source | String
 )
@@ -152,7 +151,7 @@ new ConcatSource(
 
 #### `add`
 
-```js
+```typescript
 ConcatSource.prototype.add(item: Source | String)
 ```
 
@@ -169,7 +168,7 @@ When original source matches generated source for a mapping it's assumed to be m
 
 #### `replace`
 
-```js
+```typescript
 ReplaceSource.prototype.replace(
 	start: Number,
 	end: Number,
@@ -183,7 +182,7 @@ Locations represents locations in the original source and are not influenced by 
 
 #### `insert`
 
-```js
+```typescript
 ReplaceSource.prototype.insert(
 	pos: Number,
 	insertion: String
