@@ -196,3 +196,17 @@ Location represents location in the original source and is not influenced by oth
 #### `original`
 
 Get decorated `Source`.
+
+## `CompatSource`
+
+Converts a Source-like object into a real Source object.
+
+### Public methods
+
+#### static `from`
+
+```typescript
+CompatSource.from(sourceLike: any | Source)
+```
+
+If `sourceLike` is a real Source it returns it unmodified. Otherwise it returns it wrapped in a CompatSource.
