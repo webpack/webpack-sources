@@ -8,9 +8,13 @@ branches:
 matrix:
   include:
     - os: linux
+      node_js: "14"
+    - os: linux
       node_js: "12"
     - os: linux
       node_js: "10"
+    - os: osx
+      node_js: "14"
     - os: osx
       node_js: "12"
     - os: osx
