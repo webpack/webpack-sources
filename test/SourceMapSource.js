@@ -1,6 +1,6 @@
-var SourceMapSource = require("../lib/SourceMapSource");
-var OriginalSource = require("../lib/OriginalSource");
-var ConcatSource = require("../lib/ConcatSource");
+var SourceMapSource = require("../").SourceMapSource;
+var OriginalSource = require("../").OriginalSource;
+var ConcatSource = require("../").ConcatSource;
 var SourceNode = require("source-map").SourceNode;
 
 describe("SourceMapSource", function() {

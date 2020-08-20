@@ -1,8 +1,8 @@
 require("should");
-var CachedSource = require("../lib/CachedSource");
-var OriginalSource = require("../lib/OriginalSource");
-var RawSource = require("../lib/RawSource");
-var Source = require("../lib/Source");
+var CachedSource = require("../").CachedSource;
+var OriginalSource = require("../").OriginalSource;
+var RawSource = require("../").RawSource;
+var Source = require("../").Source;
 
 class TrackedSource extends Source {
 	constructor(source) {

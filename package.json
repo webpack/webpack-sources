@@ -7,7 +7,7 @@
     "pretest": "yarn lint",
     "test": "mocha --full-trace --check-leaks",
     "travis": "yarn cover --report lcovonly",
-    "lint": "eslint lib test",
+    "lint": "eslint --cache lib test",
     "precover": "yarn lint",
     "cover": "istanbul cover node_modules/mocha/bin/_mocha"
   },

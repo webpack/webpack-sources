@@ -1,6 +1,6 @@
 var should = require("should");
-var ReplaceSource = require("../lib/ReplaceSource");
-var OriginalSource = require("../lib/OriginalSource");
+var ReplaceSource = require("../").ReplaceSource;
+var OriginalSource = require("../").OriginalSource;
 var validate = require("sourcemap-validator");
 
 describe("ReplaceSource", function() {

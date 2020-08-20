@@ -1,7 +1,7 @@
 require("should");
-var PrefixSource = require("../lib/PrefixSource");
-var OriginalSource = require("../lib/OriginalSource");
-var ConcatSource = require("../lib/ConcatSource");
+var PrefixSource = require("../").PrefixSource;
+var OriginalSource = require("../").OriginalSource;
+var ConcatSource = require("../").ConcatSource;
 
 describe("PrefixSource", function() {
 	it("should prefix a source", function() {

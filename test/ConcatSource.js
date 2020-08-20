@@ -1,7 +1,7 @@
 require("should");
-var ConcatSource = require("../lib/ConcatSource");
-var RawSource = require("../lib/RawSource");
-var OriginalSource = require("../lib/OriginalSource");
+var ConcatSource = require("../").ConcatSource;
+var RawSource = require("../").RawSource;
+var OriginalSource = require("../").OriginalSource;
 
 describe("ConcatSource", function() {
 	it("should concat two sources", function() {
