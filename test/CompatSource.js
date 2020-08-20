@@ -1,6 +1,6 @@
 var should = require("should");
-var CompatSource = require("../lib/CompatSource");
-var RawSource = require("../lib/RawSource");
+var CompatSource = require("../").CompatSource;
+var RawSource = require("../").RawSource;
 
 describe("CompatSource", function() {
 	it("should emulate all methods", function() {

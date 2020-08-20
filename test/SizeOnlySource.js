@@ -1,5 +1,5 @@
 require("should");
-var SizeOnlySource = require("../lib/SizeOnlySource");
+var SizeOnlySource = require("../").SizeOnlySource;
 
 describe("SizeOnlySource", function() {
 	it("should report the size", function() {

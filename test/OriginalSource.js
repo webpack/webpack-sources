@@ -1,5 +1,5 @@
 require("should");
-var OriginalSource = require("../lib/OriginalSource");
+var OriginalSource = require("../").OriginalSource;
 
 describe("OriginalSource", function() {
 	it("should handle multiline string", function() {
