@@ -5,29 +5,29 @@
   "main": "./lib/index.js",
   "scripts": {
     "pretest": "yarn lint",
-    "test": "mocha --full-trace --check-leaks",
-    "travis": "yarn cover --report lcovonly",
+    "test": "jest",
+    "travis": "yarn cover",
     "lint": "eslint --cache lib test",
     "precover": "yarn lint",
-    "cover": "istanbul cover node_modules/mocha/bin/_mocha"
+    "cover": "jest --coverage"
   },
   "dependencies": {
     "source-list-map": "^2.0.1",
-    "source-map": "~0.6.1"
+    "source-map": "^0.6.1"
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
-    "eslint": "^5.12.0",
-    "eslint-config-prettier": "^3.5.0",
-    "eslint-plugin-mocha": "^5.2.1",
-    "eslint-plugin-node": "^8.0.1",
+    "eslint": "^7.7.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-jest": "^23.20.0",
+    "eslint-plugin-mocha": "^8.0.0",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-nodeca": "^1.0.3",
     "eslint-plugin-prettier": "^3.0.1",
     "istanbul": "^0.4.1",
-    "mocha": "^5.2.0",
-    "prettier": "^1.15.3",
-    "should": "^13.2.3",
-    "sourcemap-validator": "^1.1.0"
+    "jest": "^26.4.0",
+    "prettier": "^2.0.5",
+    "sourcemap-validator": "^2.1.0"
   },
   "files": [
     "lib/"
@@ -48,5 +48,15 @@
   "bugs": {
     "url": "https://github.com/webpack/webpack-sources/issues"
   },
-  "homepage": "https://github.com/webpack/webpack-sources#readme"
+  "homepage": "https://github.com/webpack/webpack-sources#readme",
+  "jest": {
+    "forceExit": true,
+    "testMatch": [
+      "<rootDir>/test/*.js"
+    ],
+    "transformIgnorePatterns": [
+      "<rootDir>"
+    ],
+    "testEnvironment": "node"
+  }
 }

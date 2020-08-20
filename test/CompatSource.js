@@ -1,11 +1,10 @@
-var should = require("should");
-var CompatSource = require("../").CompatSource;
-var RawSource = require("../").RawSource;
+const CompatSource = require("../").CompatSource;
+const RawSource = require("../").RawSource;
 
-describe("CompatSource", function() {
-	it("should emulate all methods", function() {
-		var CONTENT = "Line1\n\nLine3\n";
-		var source = CompatSource.from({
+describe("CompatSource", () => {
+	it("should emulate all methods", () => {
+		const CONTENT = "Line1\n\nLine3\n";
+		const source = CompatSource.from({
 			source() {
 				return CONTENT;
 			},
@@ -13,22 +12,22 @@ describe("CompatSource", function() {
 				return 42;
 			}
 		});
-		CompatSource.from(source).should.be.eql(source);
+		expect(CompatSource.from(source)).toEqual(source);
 		const rawSource = new RawSource(CONTENT);
-		CompatSource.from(rawSource).should.be.eql(rawSource);
-		source.source().should.be.eql(CONTENT);
-		source.size().should.be.eql(42);
-		source.buffer().should.be.eql(Buffer.from(CONTENT));
-		should(source.map()).be.eql(null);
+		expect(CompatSource.from(rawSource)).toEqual(rawSource);
+		expect(source.source()).toEqual(CONTENT);
+		expect(source.size()).toBe(42);
+		expect(source.buffer()).toEqual(Buffer.from(CONTENT));
+		expect(source.map()).toBe(null);
 		const sourceAndMap = source.sourceAndMap();
-		sourceAndMap.should.have.property("source").be.eql(CONTENT);
-		sourceAndMap.should.have.property("map").be.eql(null);
+		expect(sourceAndMap).toHaveProperty("source", CONTENT);
+		expect(sourceAndMap).toHaveProperty("map", null);
 		const calledWith = [];
 		source.updateHash({
 			update(value) {
 				calledWith.push(value);
 			}
 		});
-		calledWith.should.be.eql([Buffer.from(CONTENT)]);
+		expect(calledWith).toEqual([Buffer.from(CONTENT)]);
 	});
 });

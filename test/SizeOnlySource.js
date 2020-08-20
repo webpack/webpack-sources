@@ -1,18 +1,17 @@
-require("should");
-var SizeOnlySource = require("../").SizeOnlySource;
+const SizeOnlySource = require("../").SizeOnlySource;
 
-describe("SizeOnlySource", function() {
-	it("should report the size", function() {
-		var source = new SizeOnlySource(42);
-		source.size().should.be.eql(42);
+describe("SizeOnlySource", () => {
+	it("should report the size", () => {
+		const source = new SizeOnlySource(42);
+		expect(source.size()).toBe(42);
 	});
 
 	for (const method of ["source", "map", "sourceAndMap", "buffer"]) {
-		it("should throw on " + method + "()", function() {
-			var source = new SizeOnlySource(42);
-			(() => {
+		it("should throw on " + method + "()", () => {
+			const source = new SizeOnlySource(42);
+			expect(() => {
 				source[method]();
-			}).should.throwError(/not available/);
+			}).toThrowError(/not available/);
 		});
 	}
 });

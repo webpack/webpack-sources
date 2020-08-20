@@ -1,17 +1,18 @@
-var SourceMapSource = require("../").SourceMapSource;
-var OriginalSource = require("../").OriginalSource;
-var ConcatSource = require("../").ConcatSource;
-var SourceNode = require("source-map").SourceNode;
+const SourceMapSource = require("../").SourceMapSource;
+const OriginalSource = require("../").OriginalSource;
+const ConcatSource = require("../").ConcatSource;
+const SourceNode = require("source-map").SourceNode;
 
-describe("SourceMapSource", function() {
-	it("map correctly", function() {
-		var innerSourceCode = ["Hello World", "is a test string"].join("\n") + "\n";
-		var innerSource = new ConcatSource(
+describe("SourceMapSource", () => {
+	it("map correctly", () => {
+		const innerSourceCode =
+			["Hello World", "is a test string"].join("\n") + "\n";
+		const innerSource = new ConcatSource(
 			new OriginalSource(innerSourceCode, "hello-world.txt"),
 			"Other text\n"
 		);
 
-		var source = new SourceNode(null, null, null, [
+		const source = new SourceNode(null, null, null, [
 			"Translated: ",
 			new SourceNode(1, 0, "text", "Hallo", "Hello"),
 			" ",
@@ -25,18 +26,18 @@ describe("SourceMapSource", function() {
 		]);
 		source.setSourceContent("text", innerSourceCode);
 
-		var sourceR = source.toStringWithSourceMap({
+		const sourceR = source.toStringWithSourceMap({
 			file: "translated.txt"
 		});
 
-		var sourceMapSource1 = new SourceMapSource(
+		const sourceMapSource1 = new SourceMapSource(
 			sourceR.code,
 			"text",
 			sourceR.map.toJSON(),
 			innerSource.source(),
 			innerSource.map()
 		);
-		var sourceMapSource2 = new SourceMapSource(
+		const sourceMapSource2 = new SourceMapSource(
 			sourceR.code,
 			"text",
 			sourceR.map.toJSON(),
@@ -45,15 +46,15 @@ describe("SourceMapSource", function() {
 			true
 		);
 
-		var expectedContent = [
+		const expectedContent = [
 			"Translated: Hallo Welt",
 			"ist ein test Text",
 			"Anderer Text"
 		].join("\n");
-		sourceMapSource1.source().should.be.eql(expectedContent);
-		sourceMapSource2.source().should.be.eql(expectedContent);
+		expect(sourceMapSource1.source()).toEqual(expectedContent);
+		expect(sourceMapSource2.source()).toEqual(expectedContent);
 
-		sourceMapSource1.map().should.be.eql({
+		expect(sourceMapSource1.map()).toEqual({
 			file: "x",
 			mappings: "YAAAA,K,CAAMC;AACN,O,MAAU;ACCV,O,CAAM",
 			names: ["Hello", "World"],
@@ -62,7 +63,7 @@ describe("SourceMapSource", function() {
 			version: 3
 		});
 
-		sourceMapSource2.map().should.be.eql({
+		expect(sourceMapSource2.map()).toEqual({
 			file: "x",
 			mappings: "YAAAA,K,CAAMC;AACN,O,MAAU",
 			names: ["Hello", "World"],
@@ -71,19 +72,19 @@ describe("SourceMapSource", function() {
 			version: 3
 		});
 
-		var hash = require("crypto").createHash("sha256");
+		const hash = require("crypto").createHash("sha256");
 		sourceMapSource1.updateHash(hash);
-		var digest = hash.digest("hex");
-		digest.should.be.eql(
+		const digest = hash.digest("hex");
+		expect(digest).toBe(
 			"c46f63c0329381f89b8882d60964808e95380dbac726c343a765200355875147"
 		);
 
 		const clone = new SourceMapSource(...sourceMapSource1.getArgsAsBuffers());
-		clone.sourceAndMap().should.be.eql(sourceMapSource1.sourceAndMap());
+		expect(clone.sourceAndMap()).toEqual(sourceMapSource1.sourceAndMap());
 
-		var hash2 = require("crypto").createHash("sha256");
+		const hash2 = require("crypto").createHash("sha256");
 		clone.updateHash(hash2);
-		var digest2 = hash2.digest("hex");
-		digest2.should.be.eql(digest);
+		const digest2 = hash2.digest("hex");
+		expect(digest2).toEqual(digest);
 	});
 });

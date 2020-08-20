@@ -1,56 +1,55 @@
-require("should");
-var OriginalSource = require("../").OriginalSource;
+const OriginalSource = require("../").OriginalSource;
 
-describe("OriginalSource", function() {
-	it("should handle multiline string", function() {
-		var source = new OriginalSource("Line1\n\nLine3\n", "file.js");
-		var resultText = source.source();
-		var resultMap = source.sourceAndMap({
+describe("OriginalSource", () => {
+	it("should handle multiline string", () => {
+		const source = new OriginalSource("Line1\n\nLine3\n", "file.js");
+		const resultText = source.source();
+		const resultMap = source.sourceAndMap({
 			columns: true
 		});
-		var resultListMap = source.sourceAndMap({
+		const resultListMap = source.sourceAndMap({
 			columns: false
 		});
 
-		resultText.should.be.eql("Line1\n\nLine3\n");
-		resultMap.source.should.be.eql(resultText);
-		resultListMap.source.should.be.eql(resultText);
-		resultListMap.map.file.should.be.eql(resultMap.map.file);
-		resultListMap.map.version.should.be.eql(resultMap.map.version);
-		resultMap.map.sources.should.be.eql(["file.js"]);
-		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
-		resultMap.map.sourcesContent.should.be.eql(["Line1\n\nLine3\n"]);
-		resultListMap.map.sourcesContent.should.be.eql(
+		expect(resultText).toBe("Line1\n\nLine3\n");
+		expect(resultMap.source).toEqual(resultText);
+		expect(resultListMap.source).toEqual(resultText);
+		expect(resultListMap.map.file).toEqual(resultMap.map.file);
+		expect(resultListMap.map.version).toEqual(resultMap.map.version);
+		expect(resultMap.map.sources).toEqual(["file.js"]);
+		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
+		expect(resultMap.map.sourcesContent).toEqual(["Line1\n\nLine3\n"]);
+		expect(resultListMap.map.sourcesContent).toEqual(
 			resultMap.map.sourcesContent
 		);
-		resultMap.map.mappings.should.be.eql("AAAA;;AAEA");
-		resultListMap.map.mappings.should.be.eql("AAAA;AACA;AACA;");
+		expect(resultMap.map.mappings).toBe("AAAA;;AAEA");
+		expect(resultListMap.map.mappings).toBe("AAAA;AACA;AACA;");
 	});
 
-	it("should handle empty string", function() {
-		var source = new OriginalSource("", "file.js");
-		var resultText = source.source();
-		var resultMap = source.sourceAndMap({
+	it("should handle empty string", () => {
+		const source = new OriginalSource("", "file.js");
+		const resultText = source.source();
+		const resultMap = source.sourceAndMap({
 			columns: true
 		});
-		var resultListMap = source.sourceAndMap({
+		const resultListMap = source.sourceAndMap({
 			columns: false
 		});
 
-		resultText.should.be.eql("");
-		resultMap.source.should.be.eql(resultText);
-		resultListMap.source.should.be.eql(resultText);
-		resultListMap.map.file.should.be.eql(resultMap.map.file);
-		resultListMap.map.version.should.be.eql(resultMap.map.version);
-		resultMap.map.sources.should.be.eql([]);
-		resultListMap.map.sources.should.be.eql(resultMap.map.sources);
-		resultMap.map.mappings.should.be.eql("");
-		resultListMap.map.mappings.should.be.eql("");
+		expect(resultText).toBe("");
+		expect(resultMap.source).toEqual(resultText);
+		expect(resultListMap.source).toEqual(resultText);
+		expect(resultListMap.map.file).toEqual(resultMap.map.file);
+		expect(resultListMap.map.version).toEqual(resultMap.map.version);
+		expect(resultMap.map.sources).toEqual([]);
+		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
+		expect(resultMap.map.mappings).toBe("");
+		expect(resultListMap.map.mappings).toBe("");
 	});
 
-	it("should omit mappings for columns with node", function() {
-		var source = new OriginalSource("Line1\n\nLine3\n", "file.js");
-		var resultMap = source
+	it("should omit mappings for columns with node", () => {
+		const source = new OriginalSource("Line1\n\nLine3\n", "file.js");
+		const resultMap = source
 			.node({
 				columns: false
 			})
@@ -59,16 +58,16 @@ describe("OriginalSource", function() {
 			})
 			.map.toJSON();
 
-		resultMap.mappings.should.be.eql("AAAA;AACA;AACA");
+		expect(resultMap.mappings).toBe("AAAA;AACA;AACA");
 	});
 
-	it("should return the correct size for binary files", function() {
-		var source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
-		source.size().should.be.eql(256);
+	it("should return the correct size for binary files", () => {
+		const source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
+		expect(source.size()).toBe(256);
 	});
 
-	it("should return the correct size for unicode files", function() {
-		var source = new OriginalSource("😋", "file.js");
-		source.size().should.be.eql(4);
+	it("should return the correct size for unicode files", () => {
+		const source = new OriginalSource("😋", "file.js");
+		expect(source.size()).toBe(4);
 	});
 });

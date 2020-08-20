@@ -1,11 +1,10 @@
-require("should");
-var ConcatSource = require("../").ConcatSource;
-var RawSource = require("../").RawSource;
-var OriginalSource = require("../").OriginalSource;
+const ConcatSource = require("../").ConcatSource;
+const RawSource = require("../").RawSource;
+const OriginalSource = require("../").OriginalSource;
 
-describe("ConcatSource", function() {
-	it("should concat two sources", function() {
-		var source = new ConcatSource(
+describe("ConcatSource", () => {
+	it("should concat two sources", () => {
+		const source = new ConcatSource(
 			new RawSource("Hello World\n"),
 			new OriginalSource(
 				"console.log('test');\nconsole.log('test2');\n",
@@ -13,7 +12,7 @@ describe("ConcatSource", function() {
 			)
 		);
 		source.add(new OriginalSource("Hello2\n", "hello.md"));
-		var expectedMap1 = {
+		const expectedMap1 = {
 			version: 3,
 			file: "x",
 			mappings: ";AAAA;AACA;ACDA;",
@@ -23,30 +22,30 @@ describe("ConcatSource", function() {
 				"Hello2\n"
 			]
 		};
-		var expectedSource = [
+		const expectedSource = [
 			"Hello World",
 			"console.log('test');",
 			"console.log('test2');",
 			"Hello2",
 			""
 		].join("\n");
-		source.size().should.be.eql(62);
-		source.source().should.be.eql(expectedSource);
-		source
-			.map({
+		expect(source.size()).toBe(62);
+		expect(source.source()).toEqual(expectedSource);
+		expect(
+			source.map({
 				columns: false
 			})
-			.should.be.eql(expectedMap1);
-		source
-			.sourceAndMap({
+		).toEqual(expectedMap1);
+		expect(
+			source.sourceAndMap({
 				columns: false
 			})
-			.should.be.eql({
-				source: expectedSource,
-				map: expectedMap1
-			});
+		).toEqual({
+			source: expectedSource,
+			map: expectedMap1
+		});
 
-		var expectedMap2 = {
+		const expectedMap2 = {
 			version: 3,
 			file: "x",
 			mappings: ";AAAA;AACA;ACDA",
@@ -57,15 +56,15 @@ describe("ConcatSource", function() {
 				"Hello2\n"
 			]
 		};
-		source.map().should.be.eql(expectedMap2);
-		source.sourceAndMap().should.be.eql({
+		expect(source.map()).toEqual(expectedMap2);
+		expect(source.sourceAndMap()).toEqual({
 			source: expectedSource,
 			map: expectedMap2
 		});
 	});
 
-	it("should be able to handle strings for all methods", function() {
-		var source = new ConcatSource(
+	it("should be able to handle strings for all methods", () => {
+		const source = new ConcatSource(
 			new RawSource("Hello World\n"),
 			new OriginalSource(
 				"console.log('test');\nconsole.log('test2');\n",
@@ -78,44 +77,44 @@ describe("ConcatSource", function() {
 		source.add(".");
 		source.add("log");
 		source.add(innerSource);
-		var expectedSource = [
+		const expectedSource = [
 			"Hello World",
 			"console.log('test');",
 			"console.log('test2');",
 			"console.log('string')"
 		].join("\n");
-		var expectedMap1 = {
+		const expectedMap1 = {
 			version: 3,
 			file: "x",
 			mappings: ";AAAA;AACA;A",
 			sources: ["console.js"],
 			sourcesContent: ["console.log('test');\nconsole.log('test2');\n"]
 		};
-		source.size().should.be.eql(76);
-		source.source().should.be.eql(expectedSource);
-		source.buffer().should.be.eql(Buffer.from(expectedSource, "utf-8"));
-		source
-			.map({
+		expect(source.size()).toBe(76);
+		expect(source.source()).toEqual(expectedSource);
+		expect(source.buffer()).toEqual(Buffer.from(expectedSource, "utf-8"));
+		expect(
+			source.map({
 				columns: false
 			})
-			.should.be.eql(expectedMap1);
-		source
-			.sourceAndMap({
+		).toEqual(expectedMap1);
+		expect(
+			source.sourceAndMap({
 				columns: false
 			})
-			.should.be.eql({
-				source: expectedSource,
-				map: expectedMap1
-			});
+		).toEqual({
+			source: expectedSource,
+			map: expectedMap1
+		});
 
-		var hash = require("crypto").createHash("sha256");
+		const hash = require("crypto").createHash("sha256");
 		source.updateHash(hash);
-		var digest = hash.digest("hex");
-		digest.should.be.eql(
+		const digest = hash.digest("hex");
+		expect(digest).toBe(
 			"183e6e9393eddb8480334aebeebb3366d6cce0124bc429c6e9246cc216167cb2"
 		);
 
-		var hash2 = require("crypto").createHash("sha256");
+		const hash2 = require("crypto").createHash("sha256");
 		const source2 = new ConcatSource(
 			"Hello World\n",
 			new OriginalSource(
@@ -125,15 +124,15 @@ describe("ConcatSource", function() {
 			"console.log('string')"
 		);
 		source2.updateHash(hash2);
-		hash2.digest("hex").should.be.eql(digest);
+		expect(hash2.digest("hex")).toEqual(digest);
 
 		const clone = new ConcatSource();
 		clone.addAllSkipOptimizing(source.getChildren());
 
-		clone.source().should.be.eql(source.source());
+		expect(clone.source()).toEqual(source.source());
 
-		var hash3 = require("crypto").createHash("sha256");
+		const hash3 = require("crypto").createHash("sha256");
 		clone.updateHash(hash3);
-		hash3.digest("hex").should.be.eql(digest);
+		expect(hash3.digest("hex")).toEqual(digest);
 	});
 });

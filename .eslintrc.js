@@ -1,6 +1,6 @@
 module.exports = {
 	root: true,
-	plugins: ["prettier", "node", "mocha"],
+	plugins: ["prettier", "node", "jest"],
 	extends: [
 		"eslint:recommended",
 		"plugin:node/recommended",
@@ -8,8 +8,7 @@ module.exports = {
 	],
 	env: {
 		node: true,
-		es6: true,
-		mocha: true
+		es6: true
 	},
 	parserOptions: {
 		ecmaVersion: 2017
@@ -59,5 +58,13 @@ module.exports = {
 		"node/no-unpublished-bin": "error",
 		"node/no-unpublished-require": "error",
 		"node/process-exit-as-throw": "error"
-	}
+	},
+	overrides: [
+		{
+			files: ["test/*.js"],
+			env: {
+				"jest/globals": true
+			}
+		}
+	]
 };
