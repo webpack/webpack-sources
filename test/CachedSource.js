@@ -282,4 +282,28 @@ describe("CachedSource", () => {
 		expect(clone.map({}) === null).toBe(true);
 		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
 	});
+
+	it("should allow to store and restore cached data, but fallback to the original source when needed", () => {
+		const original = new RawSource("Hello World");
+		const source = new CachedSource(original);
+
+		// fill up cache
+		source.source();
+		source.size();
+
+		let calls = 0;
+		const clone = new CachedSource(() => {
+			calls++;
+			return original;
+		}, source.getCachedData());
+
+		expect(clone.source()).toEqual(source.source());
+		expect(clone.buffer()).toEqual(source.buffer());
+		expect(clone.size()).toEqual(source.size());
+		expect(calls).toBe(0);
+		expect(clone.map({}) === null).toBe(true);
+		expect(calls).toBe(1);
+		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
+		expect(calls).toBe(1);
+	});
 });

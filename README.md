@@ -124,7 +124,24 @@ It tries to reused cached results from other methods to avoid calculations, i. e
 
 ```typescript
 new CachedSource(source: Source)
+new CachedSource(source: Source | () => Source, cachedData?: CachedData)
 ```
+
+Instead of passing a `Source` object directly one can pass an function that returns a `Source` object. The function is only called when needed and once.
+
+### Public methods
+
+#### `getCachedData()`
+
+Returns the cached data for passing to the constructor. All cached entries are converted to Buffers and strings are avoided.
+
+#### `original()`
+
+Returns the original `Source` object.
+
+#### `originalLazy()`
+
+Returns the original `Source` object or a function returning these.
 
 ## `PrefixSource`
 
