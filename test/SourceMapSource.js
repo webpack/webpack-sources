@@ -9,7 +9,8 @@ describe("SourceMapSource", () => {
 			["Hello World", "is a test string"].join("\n") + "\n";
 		const innerSource = new ConcatSource(
 			new OriginalSource(innerSourceCode, "hello-world.txt"),
-			"Other text\n"
+			new OriginalSource("Translate: ", "header.txt"),
+			"Other text"
 		);
 
 		const source = new SourceNode(null, null, null, [
@@ -20,9 +21,9 @@ describe("SourceMapSource", () => {
 			new SourceNode(2, 0, "text", "ist ein", "nope"),
 			" test ",
 			new SourceNode(2, 10, "text", "Text\n"),
-			new SourceNode(3, 0, "text", "Anderer"),
+			new SourceNode(3, 11, "text", "Anderer"),
 			" ",
-			new SourceNode(3, 6, "text", "Text")
+			new SourceNode(3, 17, "text", "Text")
 		]);
 		source.setSourceContent("text", innerSourceCode);
 
@@ -56,7 +57,7 @@ describe("SourceMapSource", () => {
 
 		expect(sourceMapSource1.map()).toEqual({
 			file: "x",
-			mappings: "YAAAA,K,CAAMC;AACN,O,MAAU;ACCV,O,CAAM",
+			mappings: "YAAAA,K,CAAMC;AACN,O,MAAU;ACCC,O,CAAM",
 			names: ["Hello", "World"],
 			sources: ["hello-world.txt", "text"],
 			sourcesContent: [innerSourceCode, innerSource.source()],
@@ -76,7 +77,7 @@ describe("SourceMapSource", () => {
 		sourceMapSource1.updateHash(hash);
 		const digest = hash.digest("hex");
 		expect(digest).toBe(
-			"c46f63c0329381f89b8882d60964808e95380dbac726c343a765200355875147"
+			"2de42bc8972534c146d0fadce8288cd9803c53fbd72bdfbbff7f062f6748e01e"
 		);
 
 		const clone = new SourceMapSource(...sourceMapSource1.getArgsAsBuffers());
