@@ -39,12 +39,8 @@ describe("OriginalSource", () => {
 		expect(resultText).toBe("");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map.file).toEqual(resultMap.map.file);
-		expect(resultListMap.map.version).toEqual(resultMap.map.version);
-		expect(resultMap.map.sources).toEqual([]);
-		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
-		expect(resultMap.map.mappings).toBe("");
-		expect(resultListMap.map.mappings).toBe("");
+		expect(resultListMap.map).toBe(null);
+		expect(resultMap.map).toBe(null);
 	});
 
 	it("should omit mappings for columns with node", () => {

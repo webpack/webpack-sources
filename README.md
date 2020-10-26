@@ -52,7 +52,7 @@ The `options` object can contain the following keys:
 ```typescript
 Source.prototype.sourceAndMap(options?: Object) -> {
 	source: String | Buffer,
-	map: Object
+	map: Object | null
 }
 ```
 
