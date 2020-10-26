@@ -135,4 +135,26 @@ describe("ConcatSource", () => {
 		clone.updateHash(hash3);
 		expect(hash3.digest("hex")).toEqual(digest);
 	});
+
+	it("should return null as map when only generated code is concatenated", () => {
+		const source = new ConcatSource(
+			"Hello World\n",
+			new RawSource("Hello World\n"),
+			""
+		);
+
+		const resultText = source.source();
+		const resultMap = source.sourceAndMap({
+			columns: true
+		});
+		const resultListMap = source.sourceAndMap({
+			columns: false
+		});
+
+		expect(resultText).toBe("Hello World\nHello World\n");
+		expect(resultMap.source).toEqual(resultText);
+		expect(resultListMap.source).toEqual(resultText);
+		expect(resultListMap.map).toBe(null);
+		expect(resultMap.map).toBe(null);
+	});
 });
