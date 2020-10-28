@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const CachedSource = require("../").CachedSource;
 const OriginalSource = require("../").OriginalSource;
 const RawSource = require("../").RawSource;
@@ -12,6 +13,7 @@ class TrackedSource extends Source {
 		this.bufferCalled = 0;
 		this.mapCalled = 0;
 		this.sourceAndMapCalled = 0;
+		this.updateHashCalled = 0;
 	}
 
 	getCalls() {
@@ -20,7 +22,8 @@ class TrackedSource extends Source {
 			source: this.sourceCalled,
 			buffer: this.bufferCalled,
 			map: this.mapCalled,
-			sourceAndMap: this.sourceAndMapCalled
+			sourceAndMap: this.sourceAndMapCalled,
+			hash: this.updateHashCalled
 		};
 	}
 
@@ -48,7 +51,18 @@ class TrackedSource extends Source {
 		this.sourceAndMapCalled++;
 		return this._innerSource.sourceAndMap(options);
 	}
+
+	updateHash(hash) {
+		this.updateHashCalled++;
+		return this._innerSource.updateHash(hash);
+	}
 }
+
+const getHash = source => {
+	const hash = crypto.createHash("md5");
+	source.updateHash(hash);
+	return hash.digest("hex");
+};
 
 describe("CachedSource", () => {
 	it("should return the correct size for binary files", () => {
@@ -103,26 +117,26 @@ describe("CachedSource", () => {
 	});
 
 	it("should use the source cache for all other calls", () => {
-		const source = new TrackedSource(
-			new OriginalSource("TestTestTest", "file.js")
-		);
+		const original = new OriginalSource("TestTestTest", "file.js");
+		const source = new TrackedSource(original);
 		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.source()).toBe("TestTestTest");
 		expect(cachedSource.size()).toBe(12);
 		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(getHash(cachedSource)).toBe(getHash(original));
 		expect(source.getCalls()).toEqual({
 			size: 0,
 			source: 1,
 			buffer: 0,
 			map: 0,
-			sourceAndMap: 0
+			sourceAndMap: 0,
+			hash: 1
 		});
 	});
 	it("should use the source cache for all other calls", () => {
-		const source = new TrackedSource(
-			new OriginalSource("TestTestTest", "file.js")
-		);
+		const original = new OriginalSource("TestTestTest", "file.js");
+		const source = new TrackedSource(original);
 		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.source()).toBe("TestTestTest");
@@ -135,12 +149,14 @@ describe("CachedSource", () => {
 		expect(typeof cachedSource.sourceAndMap().map).toBe("object");
 		expect(typeof cachedSource.map()).toBe("object");
 		expect(typeof cachedSource.map()).toBe("object");
+		expect(getHash(cachedSource)).toBe(getHash(original));
 		expect(source.getCalls()).toEqual({
 			size: 0,
 			source: 1,
 			buffer: 0,
 			map: 1,
-			sourceAndMap: 0
+			sourceAndMap: 0,
+			hash: 1
 		});
 	});
 	it("should not use buffer for source", () => {
@@ -160,7 +176,8 @@ describe("CachedSource", () => {
 			source: 1,
 			buffer: 1,
 			map: 0,
-			sourceAndMap: 0
+			sourceAndMap: 0,
+			hash: 0
 		});
 	});
 	it("should use map for sourceAndMap", () => {
@@ -184,7 +201,8 @@ describe("CachedSource", () => {
 			source: 1,
 			buffer: 0,
 			map: 1,
-			sourceAndMap: 0
+			sourceAndMap: 0,
+			hash: 0
 		});
 	});
 	it("should use binary source for buffer", () => {
@@ -204,7 +222,8 @@ describe("CachedSource", () => {
 			source: 0,
 			buffer: 0,
 			map: 0,
-			sourceAndMap: 1
+			sourceAndMap: 1,
+			hash: 0
 		});
 	});
 	it("should use an old webpack-sources Source", () => {
@@ -222,7 +241,8 @@ describe("CachedSource", () => {
 			source: 1,
 			buffer: 0,
 			map: 0,
-			sourceAndMap: 0
+			sourceAndMap: 0,
+			hash: 0
 		});
 	});
 	it("should use an old webpack-sources Source", () => {
@@ -243,19 +263,20 @@ describe("CachedSource", () => {
 			source: 1,
 			buffer: 0,
 			map: 0,
-			sourceAndMap: 0
+			sourceAndMap: 0,
+			hash: 0
 		});
 	});
 
 	it("should allow to store and restore cached data (with SourceMap)", () => {
-		const source = new CachedSource(
-			new OriginalSource("Hello World", "test.txt")
-		);
+		const original = new OriginalSource("Hello World", "test.txt");
+		const source = new CachedSource(original);
 
 		// fill up cache
 		source.source();
 		source.map({});
 		source.size();
+		getHash(source);
 
 		const clone = new CachedSource(null, source.getCachedData());
 
@@ -264,15 +285,18 @@ describe("CachedSource", () => {
 		expect(clone.size()).toEqual(source.size());
 		expect(clone.map({})).toEqual(source.map({}));
 		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
+		expect(getHash(clone)).toBe(getHash(original));
 	});
 
 	it("should allow to store and restore cached data (without SourceMap)", () => {
-		const source = new CachedSource(new RawSource("Hello World"));
+		const original = new RawSource("Hello World");
+		const source = new CachedSource(original);
 
 		// fill up cache
 		source.source();
 		source.map({});
 		source.size();
+		getHash(source);
 
 		const clone = new CachedSource(null, source.getCachedData());
 
@@ -281,6 +305,7 @@ describe("CachedSource", () => {
 		expect(clone.size()).toEqual(source.size());
 		expect(clone.map({}) === null).toBe(true);
 		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
+		expect(getHash(clone)).toBe(getHash(original));
 	});
 
 	it("should allow to store and restore cached data, but fallback to the original source when needed", () => {
@@ -292,18 +317,24 @@ describe("CachedSource", () => {
 		source.size();
 
 		let calls = 0;
-		const clone = new CachedSource(() => {
-			calls++;
-			return original;
-		}, source.getCachedData());
+		const clone = () =>
+			new CachedSource(() => {
+				calls++;
+				return original;
+			}, source.getCachedData());
 
-		expect(clone.source()).toEqual(source.source());
-		expect(clone.buffer()).toEqual(source.buffer());
-		expect(clone.size()).toEqual(source.size());
+		expect(clone().source()).toEqual(source.source());
+		expect(clone().buffer()).toEqual(source.buffer());
+		expect(clone().size()).toEqual(source.size());
 		expect(calls).toBe(0);
-		expect(clone.map({}) === null).toBe(true);
+		const clone1 = clone();
+		expect(clone1.map({}) === null).toBe(true);
 		expect(calls).toBe(1);
-		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
+		expect(clone1.map({}) === null).toBe(true);
 		expect(calls).toBe(1);
+		expect(clone().sourceAndMap({})).toEqual(source.sourceAndMap({}));
+		expect(calls).toBe(2);
+		expect(getHash(clone())).toBe(getHash(original));
+		expect(calls).toBe(3);
 	});
 });
