@@ -19,6 +19,13 @@ matrix:
       node_js: "12"
     - os: osx
       node_js: "10"
+# ppc64le support code
+    - arch: ppc64le
+      node_js: "14"
+    - arch: ppc64le
+      node_js: "12"
+    - arch: ppc64le
+      node_js: "10"
   fast_finish: true
 
 script: yarn travis
