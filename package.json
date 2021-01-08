@@ -12,8 +12,8 @@
     "cover": "jest --coverage"
   },
   "dependencies": {
-    "source-list-map": "^2.0.1",
-    "source-map": "https://github.com/benthemonkey/source-map.git#d95423f77edef6cbb9e21d2d6014c7de85ae220a"
+    "@benthemonkey/source-map": "^0.6.3",
+    "source-list-map": "^2.0.1"
   },
   "devDependencies": {
     "coveralls": "^3.0.2",

@@ -263,6 +263,11 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@benthemonkey/source-map@^0.6.3":
+  version "0.6.3"
+  resolved "https://registry.yarnpkg.com/@benthemonkey/source-map/-/source-map-0.6.3.tgz#807101c8de7418add2a95e8443ccbfa9fb511f00"
+  integrity sha512-NrNZOQr0PTS8PU3LDh8Hxviyu5zJ+cO/iok3D+E72jeDCPMBktwTp0UgjRYEgTrdZeFE1J1ttaPcWP9aLJoFyg==
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"
@@ -3592,7 +3597,7 @@ source-map@^0.5.0, source-map@^0.5.6:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
   integrity sha1-igOdLRAh0i0eoUyA2OpGi6LvP8w=
 
-source-map@^0.6.0, source-map@^0.6.1, "source-map@https://github.com/benthemonkey/source-map.git#d95423f77edef6cbb9e21d2d6014c7de85ae220a", source-map@~0.6.1:
+source-map@^0.6.0, source-map@^0.6.1, source-map@~0.6.1:
   version "0.6.1"
   resolved "https://github.com/benthemonkey/source-map.git#d95423f77edef6cbb9e21d2d6014c7de85ae220a"
 
