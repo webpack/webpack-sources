@@ -1,7 +1,7 @@
 const SourceMapSource = require("../").SourceMapSource;
 const OriginalSource = require("../").OriginalSource;
 const ConcatSource = require("../").ConcatSource;
-const SourceNode = require("@benthemonkey/source-map").SourceNode;
+const SourceNode = require("source-map-js").SourceNode;
 
 describe("SourceMapSource", () => {
 	it("map correctly", () => {
