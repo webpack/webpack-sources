@@ -3582,10 +3582,10 @@ source-map-support@^0.5.6:
     buffer-from "^1.0.0"
     source-map "^0.6.0"
 
-source-map-sync@^0.8.0-beta.0:
-  version "0.8.0-beta.0"
-  resolved "https://registry.yarnpkg.com/source-map-sync/-/source-map-sync-0.8.0-beta.0.tgz#4943350f7ac91c58489cc19b17231e364cdff5b0"
-  integrity sha512-NaP8fP2gfxxXgANPk9ZjEI0oDipd97g6eSHkzGu38jP0F5iGNadB+lmSHe5pPjvMmC9PcJdNNIZEfA+50VeqWg==
+source-map-sync@^0.8.0-beta.1:
+  version "0.8.0-beta.1"
+  resolved "https://registry.yarnpkg.com/source-map-sync/-/source-map-sync-0.8.0-beta.1.tgz#5ac363771ad04e135a5df8b6969f0a7c2450b545"
+  integrity sha512-MAII5Kn5JAEnvBvV2s6e3+muLjf9VjDN87Rq0Ihlm1/e9Ba8GWNXrohTCuqMEFOBNw2HsDKFDzc5lvx56nIk6w==
   dependencies:
     whatwg-url "^7.0.0"
 
