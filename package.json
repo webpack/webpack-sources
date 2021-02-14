@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "source-list-map": "^2.0.1",
-    "source-map": "^0.6.1"
+    "source-map-sync": "^0.0.0"
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
