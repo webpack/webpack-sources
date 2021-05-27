@@ -244,7 +244,7 @@ describe("CachedSource", () => {
 			source: 0,
 			buffer: 0,
 			map: 0,
-			sourceAndMap: 1,
+			sourceAndMap: 0,
 			hash: 0
 		});
 	});
@@ -320,8 +320,8 @@ describe("CachedSource", () => {
 			size: 0,
 			source: 0,
 			buffer: 0,
-			map: 0,
-			sourceAndMap: 1,
+			map: 1,
+			sourceAndMap: 0,
 			hash: 0
 		});
 	});
@@ -355,8 +355,8 @@ describe("CachedSource", () => {
 			size: 0,
 			source: 0,
 			buffer: 0,
-			map: 0,
-			sourceAndMap: 1,
+			map: 1, // second: with columns: undefined/true
+			sourceAndMap: 1, // first: with columns: false
 			hash: 0
 		});
 	});
@@ -424,7 +424,7 @@ describe("CachedSource", () => {
 		});
 	});
 
-	it("should not include map in the cache if only a node was computed", () => {
+	it("should include map in the cache if only a node was computed", () => {
 		const original = new OriginalSource("Hello World", "test.txt");
 		const source = new TrackedSource(original);
 		const cachedSource = new CachedSource(source);
@@ -435,10 +435,10 @@ describe("CachedSource", () => {
 		cachedSource.node();
 
 		const cachedData = cachedSource.getCachedData();
-		expect(cachedData.maps.size).toBe(0);
+		expect(cachedData.maps.size).toBe(1);
 	});
 
-	it("should not include map in the cache if only a listMap was computed", () => {
+	it("should include map in the cache if only a listMap was computed", () => {
 		const original = new OriginalSource("Hello World", "test.txt");
 		const source = new TrackedSource(original);
 		const cachedSource = new CachedSource(source);
@@ -449,7 +449,7 @@ describe("CachedSource", () => {
 		cachedSource.listMap();
 
 		const cachedData = cachedSource.getCachedData();
-		expect(cachedData.maps.size).toBe(0);
+		expect(cachedData.maps.size).toBe(1);
 	});
 
 	it("should allow to store and restore cached data (with SourceMap)", () => {
@@ -470,6 +470,15 @@ describe("CachedSource", () => {
 		expect(clone.map({})).toEqual(source.map({}));
 		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
 		expect(getHash(clone)).toBe(getHash(original));
+
+		const clone2 = new CachedSource(null, clone.getCachedData());
+
+		expect(clone2.source()).toEqual(source.source());
+		expect(clone2.buffer()).toEqual(source.buffer());
+		expect(clone2.size()).toEqual(source.size());
+		expect(clone2.map({})).toEqual(source.map({}));
+		expect(clone2.sourceAndMap({})).toEqual(source.sourceAndMap({}));
+		expect(getHash(clone2)).toBe(getHash(original));
 	});
 
 	it("should allow to store and restore cached data (without SourceMap)", () => {
