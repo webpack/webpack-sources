@@ -249,6 +249,48 @@ describe("CachedSource", () => {
 		});
 	});
 
+	it("should use sourceAndMap cache for `node` for sources that provide it", () => {
+		const original = new OriginalSource("TestTestTest", "file.js");
+		const source = new TrackedSource(original);
+		const cachedSource = new CachedSource(source);
+
+		let nodeCalled = 0;
+		source.node = options => {
+			nodeCalled++;
+			return getNode(original, options);
+		};
+
+		const sourceAndMap = cachedSource.sourceAndMap();
+		const map = cachedSource.map();
+		expect(sourceAndMap.map).toEqual(original.map({}));
+		expect(map).toEqual(original.map({}));
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
+			hash: 0
+		});
+
+		const node = cachedSource.node();
+		const sourceMap = node.toStringWithSourceMap({
+			file: "x"
+		});
+		expect(sourceMap.code).toBe("TestTestTest");
+		expect(sourceMap.map.toJSON()).toEqual(sourceAndMap.map);
+		expect(cachedSource.node()).toBe(node);
+		expect(nodeCalled).toBe(0);
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
+			hash: 0
+		});
+	});
+
 	it("should use sourceAndMap cache for `node` when source does not provide `node`", () => {
 		const original = new OriginalSource("TestTestTest", "file.js");
 		const source = new TrackedSource(original);
@@ -322,6 +364,49 @@ describe("CachedSource", () => {
 			buffer: 0,
 			map: 1,
 			sourceAndMap: 0,
+			hash: 0
+		});
+	});
+
+	it("should use sourceAndMap cache for `listMap` for sources that provide it", () => {
+		const original = new OriginalSource("TestTestTest", "file.js");
+		const source = new TrackedSource(original);
+		const cachedSource = new CachedSource(source);
+
+		let listMapCalled = 0;
+		source.listMap = options => {
+			listMapCalled++;
+			return getListMap(original, options);
+		};
+
+		const sourceAndMap = cachedSource.sourceAndMap({ columns: false });
+		const map = cachedSource.map({ columns: false });
+		expect(sourceAndMap.map).toEqual(original.map({ columns: false }));
+		expect(map).toEqual(original.map({ columns: false }));
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
+			hash: 0
+		});
+
+		const listMap = cachedSource.listMap({});
+		const sourceMap = listMap.toStringWithSourceMap({
+			file: "x"
+		});
+		expect(sourceMap.source).toBe("TestTestTest");
+		expect(sourceMap.map).toEqual(original.map({ columns: false }));
+		expect(cachedSource.listMap()).toBe(listMap);
+		expect(cachedSource.listMap({ columns: false })).toBe(listMap);
+		expect(listMapCalled).toBe(0);
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
 			hash: 0
 		});
 	});
