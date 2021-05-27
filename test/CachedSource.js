@@ -3,6 +3,7 @@ const CachedSource = require("../").CachedSource;
 const OriginalSource = require("../").OriginalSource;
 const RawSource = require("../").RawSource;
 const Source = require("../").Source;
+const { getNode, getListMap } = require("../lib/helpers");
 
 class TrackedSource extends Source {
 	constructor(source) {
@@ -205,6 +206,246 @@ describe("CachedSource", () => {
 			hash: 0
 		});
 	});
+
+	it("should use `node` for sources that provide it", () => {
+		const original = new OriginalSource("TestTestTest", "file.js");
+		const source = new TrackedSource(original);
+		const cachedSource = new CachedSource(source);
+
+		let nodeCalled = 0;
+		source.node = options => {
+			nodeCalled++;
+			return getNode(original, options);
+		};
+
+		const node = cachedSource.node();
+		const sourceMap = node.toStringWithSourceMap({
+			file: "x"
+		});
+		expect(sourceMap.code).toBe("TestTestTest");
+		expect(sourceMap.map.toJSON()).toEqual(original.map({}));
+		expect(cachedSource.node()).toBe(node);
+		expect(nodeCalled).toBe(1);
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 0,
+			hash: 0
+		});
+
+		const sourceAndMap = cachedSource.sourceAndMap();
+		const map = cachedSource.map();
+		expect(sourceAndMap.map).toEqual(sourceMap.map.toJSON());
+		expect(map).toEqual(sourceMap.map.toJSON());
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 0,
+			hash: 0
+		});
+	});
+
+	it("should use sourceAndMap cache for `node` for sources that provide it", () => {
+		const original = new OriginalSource("TestTestTest", "file.js");
+		const source = new TrackedSource(original);
+		const cachedSource = new CachedSource(source);
+
+		let nodeCalled = 0;
+		source.node = options => {
+			nodeCalled++;
+			return getNode(original, options);
+		};
+
+		const sourceAndMap = cachedSource.sourceAndMap();
+		const map = cachedSource.map();
+		expect(sourceAndMap.map).toEqual(original.map({}));
+		expect(map).toEqual(original.map({}));
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
+			hash: 0
+		});
+
+		const node = cachedSource.node();
+		const sourceMap = node.toStringWithSourceMap({
+			file: "x"
+		});
+		expect(sourceMap.code).toBe("TestTestTest");
+		expect(sourceMap.map.toJSON()).toEqual(sourceAndMap.map);
+		expect(cachedSource.node()).toBe(node);
+		expect(nodeCalled).toBe(0);
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
+			hash: 0
+		});
+	});
+
+	it("should use sourceAndMap cache for `node` when source does not provide `node`", () => {
+		const original = new OriginalSource("TestTestTest", "file.js");
+		const source = new TrackedSource(original);
+		const cachedSource = new CachedSource(source);
+
+		const node = cachedSource.node();
+		const sourceMap = node.toStringWithSourceMap({
+			file: "x"
+		});
+		expect(sourceMap.code).toBe("TestTestTest");
+		expect(sourceMap.map.toJSON()).toEqual(original.map({}));
+		expect(cachedSource.node()).toBe(node);
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
+			hash: 0
+		});
+
+		const sourceAndMap = cachedSource.sourceAndMap();
+		const map = cachedSource.map();
+		expect(sourceAndMap.map).toEqual(sourceMap.map.toJSON());
+		expect(map).toEqual(sourceMap.map.toJSON());
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
+			hash: 0
+		});
+	});
+
+	it("should use `listMap` for sources that provide it", () => {
+		const original = new OriginalSource("TestTestTest", "file.js");
+		const source = new TrackedSource(original);
+		const cachedSource = new CachedSource(source);
+
+		let listMapCalled = 0;
+		source.listMap = options => {
+			listMapCalled++;
+			return getListMap(original, options);
+		};
+
+		const listMap = cachedSource.listMap();
+		const sourceMap = listMap.toStringWithSourceMap({
+			file: "x"
+		});
+		expect(sourceMap.source).toBe("TestTestTest");
+		expect(sourceMap.map).toEqual(original.map({ columns: false }));
+		expect(cachedSource.listMap()).toBe(listMap);
+		expect(listMapCalled).toBe(1);
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 0,
+			hash: 0
+		});
+
+		const sourceAndMap = cachedSource.sourceAndMap();
+		const map = cachedSource.map();
+		expect(sourceAndMap.map).toEqual(original.map());
+		expect(map).toEqual(original.map());
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 1,
+			sourceAndMap: 0,
+			hash: 0
+		});
+	});
+
+	it("should use sourceAndMap cache for `listMap` for sources that provide it", () => {
+		const original = new OriginalSource("TestTestTest", "file.js");
+		const source = new TrackedSource(original);
+		const cachedSource = new CachedSource(source);
+
+		let listMapCalled = 0;
+		source.listMap = options => {
+			listMapCalled++;
+			return getListMap(original, options);
+		};
+
+		const sourceAndMap = cachedSource.sourceAndMap({ columns: false });
+		const map = cachedSource.map({ columns: false });
+		expect(sourceAndMap.map).toEqual(original.map({ columns: false }));
+		expect(map).toEqual(original.map({ columns: false }));
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
+			hash: 0
+		});
+
+		const listMap = cachedSource.listMap({});
+		const sourceMap = listMap.toStringWithSourceMap({
+			file: "x"
+		});
+		expect(sourceMap.source).toBe("TestTestTest");
+		expect(sourceMap.map).toEqual(original.map({ columns: false }));
+		expect(cachedSource.listMap()).toBe(listMap);
+		expect(cachedSource.listMap({ columns: false })).toBe(listMap);
+		expect(listMapCalled).toBe(0);
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
+			hash: 0
+		});
+	});
+
+	it("should use sourceAndMap cache for `listMap` when source does not provide `listMap`", () => {
+		const original = new OriginalSource("TestTestTest", "file.js");
+		const source = new TrackedSource(original);
+		const cachedSource = new CachedSource(source);
+
+		const listMap = cachedSource.listMap();
+		const sourceMap = listMap.toStringWithSourceMap({
+			file: "x"
+		});
+		expect(sourceMap.source).toBe("TestTestTest");
+		expect(sourceMap.map).toEqual(original.map({ columns: false }));
+		expect(cachedSource.listMap()).toBe(listMap);
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 0,
+			sourceAndMap: 1,
+			hash: 0
+		});
+
+		const sourceAndMap = cachedSource.sourceAndMap();
+		const map = cachedSource.map();
+		expect(sourceAndMap.map).toEqual(original.map());
+		expect(map).toEqual(original.map());
+		expect(source.getCalls()).toEqual({
+			size: 0,
+			source: 0,
+			buffer: 0,
+			map: 1, // second: with columns: undefined/true
+			sourceAndMap: 1, // first: with columns: false
+			hash: 0
+		});
+	});
+
 	it("should use binary source for buffer", () => {
 		const buffer = Buffer.from(new Array(256));
 		const source = new TrackedSource(new RawSource(buffer));
@@ -268,6 +509,34 @@ describe("CachedSource", () => {
 		});
 	});
 
+	it("should include map in the cache if only a node was computed", () => {
+		const original = new OriginalSource("Hello World", "test.txt");
+		const source = new TrackedSource(original);
+		const cachedSource = new CachedSource(source);
+
+		source.node = options => getNode(original, options);
+
+		// fill up cache
+		cachedSource.node();
+
+		const cachedData = cachedSource.getCachedData();
+		expect(cachedData.maps.size).toBe(1);
+	});
+
+	it("should include map in the cache if only a listMap was computed", () => {
+		const original = new OriginalSource("Hello World", "test.txt");
+		const source = new TrackedSource(original);
+		const cachedSource = new CachedSource(source);
+
+		source.listMap = options => getListMap(original, options);
+
+		// fill up cache
+		cachedSource.listMap();
+
+		const cachedData = cachedSource.getCachedData();
+		expect(cachedData.maps.size).toBe(1);
+	});
+
 	it("should allow to store and restore cached data (with SourceMap)", () => {
 		const original = new OriginalSource("Hello World", "test.txt");
 		const source = new CachedSource(original);
@@ -286,6 +555,15 @@ describe("CachedSource", () => {
 		expect(clone.map({})).toEqual(source.map({}));
 		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
 		expect(getHash(clone)).toBe(getHash(original));
+
+		const clone2 = new CachedSource(null, clone.getCachedData());
+
+		expect(clone2.source()).toEqual(source.source());
+		expect(clone2.buffer()).toEqual(source.buffer());
+		expect(clone2.size()).toEqual(source.size());
+		expect(clone2.map({})).toEqual(source.map({}));
+		expect(clone2.sourceAndMap({})).toEqual(source.sourceAndMap({}));
+		expect(getHash(clone2)).toBe(getHash(original));
 	});
 
 	it("should allow to store and restore cached data (without SourceMap)", () => {
