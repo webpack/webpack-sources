@@ -88,4 +88,27 @@ describe("SourceMapSource", () => {
 		const digest2 = hash2.digest("hex");
 		expect(digest2).toEqual(digest);
 	});
+
+	it("provides buffer when backed by string", () => {
+		const sourceMapSource = new SourceMapSource("source", "name");
+
+		const buffer1 = sourceMapSource.buffer();
+		expect(buffer1.length).toBe(6);
+
+		const buffer2 = sourceMapSource.buffer();
+		expect(buffer2).toBe(buffer1);
+	});
+
+	it("provides buffer when backed by buffer", () => {
+		const sourceMapSource = new SourceMapSource(
+			Buffer.from("source", "utf-8"),
+			"name"
+		);
+
+		const buffer1 = sourceMapSource.buffer();
+		expect(buffer1.length).toBe(6);
+
+		const buffer2 = sourceMapSource.buffer();
+		expect(buffer2).toBe(buffer1);
+	});
 });
