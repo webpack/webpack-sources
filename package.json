@@ -6,9 +6,7 @@
   "scripts": {
     "pretest": "yarn lint",
     "test": "jest",
-    "travis": "yarn cover",
     "lint": "eslint --cache lib test",
-    "precover": "yarn lint",
     "cover": "jest --coverage"
   },
   "dependencies": {
