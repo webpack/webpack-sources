@@ -14,7 +14,8 @@ describe("PrefixSource", () => {
 		const expectedMap1 = {
 			version: 3,
 			file: "x",
-			mappings: "AAAA;AACA;",
+			mappings: "AAAA;AACA",
+			names: [],
 			sources: ["console.js"],
 			sourcesContent: [
 				"console.log('test');console.log('test2');\nconsole.log('test22');\n"
