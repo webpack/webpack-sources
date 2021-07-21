@@ -341,6 +341,7 @@ describe("CachedSource", () => {
 		const sourceMap = listMap.toStringWithSourceMap({
 			file: "x"
 		});
+		sourceMap.map.names = sourceMap.map.names || [];
 		expect(sourceMap.source).toBe("TestTestTest");
 		expect(sourceMap.map).toEqual(original.map({ columns: false }));
 		expect(cachedSource.listMap()).toBe(listMap);
@@ -396,6 +397,7 @@ describe("CachedSource", () => {
 		const sourceMap = listMap.toStringWithSourceMap({
 			file: "x"
 		});
+		sourceMap.map.names = sourceMap.map.names || [];
 		expect(sourceMap.source).toBe("TestTestTest");
 		expect(sourceMap.map).toEqual(original.map({ columns: false }));
 		expect(cachedSource.listMap()).toBe(listMap);
@@ -420,6 +422,7 @@ describe("CachedSource", () => {
 		const sourceMap = listMap.toStringWithSourceMap({
 			file: "x"
 		});
+		sourceMap.map.names = sourceMap.map.names || [];
 		expect(sourceMap.source).toBe("TestTestTest");
 		expect(sourceMap.map).toEqual(original.map({ columns: false }));
 		expect(cachedSource.listMap()).toBe(listMap);

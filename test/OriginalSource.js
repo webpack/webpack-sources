@@ -23,7 +23,7 @@ describe("OriginalSource", () => {
 			resultMap.map.sourcesContent
 		);
 		expect(resultMap.map.mappings).toBe("AAAA;;AAEA");
-		expect(resultListMap.map.mappings).toBe("AAAA;AACA;AACA;");
+		expect(resultListMap.map.mappings).toBe("AAAA;AACA;AACA");
 	});
 
 	it("should handle empty string", () => {
@@ -65,5 +65,23 @@ describe("OriginalSource", () => {
 	it("should return the correct size for unicode files", () => {
 		const source = new OriginalSource("😋", "file.js");
 		expect(source.size()).toBe(4);
+	});
+
+	it("should split code into statements", () => {
+		const input = [
+			"if (hello()) { world(); hi(); there(); } done();",
+			"if (hello()) { world(); hi(); there(); } done();"
+		].join("\n");
+		const expected = "AAAA,eAAe,SAAS,MAAM,WAAW;AACzC,eAAe,SAAS,MAAM,WAAW";
+		const expected2 = "AAAA;AACA";
+		const source = new OriginalSource(input, "file.js");
+		expect(source.sourceAndMap().source).toBe(input);
+		expect(source.sourceAndMap({ columns: false }).source).toBe(input);
+		expect(source.map().mappings).toBe(expected);
+		expect(source.sourceAndMap().map.mappings).toBe(expected);
+		expect(source.map({ columns: false }).mappings).toBe(expected2);
+		expect(source.sourceAndMap({ columns: false }).map.mappings).toBe(
+			expected2
+		);
 	});
 });
