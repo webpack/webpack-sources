@@ -2,6 +2,7 @@ const SourceMapSource = require("../").SourceMapSource;
 const OriginalSource = require("../").OriginalSource;
 const ConcatSource = require("../").ConcatSource;
 const SourceNode = require("source-map").SourceNode;
+const { withReadableMappings } = require("./helpers");
 
 describe("SourceMapSource", () => {
 	it("map correctly", () => {
@@ -55,29 +56,57 @@ describe("SourceMapSource", () => {
 		expect(sourceMapSource1.source()).toEqual(expectedContent);
 		expect(sourceMapSource2.source()).toEqual(expectedContent);
 
-		expect(sourceMapSource1.map()).toEqual({
-			file: "x",
-			mappings: "YAAAA,K,CAAMC;AACN,O,MAAU;ACCC,O,CAAM",
-			names: ["Hello", "World"],
-			sources: ["hello-world.txt", "text"],
-			sourcesContent: [innerSourceCode, innerSource.source()],
-			version: 3
-		});
+		expect(withReadableMappings(sourceMapSource1.map())).toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:12 -> [hello-world.txt] 1:0 (Hello), 1:17, 1:18 -> [hello-world.txt] 1:6 (World), 2:0 -> [hello-world.txt] 2:0, 2:7, 2:13 -> [hello-world.txt] 2:10, 3:0 -> [text] 3:11, 3:7, 3:8 -> [text] 3:17",
+		  "file": "x",
+		  "mappings": "YCAAA,K,CAAMC;AACN,O,MAAU;ADCC,O,CAAM",
+		  "names": Array [
+		    "Hello",
+		    "World",
+		  ],
+		  "sources": Array [
+		    "text",
+		    "hello-world.txt",
+		  ],
+		  "sourcesContent": Array [
+		    "Hello World
+		is a test string
+		Translate: Other text",
+		    "Hello World
+		is a test string
+		",
+		  ],
+		  "version": 3,
+		}
+	`);
 
-		expect(sourceMapSource2.map()).toEqual({
-			file: "x",
-			mappings: "YAAAA,K,CAAMC;AACN,O,MAAU",
-			names: ["Hello", "World"],
-			sources: ["hello-world.txt"],
-			sourcesContent: [innerSourceCode],
-			version: 3
-		});
+		expect(withReadableMappings(sourceMapSource2.map())).toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:12 -> [hello-world.txt] 1:0 (Hello), 1:17, 1:18 -> [hello-world.txt] 1:6 (World), 2:0 -> [hello-world.txt] 2:0, 2:7, 2:13 -> [hello-world.txt] 2:10",
+		  "file": "x",
+		  "mappings": "YAAAA,K,CAAMC;AACN,O,MAAU",
+		  "names": Array [
+		    "Hello",
+		    "World",
+		  ],
+		  "sources": Array [
+		    "hello-world.txt",
+		  ],
+		  "sourcesContent": Array [
+		    "Hello World
+		is a test string
+		",
+		  ],
+		  "version": 3,
+		}
+	`);
 
 		const hash = require("crypto").createHash("sha256");
 		sourceMapSource1.updateHash(hash);
 		const digest = hash.digest("hex");
-		expect(digest).toBe(
-			"2de42bc8972534c146d0fadce8288cd9803c53fbd72bdfbbff7f062f6748e01e"
+		expect(digest).toMatchInlineSnapshot(
+			`"a61a2da7f3d541e458b1af9c0ec25d853fb929339d7d8b22361468be67326a52"`
 		);
 
 		const clone = new SourceMapSource(...sourceMapSource1.getArgsAsBuffers());
