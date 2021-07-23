@@ -1,6 +1,7 @@
 const ReplaceSource = require("../").ReplaceSource;
 const OriginalSource = require("../").OriginalSource;
 const validate = require("sourcemap-validator");
+const { withReadableMappings } = require("./helpers");
 
 describe("ReplaceSource", () => {
 	it("should replace correctly", () => {
@@ -46,6 +47,7 @@ describe("ReplaceSource", () => {
 		expect(originalText).toBe(
 			"Hello World!\n{}\nLine 3\nLine 4\nLine 5\nLast\nLine"
 		);
+		// const resultText = "Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line";
 		expect(resultText).toBe("Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
@@ -55,10 +57,10 @@ describe("ReplaceSource", () => {
 		expect(resultListMap.map.sourcesContent).toEqual(
 			resultMap.map.sourcesContent
 		);
-		expect(resultMap.map.mappings).toBe(
-			"AAAA,CAAC,EAAI,KAAE,IAAC;AACR,CAAC;AAAA;AAAA;AAID,IAAI,CACJ"
+		expect(withReadableMappings(resultMap.map)._mappings).toBe(
+			"1:0 -> [file.txt] 1:0, 1:1 -> [file.txt] 1:1, 1:3 -> [file.txt] 1:5, 1:8 -> [file.txt] 1:7, 1:12 -> [file.txt] 1:8, 2:0 -> [file.txt] 2:0, 2:1 -> [file.txt] 2:1, 3:0 -> [file.txt] 2:1, 4:0 -> [file.txt] 2:1, 5:0 -> [file.txt] 6:0, 5:4 -> [file.txt] 6:4, 5:5 -> [file.txt] 7:0"
 		);
-		expect(resultListMap.map.mappings).toBe("AAAA;AACA;AAAA;AAAA;AAIA,KACA");
+		expect(resultListMap.map.mappings).toBe("AAAA;AACA;AAAA;AAAA;AAIA");
 	});
 
 	it("should replace multiple items correctly", () => {
@@ -86,7 +88,7 @@ describe("ReplaceSource", () => {
 			resultMap.map.sourcesContent
 		);
 		expect(resultMap.map.mappings).toBe("AAAA,WAAE,GACE");
-		expect(resultListMap.map.mappings).toBe("AAAA,cACA");
+		expect(resultListMap.map.mappings).toBe("AAAA");
 	});
 
 	it("should prepend items correctly", () => {
@@ -165,7 +167,7 @@ describe("ReplaceSource", () => {
 			resultMap.map.sourcesContent
 		);
 		expect(resultMap.map.mappings).toBe("AAAA");
-		expect(resultListMap.map.mappings).toBe("AAAA;;");
+		expect(resultListMap.map.mappings).toBe("AAAA");
 	});
 
 	it("should produce correct source map", () => {
