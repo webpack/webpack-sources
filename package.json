@@ -9,10 +9,6 @@
     "lint": "eslint --cache lib test",
     "cover": "jest --coverage"
   },
-  "dependencies": {
-    "source-list-map": "^2.0.1",
-    "source-map": "^0.7.3"
-  },
   "devDependencies": {
     "coveralls": "^3.0.2",
     "eslint": "^7.7.0",
@@ -25,6 +21,7 @@
     "istanbul": "^0.4.1",
     "jest": "^26.4.0",
     "prettier": "^2.0.5",
+    "source-map": "^0.7.3",
     "sourcemap-validator": "^2.1.0"
   },
   "files": [

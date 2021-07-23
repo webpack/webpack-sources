@@ -45,14 +45,9 @@ describe("OriginalSource", () => {
 
 	it("should omit mappings for columns with node", () => {
 		const source = new OriginalSource("Line1\n\nLine3\n", "file.js");
-		const resultMap = source
-			.node({
-				columns: false
-			})
-			.toStringWithSourceMap({
-				file: "x"
-			})
-			.map.toJSON();
+		const resultMap = source.map({
+			columns: false
+		});
 
 		expect(resultMap.mappings).toBe("AAAA;AACA;AACA");
 	});
