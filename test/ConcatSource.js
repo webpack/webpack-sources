@@ -1,6 +1,7 @@
 const ConcatSource = require("../").ConcatSource;
 const RawSource = require("../").RawSource;
 const OriginalSource = require("../").OriginalSource;
+const { withReadableMappings } = require("./helpers");
 
 describe("ConcatSource", () => {
 	it("should concat two sources", () => {
@@ -15,7 +16,8 @@ describe("ConcatSource", () => {
 		const expectedMap1 = {
 			version: 3,
 			file: "x",
-			mappings: ";AAAA;AACA;ACDA;",
+			mappings: ";AAAA;AACA;ACDA",
+			names: [],
 			sources: ["console.js", "hello.md"],
 			sourcesContent: [
 				"console.log('test');\nconsole.log('test2');\n",
@@ -86,7 +88,8 @@ describe("ConcatSource", () => {
 		const expectedMap1 = {
 			version: 3,
 			file: "x",
-			mappings: ";AAAA;AACA;A",
+			mappings: ";AAAA;AACA",
+			names: [],
 			sources: ["console.js"],
 			sourcesContent: ["console.log('test');\nconsole.log('test2');\n"]
 		};
@@ -156,5 +159,38 @@ describe("ConcatSource", () => {
 		expect(resultListMap.source).toEqual(resultText);
 		expect(resultListMap.map).toBe(null);
 		expect(resultMap.map).toBe(null);
+	});
+
+	it("should allow to concatenate in a single line", () => {
+		const source = new ConcatSource(
+			new OriginalSource("Hello", "hello.txt"),
+			" ",
+			new OriginalSource("World ", "world.txt"),
+			"is here\n",
+			new OriginalSource("Hello\n", "hello.txt"),
+			" \n",
+			new OriginalSource("World\n", "world.txt"),
+			"is here"
+		);
+
+		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:0 -> [hello.txt] 1:0, :5, :6 -> [world.txt] 1:0, :12
+		2:0 -> [hello.txt] 1:0
+		4:0 -> [world.txt] 1:0",
+		  "file": "x",
+		  "mappings": "AAAA,K,CCAA,M;ADAA;;ACAA",
+		  "names": Array [],
+		  "sources": Array [
+		    "hello.txt",
+		    "world.txt",
+		  ],
+		  "sourcesContent": Array [
+		    "Hello",
+		    "World ",
+		  ],
+		  "version": 3,
+		}
+	`);
 	});
 });

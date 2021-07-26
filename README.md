@@ -45,7 +45,6 @@ Returns the SourceMap of the represented source code as JSON. May return `null` 
 The `options` object can contain the following keys:
 
 - `columns: Boolean` (default `true`): If set to false the implementation may omit mappings for columns.
-- `module: Boolean` (default `true`): If set to false the implementation may omit inner mappings for modules.
 
 #### `sourceAndMap`
 
@@ -73,7 +72,7 @@ Updates the provided `Hash` object with the content of the represented source co
 Represents source code without SourceMap.
 
 ```typescript
-new RawSource(sourceCode: String)
+new RawSource(sourceCode: String | Buffer)
 ```
 
 ## `OriginalSource`
@@ -82,7 +81,7 @@ Represents source code, which is a copy of the original file.
 
 ```typescript
 new OriginalSource(
-	sourceCode: String,
+	sourceCode: String | Buffer,
 	name: String
 )
 ```
@@ -98,11 +97,11 @@ Represents source code with SourceMap, optionally having an additional SourceMap
 
 ```typescript
 new SourceMapSource(
-	sourceCode: String,
+	sourceCode: String | Buffer,
 	name: String,
-	sourceMap: Object | String,
-	originalSource?: String,
-	innerSourceMap?: Object | String,
+	sourceMap: Object | String | Buffer,
+	originalSource?: String | Buffer,
+	innerSourceMap?: Object | String | Buffer,
 	removeOriginalSource?: boolean
 )
 ```
@@ -150,7 +149,7 @@ Prefix every line of the decorated `Source` with a provided string.
 ```typescript
 new PrefixSource(
 	prefix: String,
-	source: Source
+	source: Source | String | Buffer
 )
 ```
 

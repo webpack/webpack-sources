@@ -1,6 +1,7 @@
 const PrefixSource = require("../").PrefixSource;
 const OriginalSource = require("../").OriginalSource;
 const ConcatSource = require("../").ConcatSource;
+const { withReadableMappings } = require("./helpers");
 
 describe("PrefixSource", () => {
 	it("should prefix a source", () => {
@@ -14,7 +15,8 @@ describe("PrefixSource", () => {
 		const expectedMap1 = {
 			version: 3,
 			file: "x",
-			mappings: "AAAA;AACA;",
+			mappings: "AAAA;AACA",
+			names: [],
 			sources: ["console.js"],
 			sourcesContent: [
 				"console.log('test');console.log('test2');\nconsole.log('test22');\n"
@@ -50,11 +52,14 @@ describe("PrefixSource", () => {
 				"console.log('test');console.log('test2');\nconsole.log('test22');\n"
 			]
 		};
-		expect(source.map()).toEqual(expectedMap2);
-		expect(source.sourceAndMap()).toEqual({
-			source: expectedSource,
-			map: expectedMap2
-		});
+		const result = source.sourceAndMap();
+		expect(result.source).toEqual(expectedSource);
+		expect(withReadableMappings(result.map)).toEqual(
+			withReadableMappings(expectedMap2)
+		);
+		expect(withReadableMappings(source.map())).toEqual(
+			withReadableMappings(expectedMap2)
+		);
 	});
 
 	it("should have consistent source/sourceAndMap behavior", () => {
