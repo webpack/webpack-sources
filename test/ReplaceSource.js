@@ -57,10 +57,22 @@ describe("ReplaceSource", () => {
 		expect(resultListMap.map.sourcesContent).toEqual(
 			resultMap.map.sourcesContent
 		);
-		expect(withReadableMappings(resultMap.map)._mappings).toBe(
-			"1:0 -> [file.txt] 1:0, 1:1 -> [file.txt] 1:1, 1:3 -> [file.txt] 1:5, 1:8 -> [file.txt] 1:7, 1:12 -> [file.txt] 1:8, 2:0 -> [file.txt] 2:0, 2:1 -> [file.txt] 2:1, 3:0 -> [file.txt] 2:1, 4:0 -> [file.txt] 2:1, 5:0 -> [file.txt] 6:0, 5:4 -> [file.txt] 6:4, 5:5 -> [file.txt] 7:0"
-		);
-		expect(resultListMap.map.mappings).toBe("AAAA;AACA;AAAA;AAAA;AAIA");
+		expect(withReadableMappings(resultMap.map)._mappings)
+			.toMatchInlineSnapshot(`
+		"1:0 -> [file.txt] 1:0, :1 -> [file.txt] 1:1, :3 -> [file.txt] 1:5, :8 -> [file.txt] 1:7, :12 -> [file.txt] 1:8
+		2:0 -> [file.txt] 2:0, :1 -> [file.txt] 2:1
+		3:0 -> [file.txt] 2:1
+		4:0 -> [file.txt] 2:1
+		5:0 -> [file.txt] 6:0, :4 -> [file.txt] 6:4, :5 -> [file.txt] 7:0"
+	`);
+		expect(withReadableMappings(resultListMap.map)._mappings)
+			.toMatchInlineSnapshot(`
+		"1:0 -> [file.txt] 1:0
+		2:0 -> [file.txt] 2:0
+		3:0 -> [file.txt] 2:0
+		4:0 -> [file.txt] 2:0
+		5:0 -> [file.txt] 6:0"
+	`);
 	});
 
 	it("should replace multiple items correctly", () => {

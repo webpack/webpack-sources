@@ -175,7 +175,9 @@ describe("ConcatSource", () => {
 
 		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
 		Object {
-		  "_mappings": "1:0 -> [hello.txt] 1:0, 1:5, 1:6 -> [world.txt] 1:0, 1:12, 2:0 -> [hello.txt] 1:0, 4:0 -> [world.txt] 1:0",
+		  "_mappings": "1:0 -> [hello.txt] 1:0, :5, :6 -> [world.txt] 1:0, :12
+		2:0 -> [hello.txt] 1:0
+		4:0 -> [world.txt] 1:0",
 		  "file": "x",
 		  "mappings": "AAAA,K,CCAA,M;ADAA;;ACAA",
 		  "names": Array [],

@@ -62,29 +62,48 @@ describe("Snapshots", () => {
 			for (const key of Object.keys(current)) {
 				const sourceFn = current[key];
 				it(`${key} should return correct .source()`, () => {
-					expect(sourceFn().source()).toMatchSnapshot();
+					const source = sourceFn();
+					const result = source.source();
+					expect(source.source()).toEqual(result);
+					expect(result).toMatchSnapshot();
 				});
 				it(`${key} should return correct .size()`, () => {
-					expect(sourceFn().size()).toMatchSnapshot();
-				});
-				it(`${key} should return correct .map()`, () => {
-					expect(withReadableMappings(sourceFn().map())).toMatchSnapshot();
-				});
-				it(`${key} should return correct .map({ columns: false })`, () => {
-					expect(
-						withReadableMappings(sourceFn().map({ columns: false }))
-					).toMatchSnapshot();
-				});
-				it(`${key} should return correct .sourceAndMap()`, () => {
-					const result = sourceFn().sourceAndMap();
-					result.map = withReadableMappings(result.map);
+					const source = sourceFn();
+					const result = source.size();
+					expect(source.size()).toEqual(result);
 					expect(result).toMatchSnapshot();
 				});
-				it(`${key} should return correct .sourceAndMap({ columns: false })`, () => {
-					const result = sourceFn().sourceAndMap({ columns: false });
-					result.map = withReadableMappings(result.map);
-					expect(result).toMatchSnapshot();
-				});
+				for (const options of [undefined, { columns: false }]) {
+					const o = JSON.stringify(options);
+					it(`${key} should return correct .map(${o})`, () => {
+						const source = sourceFn();
+						const result = withReadableMappings(source.map(options));
+						expect(withReadableMappings(source.map(options))).toEqual(result);
+						if (result) {
+							expect(result.mappings).toMatch(
+								/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/
+							);
+						}
+						expect(result).toMatchSnapshot();
+					});
+					it(`${key} should return correct .sourceAndMap(${o})`, () => {
+						const source = sourceFn();
+						const result = source.sourceAndMap(options);
+						result.map = withReadableMappings(result.map);
+						if (result.map) {
+							expect(result.map.mappings).toMatch(
+								/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/
+							);
+						}
+						expect(result.map).toEqual(
+							withReadableMappings(sourceFn().map(options))
+						);
+						const result2 = source.sourceAndMap(options);
+						result2.map = withReadableMappings(result.map);
+						expect(result).toEqual(result2);
+						expect(result).toMatchSnapshot();
+					});
+				}
 			}
 		}
 	};

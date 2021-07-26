@@ -58,7 +58,9 @@ describe("SourceMapSource", () => {
 
 		expect(withReadableMappings(sourceMapSource1.map())).toMatchInlineSnapshot(`
 		Object {
-		  "_mappings": "1:12 -> [hello-world.txt] 1:0 (Hello), 1:17, 1:18 -> [hello-world.txt] 1:6 (World), 2:0 -> [hello-world.txt] 2:0, 2:7, 2:13 -> [hello-world.txt] 2:10, 3:0 -> [text] 3:11, 3:7, 3:8 -> [text] 3:17",
+		  "_mappings": "1:12 -> [hello-world.txt] 1:0 (Hello), :17, :18 -> [hello-world.txt] 1:6 (World)
+		2:0 -> [hello-world.txt] 2:0, :7, :13 -> [hello-world.txt] 2:10
+		3:0 -> [text] 3:11, :7, :8 -> [text] 3:17",
 		  "file": "x",
 		  "mappings": "YCAAA,K,CAAMC;AACN,O,MAAU;ADCC,O,CAAM",
 		  "names": Array [
@@ -83,7 +85,8 @@ describe("SourceMapSource", () => {
 
 		expect(withReadableMappings(sourceMapSource2.map())).toMatchInlineSnapshot(`
 		Object {
-		  "_mappings": "1:12 -> [hello-world.txt] 1:0 (Hello), 1:17, 1:18 -> [hello-world.txt] 1:6 (World), 2:0 -> [hello-world.txt] 2:0, 2:7, 2:13 -> [hello-world.txt] 2:10",
+		  "_mappings": "1:12 -> [hello-world.txt] 1:0 (Hello), :17, :18 -> [hello-world.txt] 1:6 (World)
+		2:0 -> [hello-world.txt] 2:0, :7, :13 -> [hello-world.txt] 2:10",
 		  "file": "x",
 		  "mappings": "YAAAA,K,CAAMC;AACN,O,MAAU",
 		  "names": Array [

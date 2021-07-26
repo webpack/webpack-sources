@@ -1,7 +1,9 @@
 const readMappings = require("../lib/helpers/readMappings");
 
 exports.readableMappings = (mappings, sources, names) => {
-	const output = [];
+	let str = "";
+	let currentLine = 1;
+	let first = true;
 	readMappings(
 		mappings,
 		(
@@ -12,7 +14,14 @@ exports.readableMappings = (mappings, sources, names) => {
 			originalColumn,
 			nameIndex
 		) => {
-			let str = `${generatedLine}:${generatedColumn}`;
+			if (first) {
+				first = false;
+				str += `${generatedLine}`;
+			} else {
+				str += currentLine === generatedLine ? ", " : `\n${generatedLine}`;
+			}
+			currentLine = generatedLine;
+			str += `:${generatedColumn}`;
 			if (sourceIndex >= 0) {
 				str += ` -> [${
 					sources ? sources[sourceIndex] : sourceIndex
@@ -21,10 +30,9 @@ exports.readableMappings = (mappings, sources, names) => {
 			if (nameIndex >= 0) {
 				str += ` (${names ? names[nameIndex] : nameIndex})`;
 			}
-			output.push(str);
 		}
 	);
-	return output.join(", ");
+	return str;
 };
 
 exports.withReadableMappings = sourceMap => {
