@@ -28,13 +28,16 @@ exports.readableMappings = (mappings, sources, names) => {
 };
 
 exports.withReadableMappings = sourceMap => {
-	return Object.assign({}, sourceMap, {
-		_mappings: exports.readableMappings(
-			sourceMap.mappings,
-			sourceMap.sources,
-			sourceMap.names
-		)
-	});
+	return (
+		sourceMap &&
+		Object.assign({}, sourceMap, {
+			_mappings: exports.readableMappings(
+				sourceMap.mappings,
+				sourceMap.sources,
+				sourceMap.names
+			)
+		})
+	);
 };
 
 describe("helpers", () => {
