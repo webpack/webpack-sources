@@ -1,3 +1,4 @@
+jest.mock("../lib/helpers/createMappingsSerializer");
 const ReplaceSource = require("../").ReplaceSource;
 const OriginalSource = require("../").OriginalSource;
 const SourceMapSource = require("../").SourceMapSource;

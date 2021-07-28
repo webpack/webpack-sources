@@ -25,7 +25,8 @@
     "sourcemap-validator": "^2.1.0"
   },
   "files": [
-    "lib/"
+    "lib/",
+    "!lib/helpers/__mocks__"
   ],
   "engines": {
     "node": ">=10.13.0"

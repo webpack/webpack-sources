@@ -1,3 +1,4 @@
+jest.mock("../lib/helpers/createMappingsSerializer");
 const CompatSource = require("../").CompatSource;
 const RawSource = require("../").RawSource;
 
