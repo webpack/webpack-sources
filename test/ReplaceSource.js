@@ -1,5 +1,6 @@
 const ReplaceSource = require("../").ReplaceSource;
 const OriginalSource = require("../").OriginalSource;
+const SourceMapSource = require("../").SourceMapSource;
 const validate = require("sourcemap-validator");
 const { withReadableMappings } = require("./helpers");
 
@@ -202,5 +203,76 @@ describe("ReplaceSource", () => {
 		source.replace(20, 24, "w", "world");
 		const resultMap = source.sourceAndMap();
 		validate(resultMap.source, JSON.stringify(resultMap.map));
+	});
+
+	it("should allow replacements at the start", () => {
+		const map = {
+			version: 3,
+			sources: ["abc"],
+			names: ["StaticPage", "data", "foo"],
+			mappings:
+				";;AAAA,eAAe,SAASA,UAAT,OAA8B;AAAA,MAARC,IAAQ,QAARA,IAAQ;AAC3C,sBAAO;AAAA,cAAMA,IAAI,CAACC;AAAX,IAAP;AACD",
+			/*
+				3:0 -> [abc] 1:0, :15 -> [abc] 1:15, :24 -> [abc] 1:24 (StaticPage), :34 -> [abc] 1:15, :41 -> [abc] 1:45
+				4:0 -> [abc] 1:45, :6 -> [abc] 1:37 (data), :10 -> [abc] 1:45, :18 -> [abc] 1:37 (data), :22 -> [abc] 1:45
+				5:0 -> [abc] 2:2, :22 -> [abc] 2:9
+				6:0 -> [abc] 2:9, :14 -> [abc] 2:15 (data), :18 -> [abc] 2:19, :19 -> [abc] 2:20 (foo)
+				7:0 -> [abc] 2:9, :4 -> [abc] 2:2
+				8:0 -> [abc] 3:1
+			*/
+			sourcesContent: [
+				`export default function StaticPage({ data }) {
+  return <div>{data.foo}</div>
+}
+`
+			],
+			file: "x"
+		};
+		const code = `import { jsx as _jsx } from "react/jsx-runtime";
+export var __N_SSG = true;
+export default function StaticPage(_ref) {
+	var data = _ref.data;
+	return /*#__PURE__*/_jsx("div", {
+		children: data.foo
+	});
+}`;
+		const source = new ReplaceSource(
+			new SourceMapSource(code, "source.js", map)
+		);
+		source.replace(0, 47, "");
+		source.replace(49, 55, "");
+		source.replace(76, 90, "");
+		source.replace(
+			165,
+			168,
+			"(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)"
+		);
+		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "3:0 -> [abc] 1:15, :9 -> [abc] 1:24 (StaticPage), :19 -> [abc] 1:15, :26 -> [abc] 1:45
+		4:0 -> [abc] 1:45, :6 -> [abc] 1:37 (data), :10 -> [abc] 1:45, :18 -> [abc] 1:37 (data), :22 -> [abc] 1:45
+		5:0 -> [abc] 2:2, :22 -> [abc] 2:9
+		6:0 -> [abc] 2:9, :14 -> [abc] 2:15 (data), :18 -> [abc] 2:19, :19 -> [abc] 2:20 (foo)
+		7:0 -> [abc] 2:9, :4 -> [abc] 2:2
+		8:0 -> [abc] 3:1",
+		  "file": "x",
+		  "mappings": ";;AAAe,SAASA,UAAT,OAA8B;AAAA,MAARC,IAAQ,QAARA,IAAQ;AAC3C,sBAAO;AAAA,cAAMA,IAAI,CAACC;AAAX,IAAP;AACD",
+		  "names": Array [
+		    "StaticPage",
+		    "data",
+		    "foo",
+		  ],
+		  "sources": Array [
+		    "abc",
+		  ],
+		  "sourcesContent": Array [
+		    "export default function StaticPage({ data }) {
+		  return <div>{data.foo}</div>
+		}
+		",
+		  ],
+		  "version": 3,
+		}
+	`);
 	});
 });
