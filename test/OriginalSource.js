@@ -1,3 +1,4 @@
+jest.mock("../lib/helpers/createMappingsSerializer");
 const OriginalSource = require("../").OriginalSource;
 
 describe("OriginalSource", () => {

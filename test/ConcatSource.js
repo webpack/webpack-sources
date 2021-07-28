@@ -1,3 +1,4 @@
+jest.mock("../lib/helpers/createMappingsSerializer");
 const ConcatSource = require("../").ConcatSource;
 const RawSource = require("../").RawSource;
 const OriginalSource = require("../").OriginalSource;

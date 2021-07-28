@@ -1,9 +1,13 @@
 const readMappings = require("../lib/helpers/readMappings");
 
-exports.readableMappings = (mappings, sources, names) => {
+exports.readableMappings = (mappings, sources, names, generatedCode) => {
 	let str = "";
+	let bufferedGeneratedAnnotation = "";
 	let currentLine = 1;
+	let currentColumn = 0;
+	let currentColumnMapped = false;
 	let first = true;
+	const lines = generatedCode ? generatedCode.split("\n") : [];
 	readMappings(
 		mappings,
 		(
@@ -18,7 +22,26 @@ exports.readableMappings = (mappings, sources, names) => {
 				first = false;
 				str += `${generatedLine}`;
 			} else {
-				str += currentLine === generatedLine ? ", " : `\n${generatedLine}`;
+				if (currentLine === generatedLine) {
+					str += ", ";
+				} else {
+					str += "\n";
+					if (generatedLine - 1 < lines.length) {
+						const line = lines[currentLine - 1];
+						if (line.length > currentColumn) {
+							bufferedGeneratedAnnotation += currentColumnMapped
+								? "^" + "_".repeat(line.length - currentColumn - 1)
+								: ".".repeat(line.length - currentColumn);
+						}
+						if (bufferedGeneratedAnnotation) {
+							str += `${line}\n${bufferedGeneratedAnnotation}\n`;
+							bufferedGeneratedAnnotation = "";
+						}
+					}
+					str += `${generatedLine}`;
+					currentColumn = 0;
+					currentColumnMapped = false;
+				}
 			}
 			currentLine = generatedLine;
 			str += `:${generatedColumn}`;
@@ -30,19 +53,27 @@ exports.readableMappings = (mappings, sources, names) => {
 			if (nameIndex >= 0) {
 				str += ` (${names ? names[nameIndex] : nameIndex})`;
 			}
+			if (generatedLine - 1 < lines.length && generatedColumn > currentColumn) {
+				bufferedGeneratedAnnotation += currentColumnMapped
+					? "^" + "_".repeat(generatedColumn - currentColumn - 1)
+					: ".".repeat(generatedColumn - currentColumn);
+			}
+			currentColumn = generatedColumn;
+			currentColumnMapped = sourceIndex >= 0;
 		}
 	);
 	return str;
 };
 
-exports.withReadableMappings = sourceMap => {
+exports.withReadableMappings = (sourceMap, generatedCode) => {
 	return (
 		sourceMap &&
 		Object.assign({}, sourceMap, {
 			_mappings: exports.readableMappings(
 				sourceMap.mappings,
 				sourceMap.sources,
-				sourceMap.names
+				sourceMap.names,
+				generatedCode
 			)
 		})
 	);

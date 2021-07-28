@@ -1,3 +1,4 @@
+jest.mock("../lib/helpers/createMappingsSerializer");
 const crypto = require("crypto");
 const CachedSource = require("../").CachedSource;
 const OriginalSource = require("../").OriginalSource;
