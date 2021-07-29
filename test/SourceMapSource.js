@@ -2,6 +2,7 @@ jest.mock("../lib/helpers/createMappingsSerializer");
 const SourceMapSource = require("../").SourceMapSource;
 const OriginalSource = require("../").OriginalSource;
 const ConcatSource = require("../").ConcatSource;
+const ReplaceSource = require("../").ReplaceSource;
 const SourceNode = require("source-map").SourceNode;
 const { withReadableMappings } = require("./helpers");
 
@@ -120,5 +121,90 @@ describe("SourceMapSource", () => {
 		clone.updateHash(hash2);
 		const digest2 = hash2.digest("hex");
 		expect(digest2).toEqual(digest);
+	});
+
+	it("should handle null sources and sourcesContent", () => {
+		const a = new SourceMapSource("hello world\n", "hello.txt", {
+			version: 3,
+			sources: [null],
+			sourcesContent: [null],
+			mappings: "AAAA"
+		});
+		const b = new SourceMapSource("hello world\n", "hello.txt", {
+			version: 3,
+			sources: [],
+			sourcesContent: [],
+			mappings: "AAAA"
+		});
+		const c = new SourceMapSource("hello world\n", "hello.txt", {
+			version: 3,
+			sources: ["hello-source.txt"],
+			sourcesContent: ["hello world\n"],
+			mappings: "AAAA"
+		});
+		const sources = [a, b, c].map(s => {
+			const r = new ReplaceSource(s);
+			r.replace(1, 4, "i");
+			return r;
+		});
+		const source = new ConcatSource(...sources);
+
+		expect(source.source()).toMatchInlineSnapshot(`
+		"hi world
+		hi world
+		hi world
+		"
+	`);
+		expect(withReadableMappings(source.map(), source.source()))
+			.toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:0 -> [null] 1:0
+		hi world
+		^_______
+		3:0 -> [hello-source.txt] 1:0, :1 -> [hello-source.txt] 1:1, :2 -> [hello-source.txt] 1:5
+		hi world
+		^^^_____
+		",
+		  "file": "x",
+		  "mappings": "AAAA;;ACAA,CAAC,CAAI",
+		  "names": Array [],
+		  "sources": Array [
+		    null,
+		    "hello-source.txt",
+		  ],
+		  "sourcesContent": Array [
+		    null,
+		    "hello world
+		",
+		  ],
+		  "version": 3,
+		}
+	`);
+		expect(
+			withReadableMappings(source.map({ columns: false }), source.source())
+		).toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:0 -> [null] 1:0
+		hi world
+		^_______
+		3:0 -> [hello-source.txt] 1:0
+		hi world
+		^_______
+		",
+		  "file": "x",
+		  "mappings": "AAAA;;ACAA",
+		  "names": Array [],
+		  "sources": Array [
+		    null,
+		    "hello-source.txt",
+		  ],
+		  "sourcesContent": Array [
+		    null,
+		    "hello world
+		",
+		  ],
+		  "version": 3,
+		}
+	`);
 	});
 });

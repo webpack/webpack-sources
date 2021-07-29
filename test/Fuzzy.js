@@ -117,11 +117,11 @@ describe("Fuzzy", () => {
 						throw e;
 					}
 				};
-				const rawSourceFn = list.reduce(
+				const rawSourceFn = list.reduceRight(
 					(result, fn) => () => fn(result()),
 					() => new RawSource(input)
 				);
-				const originalSourceFn = list.reduce(
+				const originalSourceFn = list.reduceRight(
 					(result, fn) => () => fn(result()),
 					() => new OriginalSource(input, "lorem.txt")
 				);
