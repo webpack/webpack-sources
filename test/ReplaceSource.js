@@ -276,4 +276,38 @@ export default function StaticPage(_ref) {
 		}
 	`);
 	});
+
+	it("should not generate invalid mappings when replacing mulitple lines of code", () => {
+		const source = new ReplaceSource(
+			new OriginalSource(
+				["if (a;b;c) {", "  a; b; c;", "}"].join("\n"),
+				"document.js"
+			),
+			"_document.js"
+		);
+		source.replace(4, 8, "false");
+		source.replace(12, 23, "");
+		expect(source.source()).toMatchInlineSnapshot(`"if (false) {}"`);
+		expect(withReadableMappings(source.map(), source.source()))
+			.toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:0 -> [document.js] 1:0, :4 -> [document.js] 1:4, :9 -> [document.js] 1:9, :12 -> [document.js] 3:0
+		if (false) {}
+		^___^____^__^
+		",
+		  "file": "x",
+		  "mappings": "AAAA,IAAI,KAAK,GAET",
+		  "names": Array [],
+		  "sources": Array [
+		    "document.js",
+		  ],
+		  "sourcesContent": Array [
+		    "if (a;b;c) {
+		  a; b; c;
+		}",
+		  ],
+		  "version": 3,
+		}
+	`);
+	});
 });
