@@ -26,7 +26,7 @@ exports.readableMappings = (mappings, sources, names, generatedCode) => {
 					str += ", ";
 				} else {
 					str += "\n";
-					if (generatedLine - 1 < lines.length) {
+					if (currentLine - 1 < lines.length) {
 						const line = lines[currentLine - 1];
 						if (line.length > currentColumn) {
 							bufferedGeneratedAnnotation += currentColumnMapped
@@ -54,14 +54,31 @@ exports.readableMappings = (mappings, sources, names, generatedCode) => {
 				str += ` (${names ? names[nameIndex] : nameIndex})`;
 			}
 			if (generatedLine - 1 < lines.length && generatedColumn > currentColumn) {
-				bufferedGeneratedAnnotation += currentColumnMapped
-					? "^" + "_".repeat(generatedColumn - currentColumn - 1)
-					: ".".repeat(generatedColumn - currentColumn);
+				const line = lines[generatedLine - 1];
+				if (generatedColumn > line.length) {
+					bufferedGeneratedAnnotation += "^... OUT OF LINE";
+				} else {
+					bufferedGeneratedAnnotation += currentColumnMapped
+						? "^" + "_".repeat(generatedColumn - currentColumn - 1)
+						: ".".repeat(generatedColumn - currentColumn);
+				}
 			}
 			currentColumn = generatedColumn;
 			currentColumnMapped = sourceIndex >= 0;
 		}
 	);
+	if (currentLine - 1 < lines.length) {
+		const line = lines[currentLine - 1];
+		if (line.length > currentColumn) {
+			bufferedGeneratedAnnotation += currentColumnMapped
+				? "^" + "_".repeat(line.length - currentColumn - 1)
+				: ".".repeat(line.length - currentColumn);
+		}
+		if (bufferedGeneratedAnnotation) {
+			str += `\n${line}\n${bufferedGeneratedAnnotation}\n`;
+			bufferedGeneratedAnnotation = "";
+		}
+	}
 	return str;
 };
 
