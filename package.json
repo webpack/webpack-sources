@@ -6,7 +6,7 @@
   "scripts": {
     "pretest": "yarn lint",
     "test": "jest",
-    "lint": "eslint --cache lib test",
+    "lint": "eslint --cache lib test/*.js",
     "cover": "jest --coverage"
   },
   "devDependencies": {

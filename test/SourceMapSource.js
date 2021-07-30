@@ -4,6 +4,8 @@ const OriginalSource = require("../").OriginalSource;
 const ConcatSource = require("../").ConcatSource;
 const ReplaceSource = require("../").ReplaceSource;
 const SourceNode = require("source-map").SourceNode;
+const fs = require("fs");
+const path = require("path");
 const { withReadableMappings } = require("./helpers");
 
 describe("SourceMapSource", () => {
@@ -206,5 +208,22 @@ describe("SourceMapSource", () => {
 		  "version": 3,
 		}
 	`);
+	});
+
+	it("should handle es6-promise correctly", () => {
+		const code = fs.readFileSync(
+			path.resolve(__dirname, "fixtures", "es6-promise.js"),
+			"utf-8"
+		);
+		const map = JSON.parse(
+			fs.readFileSync(
+				path.resolve(__dirname, "fixtures", "es6-promise.map"),
+				"utf-8"
+			)
+		);
+		const inner = new SourceMapSource(code, "es6-promise.js", map);
+		const source = new ConcatSource(inner, inner);
+		expect(source.source()).toBe(code + code);
+		expect(source.sourceAndMap().source).toBe(code + code);
 	});
 });
