@@ -2,8 +2,12 @@ jest.mock("../lib/helpers/createMappingsSerializer");
 const SourceMapSource = require("../").SourceMapSource;
 const OriginalSource = require("../").OriginalSource;
 const ConcatSource = require("../").ConcatSource;
+const PrefixSource = require("../").PrefixSource;
 const ReplaceSource = require("../").ReplaceSource;
+const CachedSource = require("../").CachedSource;
 const SourceNode = require("source-map").SourceNode;
+const fs = require("fs");
+const path = require("path");
 const { withReadableMappings } = require("./helpers");
 
 describe("SourceMapSource", () => {
@@ -206,5 +210,130 @@ describe("SourceMapSource", () => {
 		  "version": 3,
 		}
 	`);
+	});
+
+	it("should handle es6-promise correctly", () => {
+		const code = fs.readFileSync(
+			path.resolve(__dirname, "fixtures", "es6-promise.js"),
+			"utf-8"
+		);
+		const map = JSON.parse(
+			fs.readFileSync(
+				path.resolve(__dirname, "fixtures", "es6-promise.map"),
+				"utf-8"
+			)
+		);
+		const inner = new SourceMapSource(code, "es6-promise.js", map);
+		const source = new ConcatSource(inner, inner);
+		expect(source.source()).toBe(code + code);
+		expect(source.sourceAndMap().source).toBe(code + code);
+	});
+
+	it("should not emit zero sizes mappings when ending with empty mapping", () => {
+		const a = new SourceMapSource("hello\n", "a", {
+			version: 3,
+			mappings: "AAAA;AACA",
+			sources: ["hello1"]
+		});
+		const b = new SourceMapSource("hi", "b", {
+			version: 3,
+			mappings: "AAAA,EAAE",
+			sources: ["hello2"]
+		});
+		const b2 = new SourceMapSource("hi", "b", {
+			version: 3,
+			mappings: "AAAA,EAAE",
+			sources: ["hello3"]
+		});
+		const c = new SourceMapSource("", "c", {
+			version: 3,
+			mappings: "AAAA",
+			sources: ["hello4"]
+		});
+		const source = new ConcatSource(
+			a,
+			a,
+			b,
+			b,
+			b2,
+			b,
+			c,
+			c,
+			b2,
+			a,
+			b2,
+			c,
+			a,
+			b
+		);
+		source.sourceAndMap();
+		expect(withReadableMappings(source.map(), source.source()))
+			.toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:0 -> [hello1] 1:0
+		hello
+		^____
+		2:0 -> [hello1] 1:0
+		hello
+		^____
+		3:0 -> [hello2] 1:0, :4 -> [hello3] 1:0, :6 -> [hello2] 1:0, :8 -> [hello3] 1:0, :10 -> [hello1] 1:0
+		hihihihihihello
+		^___^_^_^_^____
+		4:0 -> [hello3] 1:0, :2 -> [hello1] 1:0
+		hihello
+		^_^____
+		5:0 -> [hello2] 1:0
+		hi
+		^_
+		",
+		  "file": "x",
+		  "mappings": "AAAA;AAAA;ACAA,ICAA,EDAA,ECAA,EFAA;AEAA,EFAA;ACAA",
+		  "names": Array [],
+		  "sources": Array [
+		    "hello1",
+		    "hello2",
+		    "hello3",
+		  ],
+		  "sourcesContent": undefined,
+		  "version": 3,
+		}
+	`);
+		source.sourceAndMap({ columns: true });
+		source.map({ columns: true });
+		const withReplacements = s => {
+			const r = new ReplaceSource(s);
+			r.insert(0, "");
+			return r;
+		};
+		withReplacements(source).sourceAndMap();
+		withReplacements(source).map();
+		withReplacements(source).sourceAndMap({ columns: false });
+		withReplacements(source).map({ columns: false });
+		const withPrefix = s => new PrefixSource("test", s);
+		withPrefix(source).sourceAndMap();
+		withPrefix(source).map();
+		withPrefix(source).sourceAndMap({ columns: false });
+		withPrefix(source).map({ columns: false });
+		const testCached = (s, fn) => {
+			const c = new CachedSource(s);
+			const o = fn(s);
+			const a = fn(c);
+			expect(a).toEqual(o);
+			const b = fn(c);
+			expect(b).toEqual(o);
+			return b;
+		};
+		testCached(source, s => s.sourceAndMap());
+		testCached(source, s => s.map());
+		testCached(source, s => s.sourceAndMap({ columns: false }));
+		testCached(source, s => s.map({ columns: false }));
+		testCached(withPrefix(source), s => s.sourceAndMap());
+		testCached(withPrefix(source), s => s.map());
+		testCached(withPrefix(source), s => s.sourceAndMap({ columns: false }));
+		testCached(withPrefix(source), s => s.map({ columns: false }));
+		testCached(source, s => withPrefix(s).sourceAndMap());
+		testCached(source, s => withPrefix(s).map());
+		testCached(source, s => withPrefix(s).sourceAndMap({ columns: false }));
+		testCached(source, s => withPrefix(s).map({ columns: false }));
 	});
 });
