@@ -68,22 +68,22 @@ describe("SourceMapSource", () => {
 		2:0 -> [hello-world.txt] 2:0, :7, :13 -> [hello-world.txt] 2:10
 		3:0 -> [text] 3:11, :7, :8 -> [text] 3:17",
 		  "file": "x",
-		  "mappings": "YCAAA,K,CAAMC;AACN,O,MAAU;ADCC,O,CAAM",
+		  "mappings": "YAAAA,K,CAAMC;AACN,O,MAAU;ACCC,O,CAAM",
 		  "names": Array [
 		    "Hello",
 		    "World",
 		  ],
 		  "sources": Array [
-		    "text",
 		    "hello-world.txt",
+		    "text",
 		  ],
 		  "sourcesContent": Array [
 		    "Hello World
 		is a test string
-		Translate: Other text",
+		",
 		    "Hello World
 		is a test string
-		",
+		Translate: Other text",
 		  ],
 		  "version": 3,
 		}
