@@ -83,17 +83,26 @@ exports.readableMappings = (mappings, sources, names, generatedCode) => {
 };
 
 exports.withReadableMappings = (sourceMap, generatedCode) => {
-	return (
-		sourceMap &&
-		Object.assign({}, sourceMap, {
+	if (!sourceMap) return sourceMap;
+	if (sourceMap.map) {
+		return Object.assign({}, sourceMap, {
+			_mappings: exports.readableMappings(
+				sourceMap.map.mappings,
+				sourceMap.map.sources,
+				sourceMap.map.names,
+				sourceMap.source
+			)
+		});
+	} else {
+		return Object.assign({}, sourceMap, {
 			_mappings: exports.readableMappings(
 				sourceMap.mappings,
 				sourceMap.sources,
 				sourceMap.names,
 				generatedCode
 			)
-		})
-	);
+		});
+	}
 };
 
 describe("helpers", () => {
