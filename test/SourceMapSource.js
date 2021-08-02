@@ -5,6 +5,7 @@ const ConcatSource = require("../").ConcatSource;
 const PrefixSource = require("../").PrefixSource;
 const ReplaceSource = require("../").ReplaceSource;
 const CachedSource = require("../").CachedSource;
+const createMappingsSerializer = require("../lib/helpers/createMappingsSerializer");
 const SourceNode = require("source-map").SourceNode;
 const fs = require("fs");
 const path = require("path");
@@ -366,6 +367,62 @@ describe("SourceMapSource", () => {
 		  ],
 		  "sourcesContent": undefined,
 		  "version": 3,
+		}
+	`);
+	});
+
+	it("should map generated lines to the inner source", () => {
+		const m = createMappingsSerializer();
+		const m2 = createMappingsSerializer();
+		const source = new SourceMapSource(
+			"Message: H W!",
+			"HELLO_WORLD.txt",
+			{
+				version: 3,
+				sources: ["messages.txt", "HELLO_WORLD.txt"],
+				mappings: [
+					m(1, 0, 0, 1, 0, 0),
+					m(1, 9, 1, 1, 0, 1),
+					m(1, 11, 1, 1, 6, 2),
+					m(1, 12, -1, -1, -1, -1)
+				].join(""),
+				names: ["Message", "hello", "world"]
+			},
+			"HELLO WORLD",
+			{
+				version: 3,
+				sources: ["hello world.txt"],
+				mappings: [m2(1, 0, 0, 1, 0, 0), m2(1, 6, -1, -1, -1, -1)].join(""),
+				sourcesContent: ["hello world"]
+			},
+			false
+		);
+		expect(withReadableMappings(source.sourceAndMap())).toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:0 -> [messages.txt] 1:0 (Message), :9 -> [hello world.txt] 1:0, :11 -> [HELLO_WORLD.txt] 1:6 (world), :12
+		Message: H W!
+		^________^_^.
+		",
+		  "map": Object {
+		    "file": "x",
+		    "mappings": "AAAAA,SCAA,ECAMC,C",
+		    "names": Array [
+		      "Message",
+		      "world",
+		    ],
+		    "sources": Array [
+		      "messages.txt",
+		      "hello world.txt",
+		      "HELLO_WORLD.txt",
+		    ],
+		    "sourcesContent": Array [
+		      null,
+		      "hello world",
+		      "HELLO WORLD",
+		    ],
+		    "version": 3,
+		  },
+		  "source": "Message: H W!",
 		}
 	`);
 	});
