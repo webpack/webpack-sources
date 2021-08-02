@@ -336,4 +336,37 @@ describe("SourceMapSource", () => {
 		testCached(source, s => withPrefix(s).sourceAndMap({ columns: false }));
 		testCached(source, s => withPrefix(s).map({ columns: false }));
 	});
+
+	it("should not crash without original source when mapping names", () => {
+		const source = new SourceMapSource(
+			"h",
+			"hello.txt",
+			{
+				version: 3,
+				sources: ["hello.txt"],
+				mappings: "AAAAA",
+				names: ["hello"]
+			},
+			"hello",
+			{
+				version: 3,
+				sources: ["hello world.txt"],
+				mappings: "AAAA"
+			},
+			false
+		);
+		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:0 -> [hello world.txt] 1:0",
+		  "file": "x",
+		  "mappings": "AAAA",
+		  "names": Array [],
+		  "sources": Array [
+		    "hello world.txt",
+		  ],
+		  "sourcesContent": undefined,
+		  "version": 3,
+		}
+	`);
+	});
 });
