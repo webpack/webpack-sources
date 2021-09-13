@@ -194,4 +194,14 @@ describe("ConcatSource", () => {
 		}
 	`);
 	});
+
+	it("should allow to concat buffer sources", () => {
+		const source = new ConcatSource("a", new RawSource(Buffer.from("b")), "c");
+		expect(source.sourceAndMap()).toMatchInlineSnapshot(`
+		Object {
+		  "map": null,
+		  "source": "abc",
+		}
+	`);
+	});
 });
