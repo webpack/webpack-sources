@@ -1,9 +1,9 @@
 const RawSource = require("../").RawSource;
 const {
 	enableDualStringBufferCaching,
-	enableStringInterning,
-	disableDualStringBufferCaching,
-	disableStringInterning
+	enterStringInterningRange,
+	exitStringInterningRange,
+	disableDualStringBufferCaching
 } = require("../lib/helpers/stringBufferUtils");
 
 const CODE_STRING =
@@ -26,15 +26,15 @@ describe("RawSource", () => {
 		expect.assertions(3);
 	});
 
-	describe("performance optimizations are disabled", () => {
+	describe("memory optimizations are enabled", () => {
 		beforeEach(() => {
 			disableDualStringBufferCaching();
-			disableStringInterning();
+			enterStringInterningRange();
 		});
 
 		afterEach(() => {
 			enableDualStringBufferCaching();
-			enableStringInterning();
+			exitStringInterningRange();
 		});
 
 		it("should create new buffers when caching is not enabled", () => {

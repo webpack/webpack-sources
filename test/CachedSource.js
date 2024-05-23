@@ -5,6 +5,12 @@ const OriginalSource = require("../").OriginalSource;
 const RawSource = require("../").RawSource;
 const Source = require("../").Source;
 const streamChunks = require("../lib/helpers/streamChunks");
+const {
+	enableDualStringBufferCaching,
+	enterStringInterningRange,
+	exitStringInterningRange,
+	disableDualStringBufferCaching
+} = require("../lib/helpers/stringBufferUtils");
 
 class TrackedSource extends Source {
 	constructor(source) {
@@ -66,7 +72,28 @@ const getHash = source => {
 	return hash.digest("hex");
 };
 
-describe("CachedSource", () => {
+describe.each([
+	{
+		enableMemoryOptimizations: false
+	},
+	{
+		enableMemoryOptimizations: true
+	}
+])("CachedSource %s", ({ enableMemoryOptimizations }) => {
+	beforeEach(() => {
+		if (enableMemoryOptimizations) {
+			disableDualStringBufferCaching();
+			enterStringInterningRange();
+		}
+	});
+
+	afterEach(() => {
+		if (enableMemoryOptimizations) {
+			enableDualStringBufferCaching();
+			exitStringInterningRange();
+		}
+	});
+
 	it("should return the correct size for binary files", () => {
 		const source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
 		const cachedSource = new CachedSource(source);
@@ -229,7 +256,7 @@ describe("CachedSource", () => {
 			hash: 0
 		});
 	});
-	it("should use an old webpack-sources Source", () => {
+	it("should use an old webpack-sources Source with Buffer", () => {
 		const buffer = Buffer.from(new Array(256));
 		const source = new TrackedSource(new RawSource(buffer));
 		source.buffer = undefined;
@@ -248,7 +275,7 @@ describe("CachedSource", () => {
 			hash: 0
 		});
 	});
-	it("should use an old webpack-sources Source", () => {
+	it("should use an old webpack-sources Source with String", () => {
 		const string = "Hello World";
 		const source = new TrackedSource(new RawSource(string));
 		source.buffer = undefined;
@@ -258,7 +285,11 @@ describe("CachedSource", () => {
 
 		expect(Buffer.isBuffer(buffer)).toBe(true);
 		expect(buffer.toString("utf-8")).toBe(string);
-		expect(cachedSource.buffer()).toBe(buffer);
+		if (enableMemoryOptimizations) {
+			expect(cachedSource.buffer().equals(buffer)).toBe(true);
+		} else {
+			expect(cachedSource.buffer()).toBe(buffer);
+		}
 		expect(cachedSource.source()).toBe(string);
 		expect(cachedSource.source()).toBe(string);
 		expect(source.getCalls()).toEqual({

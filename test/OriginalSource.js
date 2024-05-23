@@ -1,7 +1,34 @@
 jest.mock("../lib/helpers/createMappingsSerializer");
+const {
+	enableDualStringBufferCaching,
+	enterStringInterningRange,
+	exitStringInterningRange,
+	disableDualStringBufferCaching
+} = require("../lib/helpers/stringBufferUtils");
 const OriginalSource = require("../").OriginalSource;
 
-describe("OriginalSource", () => {
+describe.each([
+	{
+		enableMemoryOptimizations: false
+	},
+	{
+		enableMemoryOptimizations: true
+	}
+])("OriginalSource %s", ({ enableMemoryOptimizations }) => {
+	beforeEach(() => {
+		if (enableMemoryOptimizations) {
+			disableDualStringBufferCaching();
+			enterStringInterningRange();
+		}
+	});
+
+	afterEach(() => {
+		if (enableMemoryOptimizations) {
+			enableDualStringBufferCaching();
+			exitStringInterningRange();
+		}
+	});
+
 	it("should handle multiline string", () => {
 		const source = new OriginalSource("Line1\n\nLine3\n", "file.js");
 		const resultText = source.source();
