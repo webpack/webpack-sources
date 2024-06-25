@@ -8,9 +8,9 @@ Object {
     } at 6:8
   } at 8:1
 } at 9:5
-10:0 -> 1:6 (, fn) {
-  :14 -> 1:6 () {
-    12:0 -> 1:6 at 1:9:2 (num) {
+10:0 -> 1:0 (, fn) {
+  :14 -> 1:1 () {
+    12:0 -> 1:2 at 1:9:2 (num) {
     } at 15:8
   } at 17:1
 } at 18:5
@@ -46,7 +46,7 @@ Object {
 } at 14:6",
   ],
   "file": "x",
-  "generatedRanges": "AKAADE,cKAC;;AGACASEK;;;Q;;C;K;AKCMDE,cKAA;;AGAACSEK;;;Q;;C;K",
+  "generatedRanges": "AKAADE,cKAC;;AGACASEK;;;Q;;C;K;AKCADE,cKAC;;AGACCSEK;;;Q;;C;K",
   "mappings": "AAOA,SAASE,EAAEA,CAAA,EAAG;EACZE,OAAO;EAPP,IAAIC,GAAG,GAAG,CAAC;EACXC,OAAO;EACPC,OAAO,CAACC,GAAG,CAAC,oBAAoB,EAAEH,GAAG,CAAC;EACtCI,MAAM;EAMNC,MAAM;AACR;AAEAR,EAAE,CAAC,CAAC,CAAC;ACNL,SAASA,EAAEA,CAAA,EAAG;EACZE,OAAO;EAPP,IAAIC,GAAG,GAAG,CAAC;EACXC,OAAO;EACPC,OAAO,CAACC,GAAG,CAAC,oBAAoB,EAAEH,GAAG,CAAC;EACtCI,MAAM;EAMNC,MAAM;AACR;AAEAR,EAAE,CAAC,CAAC,CAAC",
   "names": Array [
     "program",

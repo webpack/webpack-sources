@@ -254,7 +254,7 @@ describe("helpers", () => {
 	});
 
 	it("format generatedRanges", () => {
-		let out = readableGeneratedRanges("AA,CCA;CAACEDCCG,E;C;C", [
+		let out = readableGeneratedRanges("AA,CCA,CECCC,CECCC;CAACEDCCG,E;C;C", [
 			"123",
 			"world()",
 			"111",
@@ -263,10 +263,12 @@ describe("helpers", () => {
 		expect(out).toMatchInlineSnapshot(`
 		"1:0 () {
 		  :1 -> 0:0 () {
-		    2:1 (123, world(), 111 [1:1] 222) {
-		    } at :3
-		  } at 3:1
-		} at 4:1
+		    :2 at 1:1:1 () {
+		      :3 at 2:1:1 () {
+		        2:1 (123, world(), 111 [1:1] 222) {
+		        } at :3
+		      } at 3:1
+		    } at 4:1
 		"
 	`);
 	});
