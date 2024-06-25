@@ -10,6 +10,7 @@ const SourceNode = require("source-map").SourceNode;
 const fs = require("fs");
 const path = require("path");
 const { withReadableMappings } = require("./helpers");
+const { getMap } = require("../lib/helpers/getFromStreamChunks");
 
 describe("SourceMapSource", () => {
 	it("map correctly", () => {
@@ -448,5 +449,142 @@ describe("SourceMapSource", () => {
 
 		const buffer2 = sourceMapSource.buffer();
 		expect(buffer2).toBe(buffer1);
+	});
+
+	it("should handle originalScopes and generatedRanges", () => {
+		const inputMap = {
+			file: "x",
+			version: 3,
+			sources: ["hello.txt"],
+			sourcesContent: ["hello world"],
+			names: ["hello"],
+			mappings: "AAAA",
+			originalScopes: ["AAAAAA,CC"],
+			generatedRanges: "ACAA,C"
+		};
+		const sourceMapSource = new SourceMapSource(
+			"hello world\n",
+			"name",
+			inputMap
+		);
+		let map = getMap(sourceMapSource, { columns: true });
+		expect(map).toEqual(inputMap);
+		expect(withReadableMappings(map)).toMatchInlineSnapshot(`
+		Object {
+		  "_generatedRanges": "1:0 -> 0:0 () {
+		} at :1
+		",
+		  "_mappings": "1:0 -> [hello.txt] 1:0",
+		  "_originalScopes": Array [
+		    "1:0 0 (hello, hello) until 2:1",
+		  ],
+		  "file": "x",
+		  "generatedRanges": "ACAA,C",
+		  "mappings": "AAAA",
+		  "names": Array [
+		    "hello",
+		  ],
+		  "originalScopes": Array [
+		    "AAAAAA,CC",
+		  ],
+		  "sources": Array [
+		    "hello.txt",
+		  ],
+		  "sourcesContent": Array [
+		    "hello world",
+		  ],
+		  "version": 3,
+		}
+	`);
+		const source = new ConcatSource(sourceMapSource, sourceMapSource);
+		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
+		Object {
+		  "_generatedRanges": "1:0 -> 0:0 () {
+		} at :1
+		2:0 -> 0:2 () {
+		} at :1
+		",
+		  "_mappings": "1:0 -> [hello.txt] 1:0
+		2:0 -> [hello.txt] 1:0",
+		  "_originalScopes": Array [
+		    "1:0 0 (hello, hello) until 2:1
+		1:0 0 (hello, hello) until 2:1",
+		  ],
+		  "file": "x",
+		  "generatedRanges": "ACAA,C;ACAE,C",
+		  "mappings": "AAAA;AAAA",
+		  "names": Array [
+		    "hello",
+		  ],
+		  "originalScopes": Array [
+		    "AAAAAA,CC,DAAAAA,CC",
+		  ],
+		  "sources": Array [
+		    "hello.txt",
+		  ],
+		  "sourcesContent": Array [
+		    "hello world",
+		  ],
+		  "version": 3,
+		}
+	`);
+	});
+
+	it("should handle a more complex map", () => {
+		let inputMap = {
+			version: 3,
+			file: "x",
+			names: [
+				"program",
+				"inlineMe",
+				"fn",
+				"function",
+				"beforeF",
+				"num",
+				"beforeI",
+				"console",
+				"log",
+				"afterI",
+				"afterF"
+			],
+			sources: ["unknown"],
+			sourcesContent: [
+				'function inlineMe() {\n  let num = 3;\n  beforeI;\n  console.log("Hello from inside!", num);\n  afterI;\n}\n\nfunction fn() {\n  beforeF;\n  inlineMe();\n  afterF;\n}\n\nfn(1);'
+			],
+			mappings:
+				"AAOA,SAASE,EAAEA,CAAA,EAAG;EACZE,OAAO;EAPP,IAAIC,GAAG,GAAG,CAAC;EACXC,OAAO;EACPC,OAAO,CAACC,GAAG,CAAC,oBAAoB,EAAEH,GAAG,CAAC;EACtCI,MAAM;EAMNC,MAAM;AACR;AAEAR,EAAE,CAAC,CAAC,CAAC",
+			originalScopes: ["AAAACE,OcGCE,PoBGCCK,KC,MC,EM"],
+			generatedRanges: "AKAADE,cKAC;;AGACASEK;;;Q;;C;K"
+		};
+		let generatedCode = `function fn() {
+  beforeF;
+  let num = 3;
+  beforeI;
+  console.log("Hello from inside!", num);
+  afterI;
+  afterF;
+}
+fn(1);\n`;
+		let sourceMapSource = new SourceMapSource(
+			generatedCode,
+			"inline-test.js",
+			inputMap
+		);
+		let map = getMap(sourceMapSource, { columns: true });
+		expect(map).toEqual(inputMap);
+
+		inputMap = Object.assign({}, inputMap, {
+			sources: ["unknown2"]
+		});
+		generatedCode = generatedCode.replace(/fn/g, "fl");
+		let sourceMapSource2 = new SourceMapSource(
+			generatedCode,
+			"inline-test2.js",
+			inputMap
+		);
+		const source = new ConcatSource(sourceMapSource, sourceMapSource2);
+		console.log(JSON.stringify(source.map(), null, 2));
+		console.log(source.source());
+		expect(withReadableMappings(source.map())).toMatchSnapshot();
 	});
 });
