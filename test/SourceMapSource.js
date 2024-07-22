@@ -10,8 +10,35 @@ const SourceNode = require("source-map").SourceNode;
 const fs = require("fs");
 const path = require("path");
 const { withReadableMappings } = require("./helpers");
+const {
+	enableDualStringBufferCaching,
+	enterStringInterningRange,
+	exitStringInterningRange,
+	disableDualStringBufferCaching
+} = require("../lib/helpers/stringBufferUtils");
 
-describe("SourceMapSource", () => {
+describe.each([
+	{
+		enableMemoryOptimizations: false
+	},
+	{
+		enableMemoryOptimizations: true
+	}
+])("SourceMapSource %s", ({ enableMemoryOptimizations }) => {
+	beforeEach(() => {
+		if (enableMemoryOptimizations) {
+			disableDualStringBufferCaching();
+			enterStringInterningRange();
+		}
+	});
+
+	afterEach(() => {
+		if (enableMemoryOptimizations) {
+			enableDualStringBufferCaching();
+			exitStringInterningRange();
+		}
+	});
+
 	it("map correctly", () => {
 		const innerSourceCode =
 			["Hello World", "is a test string"].join("\n") + "\n";
@@ -434,7 +461,12 @@ describe("SourceMapSource", () => {
 		expect(buffer1.length).toBe(6);
 
 		const buffer2 = sourceMapSource.buffer();
-		expect(buffer2).toBe(buffer1);
+		if (enableMemoryOptimizations) {
+			// When memory optimizations are enabled, the buffer is not cached.
+			expect(buffer1.equals(buffer2)).toBe(true);
+		} else {
+			expect(buffer2).toBe(buffer1);
+		}
 	});
 
 	it("provides buffer when backed by buffer", () => {
