@@ -1,4 +1,9 @@
-jest.mock("../lib/helpers/createMappingsSerializer");
+"use strict";
+
+/** @typedef {import("../lib/Source").RawSourceMap} RawSourceMap */
+
+jest.mock("./__mocks__/createMappingsSerializer");
+
 const ReplaceSource = require("../").ReplaceSource;
 const OriginalSource = require("../").OriginalSource;
 const SourceMapSource = require("../").SourceMapSource;
@@ -45,6 +50,7 @@ describe("ReplaceSource", () => {
 			columns: false
 		});
 
+		// @ts-expect-error for tests
 		expect(originalSource).toEqual(source._source);
 		expect(originalText).toBe(
 			"Hello World!\n{}\nLine 3\nLine 4\nLine 5\nLast\nLine"
@@ -53,12 +59,12 @@ describe("ReplaceSource", () => {
 		expect(resultText).toBe("Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map.file).toEqual(resultMap.map.file);
-		expect(resultListMap.map.version).toEqual(resultMap.map.version);
-		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
-		expect(resultListMap.map.sourcesContent).toEqual(
-			resultMap.map.sourcesContent
-		);
+		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
+		const map = /** @type {RawSourceMap} */ (resultMap.map);
+		expect(listMap.file).toEqual(map.file);
+		expect(listMap.version).toEqual(map.version);
+		expect(listMap.sources).toEqual(map.sources);
+		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
 		expect(withReadableMappings(resultMap.map)._mappings)
 			.toMatchInlineSnapshot(`
 		"1:0 -> [file.txt] 1:0, :1 -> [file.txt] 1:1, :3 -> [file.txt] 1:5, :8 -> [file.txt] 1:7, :12 -> [file.txt] 1:8
@@ -95,14 +101,14 @@ describe("ReplaceSource", () => {
 		expect(resultText).toBe("Message: Hey Ad!");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map.file).toEqual(resultMap.map.file);
-		expect(resultListMap.map.version).toEqual(resultMap.map.version);
-		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
-		expect(resultListMap.map.sourcesContent).toEqual(
-			resultMap.map.sourcesContent
-		);
-		expect(resultMap.map.mappings).toBe("AAAA,WAAE,GACE");
-		expect(resultListMap.map.mappings).toBe("AAAA");
+		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
+		const map = /** @type {RawSourceMap} */ (resultMap.map);
+		expect(listMap.file).toEqual(map.file);
+		expect(listMap.version).toEqual(map.version);
+		expect(listMap.sources).toEqual(map.sources);
+		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
+		expect(map.mappings).toBe("AAAA,WAAE,GACE");
+		expect(listMap.mappings).toBe("AAAA");
 	});
 
 	it("should prepend items correctly", () => {
@@ -120,14 +126,14 @@ describe("ReplaceSource", () => {
 		expect(resultText).toBe("Line -1\nLine 0\nLine 1");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map.file).toEqual(resultMap.map.file);
-		expect(resultListMap.map.version).toEqual(resultMap.map.version);
-		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
-		expect(resultListMap.map.sourcesContent).toEqual(
-			resultMap.map.sourcesContent
-		);
-		expect(resultMap.map.mappings).toBe("AAAA;AAAA;AAAA");
-		expect(resultListMap.map.mappings).toBe("AAAA;AAAA;AAAA");
+		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
+		const map = /** @type {RawSourceMap} */ (resultMap.map);
+		expect(listMap.file).toEqual(map.file);
+		expect(listMap.version).toEqual(map.version);
+		expect(listMap.sources).toEqual(map.sources);
+		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
+		expect(map.mappings).toBe("AAAA;AAAA;AAAA");
+		expect(listMap.mappings).toBe("AAAA;AAAA;AAAA");
 	});
 
 	it("should prepend items with replace at start correctly", () => {
@@ -147,14 +153,14 @@ describe("ReplaceSource", () => {
 		expect(resultText).toBe("Line 0\nHello\nLine 2");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map.file).toEqual(resultMap.map.file);
-		expect(resultListMap.map.version).toEqual(resultMap.map.version);
-		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
-		expect(resultListMap.map.sourcesContent).toEqual(
-			resultMap.map.sourcesContent
-		);
-		expect(resultMap.map.mappings).toBe("AAAA;AAAA,KAAM;AACN");
-		expect(resultListMap.map.mappings).toBe("AAAA;AAAA;AACA");
+		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
+		const map = /** @type {RawSourceMap} */ (resultMap.map);
+		expect(listMap.file).toEqual(map.file);
+		expect(listMap.version).toEqual(map.version);
+		expect(listMap.sources).toEqual(map.sources);
+		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
+		expect(map.mappings).toBe("AAAA;AAAA,KAAM;AACN");
+		expect(listMap.mappings).toBe("AAAA;AAAA;AACA");
 	});
 
 	it("should append items correctly", () => {
@@ -174,14 +180,14 @@ describe("ReplaceSource", () => {
 		expect(resultText).toBe("Line 1\nLine 2\n");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map.file).toEqual(resultMap.map.file);
-		expect(resultListMap.map.version).toEqual(resultMap.map.version);
-		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
-		expect(resultListMap.map.sourcesContent).toEqual(
-			resultMap.map.sourcesContent
-		);
-		expect(resultMap.map.mappings).toBe("AAAA");
-		expect(resultListMap.map.mappings).toBe("AAAA");
+		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
+		const map = /** @type {RawSourceMap} */ (resultMap.map);
+		expect(listMap.file).toEqual(map.file);
+		expect(listMap.version).toEqual(map.version);
+		expect(listMap.sources).toEqual(map.sources);
+		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
+		expect(map.mappings).toBe("AAAA");
+		expect(listMap.mappings).toBe("AAAA");
 	});
 
 	it("should produce correct source map", () => {

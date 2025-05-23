@@ -1,3 +1,5 @@
+"use strict";
+
 describe("package-entry", () => {
 	it("should not throw SyntaxError", () => {
 		require("../");

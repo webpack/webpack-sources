@@ -1,4 +1,9 @@
-jest.mock("../lib/helpers/createMappingsSerializer");
+"use strict";
+
+/** @typedef {import("../lib/Source").RawSourceMap} RawSourceMap */
+
+jest.mock("./__mocks__/createMappingsSerializer");
+
 const {
 	enableDualStringBufferCaching,
 	enterStringInterningRange,
@@ -42,16 +47,16 @@ describe.each([
 		expect(resultText).toBe("Line1\n\nLine3\n");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map.file).toEqual(resultMap.map.file);
-		expect(resultListMap.map.version).toEqual(resultMap.map.version);
-		expect(resultMap.map.sources).toEqual(["file.js"]);
-		expect(resultListMap.map.sources).toEqual(resultMap.map.sources);
-		expect(resultMap.map.sourcesContent).toEqual(["Line1\n\nLine3\n"]);
-		expect(resultListMap.map.sourcesContent).toEqual(
-			resultMap.map.sourcesContent
-		);
-		expect(resultMap.map.mappings).toBe("AAAA;;AAEA");
-		expect(resultListMap.map.mappings).toBe("AAAA;AACA;AACA");
+		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
+		const map = /** @type {RawSourceMap} */ (resultMap.map);
+		expect(listMap.file).toEqual(map.file);
+		expect(listMap.version).toEqual(map.version);
+		expect(map.sources).toEqual(["file.js"]);
+		expect(listMap.sources).toEqual(map.sources);
+		expect(map.sourcesContent).toEqual(["Line1\n\nLine3\n"]);
+		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
+		expect(map.mappings).toBe("AAAA;;AAEA");
+		expect(listMap.mappings).toBe("AAAA;AACA;AACA");
 	});
 
 	it("should handle empty string", () => {
@@ -73,9 +78,13 @@ describe.each([
 
 	it("should omit mappings for columns with node", () => {
 		const source = new OriginalSource("Line1\n\nLine3\n", "file.js");
-		const resultMap = source.map({
-			columns: false
-		});
+		const resultMap =
+			/** @type {RawSourceMap} */
+			(
+				source.map({
+					columns: false
+				})
+			);
 
 		expect(resultMap.mappings).toBe("AAAA;AACA;AACA");
 	});
@@ -100,11 +109,18 @@ describe.each([
 		const source = new OriginalSource(input, "file.js");
 		expect(source.sourceAndMap().source).toBe(input);
 		expect(source.sourceAndMap({ columns: false }).source).toBe(input);
-		expect(source.map().mappings).toBe(expected);
-		expect(source.sourceAndMap().map.mappings).toBe(expected);
-		expect(source.map({ columns: false }).mappings).toBe(expected2);
-		expect(source.sourceAndMap({ columns: false }).map.mappings).toBe(
-			expected2
-		);
+		expect(/** @type {RawSourceMap} */ (source.map()).mappings).toBe(expected);
+		expect(
+			/** @type {RawSourceMap} */
+			(source.sourceAndMap().map).mappings
+		).toBe(expected);
+		expect(
+			/** @type {RawSourceMap} */
+			(source.map({ columns: false })).mappings
+		).toBe(expected2);
+		expect(
+			/** @type {RawSourceMap} */
+			(source.sourceAndMap({ columns: false }).map).mappings
+		).toBe(expected2);
 	});
 });

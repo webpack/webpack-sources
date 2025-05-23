@@ -1,3 +1,5 @@
+"use strict";
+
 const RawSource = require("../").RawSource;
 const {
 	enableDualStringBufferCaching,
@@ -20,6 +22,7 @@ describe("RawSource", () => {
 
 	it("stream chunks works correctly", () => {
 		const source = new RawSource(CODE_STRING, true);
+		// @ts-expect-error for tests
 		source.streamChunks(null, (line, lineNum) => {
 			expect(line).toEqual(`console.log('test${"2".repeat(lineNum - 1)}');\n`);
 		});
@@ -55,6 +58,7 @@ describe("RawSource", () => {
 
 		it("stream chunks works correctly", () => {
 			const source = new RawSource(CODE_STRING, true);
+			// @ts-expect-error for tests
 			source.streamChunks(null, (line, lineNum) => {
 				expect(line).toEqual(
 					`console.log('test${"2".repeat(lineNum - 1)}');\n`

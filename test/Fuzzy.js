@@ -1,4 +1,7 @@
-jest.mock("../lib/helpers/createMappingsSerializer");
+"use strict";
+
+jest.mock("./__mocks__/createMappingsSerializer");
+
 const { SourceMapConsumer } = require("source-map");
 const CachedSource = require("../lib/CachedSource");
 const CompatSource = require("../lib/CompatSource");
@@ -10,6 +13,8 @@ const ReplaceSource = require("../lib/ReplaceSource");
 const SourceMapSource = require("../lib/SourceMapSource");
 const { withReadableMappings } = require("./helpers");
 const validate = require("sourcemap-validator");
+
+/** @typedef {import("../lib/Source").RawSourceMap} RawSourceMap */
 
 const LOREM =
 	"Lorem { ipsum dolor sit; } amet; { consetetur sadipscing elitr }; { sed { diam; nonumy; } eirmod { tempor invidunt ut labore et } dolore magna aliquyam erat; {{{ sed } diam } voluptua}; At vero eos et accusam et justo duo dolores et ea rebum; Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. { Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore } et dolore magna aliquyam erat, { sed diam voluptua }. { At } { vero } { eos } { et } accusam { et } justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
@@ -30,28 +35,28 @@ const makeReplacements = (replaceSource, input) => {
 	}
 };
 
-const getReplacementNames = input => {
+const getReplacementNames = (input) => {
 	return input.match(/\w{6,}/g);
 };
 
 describe("Fuzzy", () => {
 	const variants = {
-		CompatSource: source => new CompatSource(source),
-		PrefixSource: source => new PrefixSource("lorem: ", source),
-		ReplaceSource: source => {
+		CompatSource: (source) => new CompatSource(source),
+		PrefixSource: (source) => new PrefixSource("lorem: ", source),
+		ReplaceSource: (source) => {
 			const replaceSource = new ReplaceSource(source, "replaced.txt");
 			const input = source.source();
 			makeReplacements(replaceSource, input);
 			return replaceSource;
 		},
-		ConcatSource: source => new ConcatSource(source, source, source),
-		SourceMapSource: source => {
+		ConcatSource: (source) => new ConcatSource(source, source, source),
+		SourceMapSource: (source) => {
 			const map = source.map();
 			return map
 				? new SourceMapSource(source.source(), "source-map.txt", source.map())
 				: new OriginalSource(source.source(), "lorem.txt");
 		},
-		SourceMapSourceInner: source => {
+		SourceMapSourceInner: (source) => {
 			const code = source.source();
 			const replaceSource = new ReplaceSource(
 				new OriginalSource(code, "lorem.txt"),
@@ -66,7 +71,8 @@ describe("Fuzzy", () => {
 				? new SourceMapSource(
 						sourceAndMap.source,
 						"lorem.txt",
-						sourceAndMap.map,
+						/** @type {RawSourceMap} */
+						(sourceAndMap.map),
 						code,
 						map,
 						true
@@ -74,10 +80,11 @@ describe("Fuzzy", () => {
 				: new SourceMapSource(
 						sourceAndMap.source,
 						"lorem.txt",
-						sourceAndMap.map
+						/** @type {RawSourceMap} */
+						(sourceAndMap.map)
 				  );
 		},
-		CachedSource: source => new CachedSource(source)
+		CachedSource: (source) => new CachedSource(source)
 	};
 
 	const createTests = (remaining, snapshot, list, offset) => {
@@ -97,7 +104,7 @@ describe("Fuzzy", () => {
 							expect(validNames).toContain(name);
 						}
 						validate(code, JSON.stringify(sourceMap));
-						await SourceMapConsumer.with(sourceMap, null, consumer => {
+						await SourceMapConsumer.with(sourceMap, null, (consumer) => {
 							if (offset === 0) {
 								// TODO test for other offset too
 								expect(
@@ -111,7 +118,7 @@ describe("Fuzzy", () => {
 							}
 						});
 					} catch (e) {
-						e.message += `\n${JSON.stringify(sourceMap, 0, 2)}\n${
+						e.message += `\n${JSON.stringify(sourceMap, undefined, 2)}\n${
 							withReadableMappings(sourceMap, code)._mappings
 						}`;
 						throw e;

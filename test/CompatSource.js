@@ -1,4 +1,7 @@
-jest.mock("../lib/helpers/createMappingsSerializer");
+"use strict";
+
+jest.mock("./__mocks__/createMappingsSerializer");
+
 const CompatSource = require("../").CompatSource;
 const RawSource = require("../").RawSource;
 
@@ -23,8 +26,10 @@ describe("CompatSource", () => {
 		const sourceAndMap = source.sourceAndMap();
 		expect(sourceAndMap).toHaveProperty("source", CONTENT);
 		expect(sourceAndMap).toHaveProperty("map", null);
+		/** @type {(string | Buffer)[]} */
 		const calledWith = [];
 		source.updateHash({
+			// @ts-expect-error for tests
 			update(value) {
 				calledWith.push(value);
 			}
