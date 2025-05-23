@@ -1,4 +1,7 @@
-jest.mock("../lib/helpers/createMappingsSerializer");
+"use strict";
+
+jest.mock("./__mocks__/createMappingsSerializer");
+
 const ConcatSource = require("../").ConcatSource;
 const RawSource = require("../").RawSource;
 const OriginalSource = require("../").OriginalSource;

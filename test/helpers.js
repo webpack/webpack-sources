@@ -1,3 +1,5 @@
+"use strict";
+
 const readMappings = require("../lib/helpers/readMappings");
 
 exports.readableMappings = (mappings, sources, names, generatedCode) => {

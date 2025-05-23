@@ -1,4 +1,7 @@
-jest.mock("../lib/helpers/createMappingsSerializer");
+"use strict";
+
+jest.mock("./__mocks__/createMappingsSerializer");
+
 const crypto = require("crypto");
 const CachedSource = require("../").CachedSource;
 const OriginalSource = require("../").OriginalSource;
@@ -66,7 +69,7 @@ class TrackedSource extends Source {
 	}
 }
 
-const getHash = source => {
+const getHash = (source) => {
 	const hash = crypto.createHash("md5");
 	source.updateHash(hash);
 	return hash.digest("hex");
@@ -259,6 +262,7 @@ describe.each([
 	it("should use an old webpack-sources Source with Buffer", () => {
 		const buffer = Buffer.from(new Array(256));
 		const source = new TrackedSource(new RawSource(buffer));
+		// @ts-expect-error for tests
 		source.buffer = undefined;
 		const cachedSource = new CachedSource(source);
 
@@ -278,6 +282,7 @@ describe.each([
 	it("should use an old webpack-sources Source with String", () => {
 		const string = "Hello World";
 		const source = new TrackedSource(new RawSource(string));
+		// @ts-expect-error for tests
 		source.buffer = undefined;
 		const cachedSource = new CachedSource(source);
 
@@ -307,6 +312,7 @@ describe.each([
 		const source = new TrackedSource(original);
 		const cachedSource = new CachedSource(source);
 
+		// @ts-expect-error for tests
 		source.streamChunks = (...args) => streamChunks(original, ...args);
 
 		// fill up cache
@@ -331,6 +337,7 @@ describe.each([
 		source.size();
 		getHash(source);
 
+		// @ts-expect-error for tests
 		const clone = new CachedSource(null, source.getCachedData());
 
 		expect(clone.source()).toEqual(source.source());
@@ -340,6 +347,7 @@ describe.each([
 		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
 		expect(getHash(clone)).toBe(getHash(original));
 
+		// @ts-expect-error for tests
 		const clone2 = new CachedSource(null, clone.getCachedData());
 
 		expect(clone2.source()).toEqual(source.source());
@@ -360,6 +368,7 @@ describe.each([
 		source.size();
 		getHash(source);
 
+		// @ts-expect-error for tests
 		const clone = new CachedSource(null, source.getCachedData());
 
 		expect(clone.source()).toEqual(source.source());

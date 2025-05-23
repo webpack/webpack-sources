@@ -1,4 +1,9 @@
-jest.mock("../lib/helpers/createMappingsSerializer");
+"use strict";
+
+/** @typedef {import("../lib/Source").RawSourceMap} RawSourceMap */
+
+jest.mock("./__mocks__/createMappingsSerializer");
+
 const SourceMapSource = require("../").SourceMapSource;
 const OriginalSource = require("../").OriginalSource;
 const ConcatSource = require("../").ConcatSource;
@@ -71,14 +76,16 @@ describe.each([
 			"text",
 			sourceR.map.toJSON(),
 			innerSource.source(),
-			innerSource.map()
+			/** @type {RawSourceMap} */
+			(innerSource.map())
 		);
 		const sourceMapSource2 = new SourceMapSource(
 			sourceR.code,
 			"text",
 			sourceR.map.toJSON(),
 			innerSource.source(),
-			innerSource.map(),
+			/** @type {RawSourceMap} */
+			(innerSource.map()),
 			true
 		);
 
@@ -158,7 +165,9 @@ describe.each([
 	it("should handle null sources and sourcesContent", () => {
 		const a = new SourceMapSource("hello world\n", "hello.txt", {
 			version: 3,
+			// @ts-expect-error for tests
 			sources: [null],
+			// @ts-expect-error for tests
 			sourcesContent: [null],
 			mappings: "AAAA"
 		});
@@ -166,15 +175,19 @@ describe.each([
 			version: 3,
 			sources: [],
 			sourcesContent: [],
-			mappings: "AAAA"
+			mappings: "AAAA",
+			names: [],
+			file: ""
 		});
 		const c = new SourceMapSource("hello world\n", "hello.txt", {
 			version: 3,
 			sources: ["hello-source.txt"],
 			sourcesContent: ["hello world\n"],
-			mappings: "AAAA"
+			mappings: "AAAA",
+			names: [],
+			file: ""
 		});
-		const sources = [a, b, c].map(s => {
+		const sources = [a, b, c].map((s) => {
 			const r = new ReplaceSource(s);
 			r.replace(1, 4, "i");
 			return r;
@@ -261,22 +274,30 @@ describe.each([
 		const a = new SourceMapSource("hello\n", "a", {
 			version: 3,
 			mappings: "AAAA;AACA",
-			sources: ["hello1"]
+			sources: ["hello1"],
+			names: [],
+			file: ""
 		});
 		const b = new SourceMapSource("hi", "b", {
 			version: 3,
 			mappings: "AAAA,EAAE",
-			sources: ["hello2"]
+			sources: ["hello2"],
+			names: [],
+			file: ""
 		});
 		const b2 = new SourceMapSource("hi", "b", {
 			version: 3,
 			mappings: "AAAA,EAAE",
-			sources: ["hello3"]
+			sources: ["hello3"],
+			names: [],
+			file: ""
 		});
 		const c = new SourceMapSource("", "c", {
 			version: 3,
 			mappings: "AAAA",
-			sources: ["hello4"]
+			sources: ["hello4"],
+			names: [],
+			file: ""
 		});
 		const source = new ConcatSource(
 			a,
@@ -328,7 +349,7 @@ describe.each([
 	`);
 		source.sourceAndMap({ columns: true });
 		source.map({ columns: true });
-		const withReplacements = s => {
+		const withReplacements = (s) => {
 			const r = new ReplaceSource(s);
 			r.insert(0, "");
 			return r;
@@ -337,7 +358,7 @@ describe.each([
 		withReplacements(source).map();
 		withReplacements(source).sourceAndMap({ columns: false });
 		withReplacements(source).map({ columns: false });
-		const withPrefix = s => new PrefixSource("test", s);
+		const withPrefix = (s) => new PrefixSource("test", s);
 		withPrefix(source).sourceAndMap();
 		withPrefix(source).map();
 		withPrefix(source).sourceAndMap({ columns: false });
@@ -351,18 +372,18 @@ describe.each([
 			expect(b).toEqual(o);
 			return b;
 		};
-		testCached(source, s => s.sourceAndMap());
-		testCached(source, s => s.map());
-		testCached(source, s => s.sourceAndMap({ columns: false }));
-		testCached(source, s => s.map({ columns: false }));
-		testCached(withPrefix(source), s => s.sourceAndMap());
-		testCached(withPrefix(source), s => s.map());
-		testCached(withPrefix(source), s => s.sourceAndMap({ columns: false }));
-		testCached(withPrefix(source), s => s.map({ columns: false }));
-		testCached(source, s => withPrefix(s).sourceAndMap());
-		testCached(source, s => withPrefix(s).map());
-		testCached(source, s => withPrefix(s).sourceAndMap({ columns: false }));
-		testCached(source, s => withPrefix(s).map({ columns: false }));
+		testCached(source, (s) => s.sourceAndMap());
+		testCached(source, (s) => s.map());
+		testCached(source, (s) => s.sourceAndMap({ columns: false }));
+		testCached(source, (s) => s.map({ columns: false }));
+		testCached(withPrefix(source), (s) => s.sourceAndMap());
+		testCached(withPrefix(source), (s) => s.map());
+		testCached(withPrefix(source), (s) => s.sourceAndMap({ columns: false }));
+		testCached(withPrefix(source), (s) => s.map({ columns: false }));
+		testCached(source, (s) => withPrefix(s).sourceAndMap());
+		testCached(source, (s) => withPrefix(s).map());
+		testCached(source, (s) => withPrefix(s).sourceAndMap({ columns: false }));
+		testCached(source, (s) => withPrefix(s).map({ columns: false }));
 	});
 
 	it("should not crash without original source when mapping names", () => {
@@ -373,13 +394,16 @@ describe.each([
 				version: 3,
 				sources: ["hello.txt"],
 				mappings: "AAAAA",
-				names: ["hello"]
+				names: ["hello"],
+				file: ""
 			},
 			"hello",
 			{
 				version: 3,
 				sources: ["hello world.txt"],
-				mappings: "AAAA"
+				mappings: "AAAA",
+				names: [],
+				file: ""
 			},
 			false
 		);
@@ -413,14 +437,17 @@ describe.each([
 					m(1, 11, 1, 1, 6, 2),
 					m(1, 12, -1, -1, -1, -1)
 				].join(""),
-				names: ["Message", "hello", "world"]
+				names: ["Message", "hello", "world"],
+				file: ""
 			},
 			"HELLO WORLD",
 			{
 				version: 3,
 				sources: ["hello world.txt"],
 				mappings: [m2(1, 0, 0, 1, 0, 0), m2(1, 6, -1, -1, -1, -1)].join(""),
-				sourcesContent: ["hello world"]
+				sourcesContent: ["hello world"],
+				names: [],
+				file: ""
 			},
 			false
 		);

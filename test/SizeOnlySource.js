@@ -1,3 +1,5 @@
+"use strict";
+
 const SizeOnlySource = require("../").SizeOnlySource;
 
 describe("SizeOnlySource", () => {
@@ -10,7 +12,8 @@ describe("SizeOnlySource", () => {
 		it("should throw on " + method + "()", () => {
 			const source = new SizeOnlySource(42);
 			expect(() => {
-				source[method]();
+				// @ts-expect-error for tests
+				source[/** @type {keyof SizeOnlySource} */ (method)]();
 			}).toThrowError(/not available/);
 		});
 	}
