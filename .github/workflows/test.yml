@@ -52,7 +52,7 @@ jobs:
           architecture: ${{ steps.calculate_architecture.outputs.result }}
           cache: "yarn"
       - run: yarn --frozen-lockfile --ignore-engines
-        if: matrix.node-version == '10.x' && matrix.node-version == '12.x' && matrix.node-version == '14.x'
+        if: matrix.node-version == '10.x' || matrix.node-version == '12.x' || matrix.node-version == '14.x'
       - run: yarn --frozen-lockfile
         if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x'
       - run: yarn cover
