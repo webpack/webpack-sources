@@ -34,7 +34,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           architecture: ${{ steps.calculate_architecture.outputs.result }}
           cache: "yarn"
+      - run: yarn --frozen-lockfile --ignore-engines
+        if: matrix.node-version == '10.x' && matrix.node-version == '12.x' && matrix.node-version == '14.x'
       - run: yarn --frozen-lockfile
+        if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x'
       - uses: actions/cache@v4
         with:
           path: .eslintcache
