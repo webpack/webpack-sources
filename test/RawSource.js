@@ -55,6 +55,28 @@ describe("RawSource", () => {
 		});
 	}
 
+	for (const hash of [
+		["md5", [crypto.createHash("md5"), crypto.createHash("md5")]],
+		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],
+		[
+			"xxhash64",
+			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())]
+		]
+	]) {
+		it(`should have the same hash (${hash[0]}) for string and Buffer (convert to string)`, () => {
+			const sourceString = new RawSource("Text", true);
+			const sourceBuffer = new RawSource(Buffer.from("Text"), true);
+
+			expect(sourceString.source()).toBe("Text");
+			expect(sourceString.buffer()).toEqual(sourceBuffer.buffer());
+
+			sourceString.updateHash(hash[1][0]);
+			sourceBuffer.updateHash(hash[1][1]);
+
+			expect(hash[1][0].digest("hex")).toBe(hash[1][1].digest("hex"));
+		});
+	}
+
 	describe("memory optimizations are enabled", () => {
 		beforeEach(() => {
 			disableDualStringBufferCaching();
