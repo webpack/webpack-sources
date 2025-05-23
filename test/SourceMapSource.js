@@ -21,6 +21,10 @@ const {
 	exitStringInterningRange,
 	disableDualStringBufferCaching
 } = require("../lib/helpers/stringBufferUtils");
+const crypto = require("crypto");
+const BatchedHash = require("webpack/lib/util/hash/BatchedHash");
+const createMd4 = require("webpack/lib/util/hash/md4");
+const createXXHash64 = require("webpack/lib/util/hash/xxhash64");
 
 describe.each([
 	{
@@ -508,4 +512,46 @@ describe.each([
 		const buffer2 = sourceMapSource.buffer();
 		expect(buffer2).toBe(buffer1);
 	});
+
+	for (const hash of [
+		["md5", [crypto.createHash("md5"), crypto.createHash("md5")]],
+		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],
+		[
+			"xxhash64",
+			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())]
+		]
+	]) {
+		it(`should have the same hash (${hash[0]}) for string and Buffer`, () => {
+			const sourceString = new SourceMapSource("hello world\n", "hello.txt", {
+				version: 3,
+				sources: ["hello-source.txt"],
+				sourcesContent: ["hello world\n"],
+				mappings: "AAAA",
+				names: [],
+				file: ""
+			});
+			const sourceBuffer = new SourceMapSource(
+				Buffer.from("hello world\n"),
+				"hello.txt",
+				Buffer.from(
+					JSON.stringify({
+						version: 3,
+						sources: ["hello-source.txt"],
+						sourcesContent: ["hello world\n"],
+						mappings: "AAAA",
+						names: [],
+						file: ""
+					})
+				)
+			);
+
+			expect(sourceString.source()).toBe("hello world\n");
+			expect(sourceString.buffer()).toEqual(sourceBuffer.buffer());
+
+			sourceString.updateHash(hash[1][0]);
+			sourceBuffer.updateHash(hash[1][1]);
+
+			expect(hash[1][0].digest("hex")).toBe(hash[1][1].digest("hex"));
+		});
+	}
 });
