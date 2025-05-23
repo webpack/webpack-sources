@@ -35,7 +35,8 @@
     "source-map": "^0.7.3",
     "sourcemap-validator": "^2.1.0",
     "tooling": "webpack/tooling#v1.23.9",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "webpack": "^5.99.9"
   },
   "files": [
     "lib/"
