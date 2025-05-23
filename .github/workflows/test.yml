@@ -9,6 +9,23 @@ on:
       - main
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "yarn"
+      - run: yarn --frozen-lockfile
+      - name: Cache eslint result
+        uses: actions/cache@v4
+        with:
+          path: .eslintcache
+          key: lint-eslint-${{ runner.os }}-node-${{ hashFiles('**/yarn.lock', '**/.eslintrc.js') }}
+          restore-keys: lint-eslint-
+      - run: yarn lint
   test:
     strategy:
       fail-fast: false
@@ -38,12 +55,6 @@ jobs:
         if: matrix.node-version == '10.x' && matrix.node-version == '12.x' && matrix.node-version == '14.x'
       - run: yarn --frozen-lockfile
         if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x'
-      - uses: actions/cache@v4
-        with:
-          path: .eslintcache
-          key: lint-${{ env.GITHUB_SHA }}
-          restore-keys: lint-
-      - run: yarn lint
       - run: yarn cover
       - uses: codecov/codecov-action@v5
         with:
