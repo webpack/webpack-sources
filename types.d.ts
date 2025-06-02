@@ -84,8 +84,8 @@ declare interface GeneratedSourceInfo {
 	generatedColumn?: number;
 	source?: string;
 }
-declare interface Hash {
-	update: (data: string | Buffer, inputEncoding?: string) => Hash;
+declare interface HashLike {
+	update: (data: string | Buffer, inputEncoding?: string) => HashLike;
 	digest: (encoding?: string) => string | Buffer;
 }
 declare interface MapOptions {
@@ -215,7 +215,7 @@ declare class Source {
 	size(): number;
 	map(options?: MapOptions): null | RawSourceMap;
 	sourceAndMap(options?: MapOptions): SourceAndMap;
-	updateHash(hash: Hash): void;
+	updateHash(hash: HashLike): void;
 }
 declare interface SourceAndMap {
 	source: SourceValue;
@@ -227,7 +227,7 @@ declare interface SourceLike {
 	size?: () => number;
 	map?: (options?: MapOptions) => null | RawSourceMap;
 	sourceAndMap?: (options?: MapOptions) => SourceAndMap;
-	updateHash?: (hash: Hash) => void;
+	updateHash?: (hash: HashLike) => void;
 }
 declare class SourceMapSource extends Source {
 	constructor(
@@ -312,7 +312,7 @@ declare namespace exports {
 		SourceLike,
 		ConcatSourceChild,
 		Replacement,
-		Hash,
+		HashLike,
 		MapOptions,
 		RawSourceMap,
 		SourceAndMap,
