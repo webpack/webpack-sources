@@ -167,6 +167,8 @@ declare interface RawSourceMap {
 	sourcesContent?: string[];
 	mappings: string;
 	file: string;
+	debugId: string;
+	ignoreList: number[];
 }
 declare class ReplaceSource extends Source {
 	constructor(source: Source, name?: string);
