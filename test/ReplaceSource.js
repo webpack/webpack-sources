@@ -283,7 +283,7 @@ export default function StaticPage(_ref) {
 	`);
 	});
 
-	it("should not generate invalid mappings when replacing mulitple lines of code", () => {
+	it("should not generate invalid mappings when replacing multiple lines of code", () => {
 		const source = new ReplaceSource(
 			new OriginalSource(
 				["if (a;b;c) {", "  a; b; c;", "}"].join("\n"),
