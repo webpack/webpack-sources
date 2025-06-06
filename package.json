@@ -66,15 +66,5 @@
   "bugs": {
     "url": "https://github.com/webpack/webpack-sources/issues"
   },
-  "homepage": "https://github.com/webpack/webpack-sources#readme",
-  "jest": {
-    "forceExit": true,
-    "testMatch": [
-      "<rootDir>/test/*.js"
-    ],
-    "transformIgnorePatterns": [
-      "<rootDir>"
-    ],
-    "testEnvironment": "node"
-  }
+  "homepage": "https://github.com/webpack/webpack-sources#readme"
 }
