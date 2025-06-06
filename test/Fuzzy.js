@@ -35,11 +35,9 @@ const makeReplacements = (replaceSource, input) => {
 	}
 };
 
-const getReplacementNames = (input) => {
-	return input.match(/\w{6,}/g);
-};
+const getReplacementNames = (input) => input.match(/\w{6,}/g);
 
-describe("Fuzzy", () => {
+describe("fuzzy", () => {
 	const variants = {
 		CompatSource: (source) => new CompatSource(source),
 		PrefixSource: (source) => new PrefixSource("lorem: ", source),
@@ -76,13 +74,13 @@ describe("Fuzzy", () => {
 						code,
 						map,
 						true
-				  )
+					)
 				: new SourceMapSource(
 						sourceAndMap.source,
 						"lorem.txt",
 						/** @type {RawSourceMap} */
 						(sourceAndMap.map)
-				  );
+					);
 		},
 		CachedSource: (source) => new CachedSource(source)
 	};
@@ -117,11 +115,11 @@ describe("Fuzzy", () => {
 								});
 							}
 						});
-					} catch (e) {
-						e.message += `\n${JSON.stringify(sourceMap, undefined, 2)}\n${
+					} catch (err) {
+						err.message += `\n${JSON.stringify(sourceMap, undefined, 2)}\n${
 							withReadableMappings(sourceMap, code)._mappings
 						}`;
-						throw e;
+						throw err;
 					}
 				};
 				const rawSourceFn = list.reduceRight(
@@ -147,6 +145,7 @@ describe("Fuzzy", () => {
 									expect(result).toMatchSnapshot();
 								}
 							});
+
 							it(`${inputSourceName} ${inputName} should return correct .size()`, () => {
 								const source = sourceFn();
 								const result = source.size();
@@ -156,6 +155,7 @@ describe("Fuzzy", () => {
 								}
 							});
 						}
+
 						it(`${inputSourceName} ${inputName} should return correct .map(${o})`, async () => {
 							const source = sourceFn();
 							const result = withReadableMappings(source.map(options));
@@ -171,6 +171,7 @@ describe("Fuzzy", () => {
 								expect(result).toMatchSnapshot();
 							}
 						});
+
 						it(`${inputSourceName} ${inputName} should return correct .sourceAndMap(${o})`, async () => {
 							const source = sourceFn();
 							const result = source.sourceAndMap(options);
@@ -192,9 +193,11 @@ describe("Fuzzy", () => {
 							}
 						});
 					}
+
 					it(`${inputName} RawSource and OriginalSource should return equal .source(${o})`, () => {
 						expect(originalSourceFn().source()).toEqual(rawSourceFn().source());
 					});
+
 					it(`${inputName} RawSource and OriginalSource should return equal .sourceAndMap(${o}).source`, () => {
 						expect(originalSourceFn().sourceAndMap(options).source).toEqual(
 							rawSourceFn().sourceAndMap(options).source
@@ -205,19 +208,32 @@ describe("Fuzzy", () => {
 		} else {
 			for (const key of Object.keys(variants)) {
 				const fn = variants[key];
+
 				describe(key, () => {
 					createTests(
 						remaining - 1,
 						snapshot,
-						list.concat(fn),
+						[...list, fn],
 						offset + (key === "PrefixSource" ? 7 : 0)
 					);
 				});
 			}
 		}
 	};
-	describe("single source", () => createTests(1, true, [], 0));
-	describe("2 sources", () => createTests(2, true, [], 0));
-	describe("3 sources", () => createTests(3, false, [], 0));
-	describe("4 sources", () => createTests(4, false, [], 0));
+
+	describe("single source", () => {
+		createTests(1, true, [], 0);
+	});
+
+	describe("2 sources", () => {
+		createTests(2, true, [], 0);
+	});
+
+	describe("3 sources", () => {
+		createTests(3, false, [], 0);
+	});
+
+	describe("4 sources", () => {
+		createTests(4, false, [], 0);
+	});
 });

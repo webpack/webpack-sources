@@ -2,12 +2,12 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
-const PrefixSource = require("../").PrefixSource;
-const OriginalSource = require("../").OriginalSource;
-const ConcatSource = require("../").ConcatSource;
+const { PrefixSource } = require("../");
+const { OriginalSource } = require("../");
+const { ConcatSource } = require("../");
 const { withReadableMappings } = require("./helpers");
 
-describe("PrefixSource", () => {
+describe("prefixSource", () => {
 	it("should prefix a source", () => {
 		const source = new PrefixSource(
 			"\t",

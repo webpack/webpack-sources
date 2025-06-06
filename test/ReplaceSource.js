@@ -4,15 +4,19 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
-const ReplaceSource = require("../").ReplaceSource;
-const OriginalSource = require("../").OriginalSource;
-const SourceMapSource = require("../").SourceMapSource;
+const { ReplaceSource } = require("../");
+const { OriginalSource } = require("../");
+const { SourceMapSource } = require("../");
 const validate = require("sourcemap-validator");
 const { withReadableMappings } = require("./helpers");
 
-describe("ReplaceSource", () => {
+describe("replaceSource", () => {
 	it("should replace correctly", () => {
-		let line1, line2, line3, line4, line5;
+		let line1;
+		let line2;
+		let line3;
+		let line4;
+		let line5;
 		const source = new ReplaceSource(
 			new OriginalSource(
 				[
@@ -43,7 +47,7 @@ describe("ReplaceSource", () => {
 		const originalSource = source.original();
 		const originalText = originalSource.source();
 		const resultText = source.source();
-		const resultMap = source.sourceAndMap({
+		const result = source.sourceAndMap({
 			columns: true
 		});
 		const resultListMap = source.sourceAndMap({
@@ -57,16 +61,15 @@ describe("ReplaceSource", () => {
 		);
 		// const resultText = "Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line";
 		expect(resultText).toBe("Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line");
-		expect(resultMap.source).toEqual(resultText);
+		expect(result.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
 		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const map = /** @type {RawSourceMap} */ (resultMap.map);
-		expect(listMap.file).toEqual(map.file);
-		expect(listMap.version).toEqual(map.version);
-		expect(listMap.sources).toEqual(map.sources);
-		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
-		expect(withReadableMappings(resultMap.map)._mappings)
-			.toMatchInlineSnapshot(`
+		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		expect(listMap.file).toEqual(resultMap.file);
+		expect(listMap.version).toEqual(resultMap.version);
+		expect(listMap.sources).toEqual(resultMap.sources);
+		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
+		expect(withReadableMappings(resultMap)._mappings).toMatchInlineSnapshot(`
 		"1:0 -> [file.txt] 1:0, :1 -> [file.txt] 1:1, :3 -> [file.txt] 1:5, :8 -> [file.txt] 1:7, :12 -> [file.txt] 1:8
 		2:0 -> [file.txt] 2:0, :1 -> [file.txt] 2:1
 		3:0 -> [file.txt] 2:1
@@ -91,7 +94,7 @@ describe("ReplaceSource", () => {
 		source.insert(0, "Message: ");
 		source.replace(2, line1.length + 4, "y A");
 		const resultText = source.source();
-		const resultMap = source.sourceAndMap({
+		const result = source.sourceAndMap({
 			columns: true
 		});
 		const resultListMap = source.sourceAndMap({
@@ -99,15 +102,15 @@ describe("ReplaceSource", () => {
 		});
 
 		expect(resultText).toBe("Message: Hey Ad!");
-		expect(resultMap.source).toEqual(resultText);
+		expect(result.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
 		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const map = /** @type {RawSourceMap} */ (resultMap.map);
-		expect(listMap.file).toEqual(map.file);
-		expect(listMap.version).toEqual(map.version);
-		expect(listMap.sources).toEqual(map.sources);
-		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
-		expect(map.mappings).toBe("AAAA,WAAE,GACE");
+		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		expect(listMap.file).toEqual(resultMap.file);
+		expect(listMap.version).toEqual(resultMap.version);
+		expect(listMap.sources).toEqual(resultMap.sources);
+		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
+		expect(resultMap.mappings).toBe("AAAA,WAAE,GACE");
 		expect(listMap.mappings).toBe("AAAA");
 	});
 
@@ -116,7 +119,7 @@ describe("ReplaceSource", () => {
 		source.insert(-1, "Line -1\n");
 		source.insert(-1, "Line 0\n");
 		const resultText = source.source();
-		const resultMap = source.sourceAndMap({
+		const result = source.sourceAndMap({
 			columns: true
 		});
 		const resultListMap = source.sourceAndMap({
@@ -124,15 +127,15 @@ describe("ReplaceSource", () => {
 		});
 
 		expect(resultText).toBe("Line -1\nLine 0\nLine 1");
-		expect(resultMap.source).toEqual(resultText);
+		expect(result.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
 		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const map = /** @type {RawSourceMap} */ (resultMap.map);
-		expect(listMap.file).toEqual(map.file);
-		expect(listMap.version).toEqual(map.version);
-		expect(listMap.sources).toEqual(map.sources);
-		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
-		expect(map.mappings).toBe("AAAA;AAAA;AAAA");
+		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		expect(listMap.file).toEqual(resultMap.file);
+		expect(listMap.version).toEqual(resultMap.version);
+		expect(listMap.sources).toEqual(resultMap.sources);
+		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
+		expect(resultMap.mappings).toBe("AAAA;AAAA;AAAA");
 		expect(listMap.mappings).toBe("AAAA;AAAA;AAAA");
 	});
 
@@ -143,7 +146,7 @@ describe("ReplaceSource", () => {
 		source.insert(-1, "Line 0\n");
 		source.replace(0, 5, "Hello");
 		const resultText = source.source();
-		const resultMap = source.sourceAndMap({
+		const result = source.sourceAndMap({
 			columns: true
 		});
 		const resultListMap = source.sourceAndMap({
@@ -151,15 +154,15 @@ describe("ReplaceSource", () => {
 		});
 
 		expect(resultText).toBe("Line 0\nHello\nLine 2");
-		expect(resultMap.source).toEqual(resultText);
+		expect(result.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
 		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const map = /** @type {RawSourceMap} */ (resultMap.map);
-		expect(listMap.file).toEqual(map.file);
-		expect(listMap.version).toEqual(map.version);
-		expect(listMap.sources).toEqual(map.sources);
-		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
-		expect(map.mappings).toBe("AAAA;AAAA,KAAM;AACN");
+		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		expect(listMap.file).toEqual(resultMap.file);
+		expect(listMap.version).toEqual(resultMap.version);
+		expect(listMap.sources).toEqual(resultMap.sources);
+		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
+		expect(resultMap.mappings).toBe("AAAA;AAAA,KAAM;AACN");
 		expect(listMap.mappings).toBe("AAAA;AAAA;AACA");
 	});
 
@@ -170,7 +173,7 @@ describe("ReplaceSource", () => {
 		);
 		source.insert(line1.length + 1, "Line 2\n");
 		const resultText = source.source();
-		const resultMap = source.sourceAndMap({
+		const result = source.sourceAndMap({
 			columns: true
 		});
 		const resultListMap = source.sourceAndMap({
@@ -178,22 +181,22 @@ describe("ReplaceSource", () => {
 		});
 
 		expect(resultText).toBe("Line 1\nLine 2\n");
-		expect(resultMap.source).toEqual(resultText);
+		expect(result.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
 		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const map = /** @type {RawSourceMap} */ (resultMap.map);
-		expect(listMap.file).toEqual(map.file);
-		expect(listMap.version).toEqual(map.version);
-		expect(listMap.sources).toEqual(map.sources);
-		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
-		expect(map.mappings).toBe("AAAA");
+		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		expect(listMap.file).toEqual(resultMap.file);
+		expect(listMap.version).toEqual(resultMap.version);
+		expect(listMap.sources).toEqual(resultMap.sources);
+		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
+		expect(resultMap.mappings).toBe("AAAA");
 		expect(listMap.mappings).toBe("AAAA");
 	});
 
 	it("should produce correct source map", () => {
 		const bootstrapCode = "   var hello\n   var world\n";
 
-		expect(function () {
+		expect(() => {
 			const source = new ReplaceSource(
 				new OriginalSource(bootstrapCode, "file.js")
 			);
@@ -201,7 +204,7 @@ describe("ReplaceSource", () => {
 			source.replace(20, 24, "w", "identifiers");
 			const resultMap = source.sourceAndMap();
 			validate(resultMap.source, JSON.stringify(resultMap.map));
-		}).toThrowError();
+		}).toThrow(/mismatched names/);
 
 		const source = new ReplaceSource(
 			new OriginalSource(bootstrapCode, "file.js")
@@ -293,7 +296,7 @@ export default function StaticPage(_ref) {
 		);
 		source.replace(4, 8, "false");
 		source.replace(12, 23, "");
-		expect(source.source()).toMatchInlineSnapshot(`"if (false) {}"`);
+		expect(source.source()).toMatchInlineSnapshot('"if (false) {}"');
 		expect(withReadableMappings(source.map(), source.source()))
 			.toMatchInlineSnapshot(`
 		Object {

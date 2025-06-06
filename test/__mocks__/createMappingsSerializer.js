@@ -5,13 +5,11 @@
 
 "use strict";
 
-/* global jest */
-
 const createMappingsSerializer = jest.requireActual(
 	"../createMappingsSerializer"
 );
 
-module.exports = options => {
+module.exports = (options) => {
 	const fn = createMappingsSerializer(options);
 	let lastLine = 1;
 	let lastColumn = -1;
@@ -29,9 +27,9 @@ module.exports = options => {
 			(sourceIndex === -1
 				? originalLine === -1 && originalColumn === -1 && nameIndex === -1
 				: sourceIndex >= 0 &&
-				  originalLine >= 1 &&
-				  originalColumn >= 0 &&
-				  nameIndex >= -1)
+					originalLine >= 1 &&
+					originalColumn >= 0 &&
+					nameIndex >= -1)
 		) {
 			lastLine = generatedLine;
 			lastColumn = generatedColumn;

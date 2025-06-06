@@ -4,16 +4,16 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
-const SourceMapSource = require("../").SourceMapSource;
-const OriginalSource = require("../").OriginalSource;
-const ConcatSource = require("../").ConcatSource;
-const PrefixSource = require("../").PrefixSource;
-const ReplaceSource = require("../").ReplaceSource;
-const CachedSource = require("../").CachedSource;
+const { SourceMapSource } = require("../");
+const { OriginalSource } = require("../");
+const { ConcatSource } = require("../");
+const { PrefixSource } = require("../");
+const { ReplaceSource } = require("../");
+const { CachedSource } = require("../");
 const createMappingsSerializer = require("../lib/helpers/createMappingsSerializer");
-const SourceNode = require("source-map").SourceNode;
-const fs = require("fs");
-const path = require("path");
+const { SourceNode } = require("source-map");
+const fs = require("node:fs");
+const path = require("node:path");
 const { withReadableMappings } = require("./helpers");
 const {
 	enableDualStringBufferCaching,
@@ -21,7 +21,7 @@ const {
 	exitStringInterningRange,
 	disableDualStringBufferCaching
 } = require("../lib/helpers/stringBufferUtils");
-const crypto = require("crypto");
+const crypto = require("node:crypto");
 const BatchedHash = require("webpack/lib/util/hash/BatchedHash");
 const createMd4 = require("webpack/lib/util/hash/md4");
 const createXXHash64 = require("webpack/lib/util/hash/xxhash64");
@@ -33,7 +33,7 @@ describe.each([
 	{
 		enableMemoryOptimizations: true
 	}
-])("SourceMapSource %s", ({ enableMemoryOptimizations }) => {
+])("sourceMapSource %s", ({ enableMemoryOptimizations }) => {
 	beforeEach(() => {
 		if (enableMemoryOptimizations) {
 			disableDualStringBufferCaching();
@@ -49,8 +49,9 @@ describe.each([
 	});
 
 	it("map correctly", () => {
-		const innerSourceCode =
-			["Hello World", "is a test string"].join("\n") + "\n";
+		const innerSourceCode = `${["Hello World", "is a test string"].join(
+			"\n"
+		)}\n`;
 		const innerSource = new ConcatSource(
 			new OriginalSource(innerSourceCode, "hello-world.txt"),
 			new OriginalSource("Translate: ", "header.txt"),
@@ -150,17 +151,19 @@ describe.each([
 		}
 	`);
 
-		const hash = require("crypto").createHash("sha256");
+		const hash = require("node:crypto").createHash("sha256");
+
 		sourceMapSource1.updateHash(hash);
 		const digest = hash.digest("hex");
 		expect(digest).toMatchInlineSnapshot(
-			`"a61a2da7f3d541e458b1af9c0ec25d853fb929339d7d8b22361468be67326a52"`
+			'"a61a2da7f3d541e458b1af9c0ec25d853fb929339d7d8b22361468be67326a52"'
 		);
 
 		const clone = new SourceMapSource(...sourceMapSource1.getArgsAsBuffers());
 		expect(clone.sourceAndMap()).toEqual(sourceMapSource1.sourceAndMap());
 
-		const hash2 = require("crypto").createHash("sha256");
+		const hash2 = require("node:crypto").createHash("sha256");
+
 		clone.updateHash(hash2);
 		const digest2 = hash2.digest("hex");
 		expect(digest2).toEqual(digest);
@@ -260,12 +263,12 @@ describe.each([
 	it("should handle es6-promise correctly", () => {
 		const code = fs.readFileSync(
 			path.resolve(__dirname, "fixtures", "es6-promise.js"),
-			"utf-8"
+			"utf8"
 		);
 		const map = JSON.parse(
 			fs.readFileSync(
 				path.resolve(__dirname, "fixtures", "es6-promise.map"),
-				"utf-8"
+				"utf8"
 			)
 		);
 		const inner = new SourceMapSource(code, "es6-promise.js", map);
@@ -489,25 +492,24 @@ describe.each([
 		const sourceMapSource = new SourceMapSource("source", "name");
 
 		const buffer1 = sourceMapSource.buffer();
-		expect(buffer1.length).toBe(6);
+		expect(buffer1).toHaveLength(6);
 
 		const buffer2 = sourceMapSource.buffer();
-		if (enableMemoryOptimizations) {
-			// When memory optimizations are enabled, the buffer is not cached.
-			expect(buffer1.equals(buffer2)).toBe(true);
-		} else {
-			expect(buffer2).toBe(buffer1);
-		}
+
+		// When memory optimizations are enabled, the buffer is not cached.
+		expect(enableMemoryOptimizations ? buffer1.equals(buffer2) : buffer2).toBe(
+			enableMemoryOptimizations ? true : buffer1
+		);
 	});
 
 	it("provides buffer when backed by buffer", () => {
 		const sourceMapSource = new SourceMapSource(
-			Buffer.from("source", "utf-8"),
+			Buffer.from("source", "utf8"),
 			"name"
 		);
 
 		const buffer1 = sourceMapSource.buffer();
-		expect(buffer1.length).toBe(6);
+		expect(buffer1).toHaveLength(6);
 
 		const buffer2 = sourceMapSource.buffer();
 		expect(buffer2).toBe(buffer1);

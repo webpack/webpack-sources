@@ -2,10 +2,10 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
-const CompatSource = require("../").CompatSource;
-const RawSource = require("../").RawSource;
+const { CompatSource } = require("../");
+const { RawSource } = require("../");
 
-describe("CompatSource", () => {
+describe("compatSource", () => {
 	it("should emulate all methods", () => {
 		const CONTENT = "Line1\n\nLine3\n";
 		const source = CompatSource.from({
@@ -22,7 +22,7 @@ describe("CompatSource", () => {
 		expect(source.source()).toEqual(CONTENT);
 		expect(source.size()).toBe(42);
 		expect(source.buffer()).toEqual(Buffer.from(CONTENT));
-		expect(source.map()).toBe(null);
+		expect(source.map()).toBeNull();
 		const sourceAndMap = source.sourceAndMap();
 		expect(sourceAndMap).toHaveProperty("source", CONTENT);
 		expect(sourceAndMap).toHaveProperty("map", null);

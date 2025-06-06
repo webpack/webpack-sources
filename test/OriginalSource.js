@@ -1,6 +1,6 @@
 "use strict";
 
-const crypto = require("crypto");
+const crypto = require("node:crypto");
 const BatchedHash = require("webpack/lib/util/hash/BatchedHash");
 const createMd4 = require("webpack/lib/util/hash/md4");
 const createXXHash64 = require("webpack/lib/util/hash/xxhash64");
@@ -15,7 +15,7 @@ const {
 	exitStringInterningRange,
 	disableDualStringBufferCaching
 } = require("../lib/helpers/stringBufferUtils");
-const OriginalSource = require("../").OriginalSource;
+const { OriginalSource } = require("../");
 
 describe.each([
 	{
@@ -24,7 +24,7 @@ describe.each([
 	{
 		enableMemoryOptimizations: true
 	}
-])("OriginalSource %s", ({ enableMemoryOptimizations }) => {
+])("originalSource %s", ({ enableMemoryOptimizations }) => {
 	beforeEach(() => {
 		if (enableMemoryOptimizations) {
 			disableDualStringBufferCaching();
@@ -42,25 +42,25 @@ describe.each([
 	it("should handle multiline string", () => {
 		const source = new OriginalSource("Line1\n\nLine3\n", "file.js");
 		const resultText = source.source();
-		const resultMap = source.sourceAndMap({
+		const result = source.sourceAndMap({
 			columns: true
 		});
-		const resultListMap = source.sourceAndMap({
+		const resultList = source.sourceAndMap({
 			columns: false
 		});
 
 		expect(resultText).toBe("Line1\n\nLine3\n");
-		expect(resultMap.source).toEqual(resultText);
-		expect(resultListMap.source).toEqual(resultText);
-		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const map = /** @type {RawSourceMap} */ (resultMap.map);
-		expect(listMap.file).toEqual(map.file);
-		expect(listMap.version).toEqual(map.version);
-		expect(map.sources).toEqual(["file.js"]);
-		expect(listMap.sources).toEqual(map.sources);
-		expect(map.sourcesContent).toEqual(["Line1\n\nLine3\n"]);
-		expect(listMap.sourcesContent).toEqual(map.sourcesContent);
-		expect(map.mappings).toBe("AAAA;;AAEA");
+		expect(result.source).toEqual(resultText);
+		expect(resultList.source).toEqual(resultText);
+		const listMap = /** @type {RawSourceMap} */ (resultList.map);
+		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		expect(listMap.file).toEqual(resultMap.file);
+		expect(listMap.version).toEqual(resultMap.version);
+		expect(resultMap.sources).toEqual(["file.js"]);
+		expect(listMap.sources).toEqual(resultMap.sources);
+		expect(resultMap.sourcesContent).toEqual(["Line1\n\nLine3\n"]);
+		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
+		expect(resultMap.mappings).toBe("AAAA;;AAEA");
 		expect(listMap.mappings).toBe("AAAA;AACA;AACA");
 	});
 
@@ -77,8 +77,8 @@ describe.each([
 		expect(resultText).toBe("");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map).toBe(null);
-		expect(resultMap.map).toBe(null);
+		expect(resultListMap.map).toBeNull();
+		expect(resultMap.map).toBeNull();
 	});
 
 	it("should omit mappings for columns with node", () => {
@@ -95,7 +95,10 @@ describe.each([
 	});
 
 	it("should return the correct size for binary files", () => {
-		const source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
+		const source = new OriginalSource(
+			Buffer.from(Array.from({ length: 256 })),
+			"file.wasm"
+		);
 		expect(source.size()).toBe(256);
 	});
 

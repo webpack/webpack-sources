@@ -2,12 +2,12 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
-const ConcatSource = require("../").ConcatSource;
-const RawSource = require("../").RawSource;
-const OriginalSource = require("../").OriginalSource;
+const { ConcatSource } = require("../");
+const { RawSource } = require("../");
+const { OriginalSource } = require("../");
 const { withReadableMappings } = require("./helpers");
 
-describe("ConcatSource", () => {
+describe("concatSource", () => {
 	it("should concat two sources", () => {
 		const source = new ConcatSource(
 			new RawSource("Hello World\n"),
@@ -99,7 +99,7 @@ describe("ConcatSource", () => {
 		};
 		expect(source.size()).toBe(76);
 		expect(source.source()).toEqual(expectedSource);
-		expect(source.buffer()).toEqual(Buffer.from(expectedSource, "utf-8"));
+		expect(source.buffer()).toEqual(Buffer.from(expectedSource, "utf8"));
 		expect(
 			source.map({
 				columns: false
@@ -114,14 +114,16 @@ describe("ConcatSource", () => {
 			map: expectedMap1
 		});
 
-		const hash = require("crypto").createHash("sha256");
+		const hash = require("node:crypto").createHash("sha256");
+
 		source.updateHash(hash);
 		const digest = hash.digest("hex");
 		expect(digest).toBe(
 			"183e6e9393eddb8480334aebeebb3366d6cce0124bc429c6e9246cc216167cb2"
 		);
 
-		const hash2 = require("crypto").createHash("sha256");
+		const hash2 = require("node:crypto").createHash("sha256");
+
 		const source2 = new ConcatSource(
 			"Hello World\n",
 			new OriginalSource(
@@ -138,7 +140,8 @@ describe("ConcatSource", () => {
 
 		expect(clone.source()).toEqual(source.source());
 
-		const hash3 = require("crypto").createHash("sha256");
+		const hash3 = require("node:crypto").createHash("sha256");
+
 		clone.updateHash(hash3);
 		expect(hash3.digest("hex")).toEqual(digest);
 	});
@@ -161,8 +164,8 @@ describe("ConcatSource", () => {
 		expect(resultText).toBe("Hello World\nHello World\n");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map).toBe(null);
-		expect(resultMap.map).toBe(null);
+		expect(resultListMap.map).toBeNull();
+		expect(resultMap.map).toBeNull();
 	});
 
 	it("should allow to concatenate in a single line", () => {

@@ -2,7 +2,7 @@
 
 const readMappings = require("../lib/helpers/readMappings");
 
-exports.readableMappings = (mappings, sources, names, generatedCode) => {
+module.exports.readableMappings = (mappings, sources, names, generatedCode) => {
 	let str = "";
 	let bufferedGeneratedAnnotation = "";
 	let currentLine = 1;
@@ -23,27 +23,25 @@ exports.readableMappings = (mappings, sources, names, generatedCode) => {
 			if (first) {
 				first = false;
 				str += `${generatedLine}`;
+			} else if (currentLine === generatedLine) {
+				str += ", ";
 			} else {
-				if (currentLine === generatedLine) {
-					str += ", ";
-				} else {
-					str += "\n";
-					if (currentLine - 1 < lines.length) {
-						const line = lines[currentLine - 1];
-						if (line.length > currentColumn) {
-							bufferedGeneratedAnnotation += currentColumnMapped
-								? "^" + "_".repeat(line.length - currentColumn - 1)
-								: ".".repeat(line.length - currentColumn);
-						}
-						if (bufferedGeneratedAnnotation) {
-							str += `${line}\n${bufferedGeneratedAnnotation}\n`;
-							bufferedGeneratedAnnotation = "";
-						}
+				str += "\n";
+				if (currentLine - 1 < lines.length) {
+					const line = lines[currentLine - 1];
+					if (line.length > currentColumn) {
+						bufferedGeneratedAnnotation += currentColumnMapped
+							? `^${"_".repeat(line.length - currentColumn - 1)}`
+							: ".".repeat(line.length - currentColumn);
 					}
-					str += `${generatedLine}`;
-					currentColumn = 0;
-					currentColumnMapped = false;
+					if (bufferedGeneratedAnnotation) {
+						str += `${line}\n${bufferedGeneratedAnnotation}\n`;
+						bufferedGeneratedAnnotation = "";
+					}
 				}
+				str += `${generatedLine}`;
+				currentColumn = 0;
+				currentColumnMapped = false;
 			}
 			currentLine = generatedLine;
 			str += `:${generatedColumn}`;
@@ -61,7 +59,7 @@ exports.readableMappings = (mappings, sources, names, generatedCode) => {
 					bufferedGeneratedAnnotation += "^... OUT OF LINE";
 				} else {
 					bufferedGeneratedAnnotation += currentColumnMapped
-						? "^" + "_".repeat(generatedColumn - currentColumn - 1)
+						? `^${"_".repeat(generatedColumn - currentColumn - 1)}`
 						: ".".repeat(generatedColumn - currentColumn);
 				}
 			}
@@ -73,7 +71,7 @@ exports.readableMappings = (mappings, sources, names, generatedCode) => {
 		const line = lines[currentLine - 1];
 		if (line.length > currentColumn) {
 			bufferedGeneratedAnnotation += currentColumnMapped
-				? "^" + "_".repeat(line.length - currentColumn - 1)
+				? `^${"_".repeat(line.length - currentColumn - 1)}`
 				: ".".repeat(line.length - currentColumn);
 		}
 		if (bufferedGeneratedAnnotation) {
@@ -84,29 +82,26 @@ exports.readableMappings = (mappings, sources, names, generatedCode) => {
 	return str;
 };
 
-exports.withReadableMappings = (sourceMap, generatedCode) => {
+module.exports.withReadableMappings = (sourceMap, generatedCode) => {
 	if (!sourceMap) return sourceMap;
 	if (sourceMap.map) {
-		return Object.assign({}, sourceMap, {
-			_mappings: exports.readableMappings(
+		return {
+			...sourceMap,
+			_mappings: module.exports.readableMappings(
 				sourceMap.map.mappings,
 				sourceMap.map.sources,
 				sourceMap.map.names,
 				sourceMap.source
 			)
-		});
-	} else {
-		return Object.assign({}, sourceMap, {
-			_mappings: exports.readableMappings(
-				sourceMap.mappings,
-				sourceMap.sources,
-				sourceMap.names,
-				generatedCode
-			)
-		});
+		};
 	}
+	return {
+		...sourceMap,
+		_mappings: module.exports.readableMappings(
+			sourceMap.mappings,
+			sourceMap.sources,
+			sourceMap.names,
+			generatedCode
+		)
+	};
 };
-
-describe("helpers", () => {
-	it("only helpers", () => {});
-});

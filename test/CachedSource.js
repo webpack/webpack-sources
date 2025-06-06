@@ -2,11 +2,11 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
-const crypto = require("crypto");
-const CachedSource = require("../").CachedSource;
-const OriginalSource = require("../").OriginalSource;
-const RawSource = require("../").RawSource;
-const Source = require("../").Source;
+const crypto = require("node:crypto");
+const { CachedSource } = require("../");
+const { OriginalSource } = require("../");
+const { RawSource } = require("../");
+const { Source } = require("../");
 const streamChunks = require("../lib/helpers/streamChunks");
 const {
 	enableDualStringBufferCaching,
@@ -82,7 +82,7 @@ describe.each([
 	{
 		enableMemoryOptimizations: true
 	}
-])("CachedSource %s", ({ enableMemoryOptimizations }) => {
+])("cachedSource %s", ({ enableMemoryOptimizations }) => {
 	beforeEach(() => {
 		if (enableMemoryOptimizations) {
 			disableDualStringBufferCaching();
@@ -98,7 +98,10 @@ describe.each([
 	});
 
 	it("should return the correct size for binary files", () => {
-		const source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
+		const source = new OriginalSource(
+			Buffer.from(Array.from({ length: 256 })),
+			"file.wasm"
+		);
 		const cachedSource = new CachedSource(source);
 
 		expect(cachedSource.size()).toBe(256);
@@ -106,7 +109,10 @@ describe.each([
 	});
 
 	it("should return the correct size for cached binary sources", () => {
-		const source = new OriginalSource(Buffer.from(new Array(256)), "file.wasm");
+		const source = new OriginalSource(
+			Buffer.from(Array.from({ length: 256 })),
+			"file.wasm"
+		);
 		const cachedSource = new CachedSource(source);
 
 		cachedSource.source();
@@ -155,7 +161,7 @@ describe.each([
 
 		expect(cachedSource.source()).toBe("TestTestTest");
 		expect(cachedSource.size()).toBe(12);
-		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(cachedSource.buffer().toString("utf8")).toBe("TestTestTest");
 		expect(getHash(cachedSource)).toBe(getHash(original));
 		expect(source.getCalls()).toEqual({
 			size: 0,
@@ -166,7 +172,8 @@ describe.each([
 			hash: 1
 		});
 	});
-	it("should use the source cache for all other calls", () => {
+
+	it("should use the source cache for all other calls #2", () => {
 		const original = new OriginalSource("TestTestTest", "file.js");
 		const source = new TrackedSource(original);
 		const cachedSource = new CachedSource(source);
@@ -175,8 +182,8 @@ describe.each([
 		expect(cachedSource.source()).toBe("TestTestTest");
 		expect(cachedSource.size()).toBe(12);
 		expect(cachedSource.size()).toBe(12);
-		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
-		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(cachedSource.buffer().toString("utf8")).toBe("TestTestTest");
+		expect(cachedSource.buffer().toString("utf8")).toBe("TestTestTest");
 		expect(cachedSource.sourceAndMap().source).toBe("TestTestTest");
 		expect(typeof cachedSource.sourceAndMap().map).toBe("object");
 		expect(typeof cachedSource.map()).toBe("object");
@@ -191,6 +198,7 @@ describe.each([
 			hash: 1
 		});
 	});
+
 	it("should not use buffer for source", () => {
 		const source = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js")
@@ -199,8 +207,8 @@ describe.each([
 
 		expect(cachedSource.size()).toBe(12);
 		expect(cachedSource.size()).toBe(12);
-		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
-		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(cachedSource.buffer().toString("utf8")).toBe("TestTestTest");
+		expect(cachedSource.buffer().toString("utf8")).toBe("TestTestTest");
 		expect(cachedSource.source()).toBe("TestTestTest");
 		expect(cachedSource.source()).toBe("TestTestTest");
 		expect(source.getCalls()).toEqual({
@@ -212,6 +220,7 @@ describe.each([
 			hash: 0
 		});
 	});
+
 	it("should use map for sourceAndMap", () => {
 		const source = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js")
@@ -224,8 +233,8 @@ describe.each([
 		expect(typeof cachedSource.sourceAndMap().map).toBe("object");
 		expect(cachedSource.size()).toBe(12);
 		expect(cachedSource.size()).toBe(12);
-		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
-		expect(cachedSource.buffer().toString("utf-8")).toBe("TestTestTest");
+		expect(cachedSource.buffer().toString("utf8")).toBe("TestTestTest");
+		expect(cachedSource.buffer().toString("utf8")).toBe("TestTestTest");
 		expect(cachedSource.source()).toBe("TestTestTest");
 		expect(cachedSource.source()).toBe("TestTestTest");
 		expect(source.getCalls()).toEqual({
@@ -239,7 +248,7 @@ describe.each([
 	});
 
 	it("should use binary source for buffer", () => {
-		const buffer = Buffer.from(new Array(256));
+		const buffer = Buffer.from(Array.from({ length: 256 }));
 		const source = new TrackedSource(new RawSource(buffer));
 		const cachedSource = new CachedSource(source);
 
@@ -259,8 +268,9 @@ describe.each([
 			hash: 0
 		});
 	});
+
 	it("should use an old webpack-sources Source with Buffer", () => {
-		const buffer = Buffer.from(new Array(256));
+		const buffer = Buffer.from(Array.from({ length: 256 }));
 		const source = new TrackedSource(new RawSource(buffer));
 		// @ts-expect-error for tests
 		source.buffer = undefined;
@@ -279,6 +289,7 @@ describe.each([
 			hash: 0
 		});
 	});
+
 	it("should use an old webpack-sources Source with String", () => {
 		const string = "Hello World";
 		const source = new TrackedSource(new RawSource(string));
@@ -289,12 +300,12 @@ describe.each([
 		const buffer = cachedSource.buffer();
 
 		expect(Buffer.isBuffer(buffer)).toBe(true);
-		expect(buffer.toString("utf-8")).toBe(string);
-		if (enableMemoryOptimizations) {
-			expect(cachedSource.buffer().equals(buffer)).toBe(true);
-		} else {
-			expect(cachedSource.buffer()).toBe(buffer);
-		}
+		expect(buffer.toString("utf8")).toBe(string);
+		expect(
+			enableMemoryOptimizations
+				? cachedSource.buffer().equals(buffer)
+				: cachedSource.buffer()
+		).toBe(enableMemoryOptimizations ? true : buffer);
 		expect(cachedSource.source()).toBe(string);
 		expect(cachedSource.source()).toBe(string);
 		expect(source.getCalls()).toEqual({
@@ -374,7 +385,7 @@ describe.each([
 		expect(clone.source()).toEqual(source.source());
 		expect(clone.buffer()).toEqual(source.buffer());
 		expect(clone.size()).toEqual(source.size());
-		expect(clone.map({}) === null).toBe(true);
+		expect(clone.map({})).toBeNull();
 		expect(clone.sourceAndMap({})).toEqual(source.sourceAndMap({}));
 		expect(getHash(clone)).toBe(getHash(original));
 	});
@@ -399,9 +410,9 @@ describe.each([
 		expect(clone().size()).toEqual(source.size());
 		expect(calls).toBe(0);
 		const clone1 = clone();
-		expect(clone1.map({}) === null).toBe(true);
+		expect(clone1.map({})).toBeNull();
 		expect(calls).toBe(1);
-		expect(clone1.map({}) === null).toBe(true);
+		expect(clone1.map({})).toBeNull();
 		expect(calls).toBe(1);
 		expect(clone().sourceAndMap({})).toEqual(source.sourceAndMap({}));
 		expect(calls).toBe(2);
