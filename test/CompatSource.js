@@ -14,7 +14,7 @@ describe("compatSource", () => {
 			},
 			size() {
 				return 42;
-			}
+			},
 		});
 		expect(CompatSource.from(source)).toEqual(source);
 		const rawSource = new RawSource(CONTENT);
@@ -32,7 +32,7 @@ describe("compatSource", () => {
 			// @ts-expect-error for tests
 			update(value) {
 				calledWith.push(value);
-			}
+			},
 		});
 		expect(calledWith).toEqual([Buffer.from(CONTENT)]);
 	});

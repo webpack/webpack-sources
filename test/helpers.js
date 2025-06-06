@@ -18,7 +18,7 @@ module.exports.readableMappings = (mappings, sources, names, generatedCode) => {
 			sourceIndex,
 			originalLine,
 			originalColumn,
-			nameIndex
+			nameIndex,
 		) => {
 			if (first) {
 				first = false;
@@ -65,7 +65,7 @@ module.exports.readableMappings = (mappings, sources, names, generatedCode) => {
 			}
 			currentColumn = generatedColumn;
 			currentColumnMapped = sourceIndex >= 0;
-		}
+		},
 	);
 	if (currentLine - 1 < lines.length) {
 		const line = lines[currentLine - 1];
@@ -91,8 +91,8 @@ module.exports.withReadableMappings = (sourceMap, generatedCode) => {
 				sourceMap.map.mappings,
 				sourceMap.map.sources,
 				sourceMap.map.names,
-				sourceMap.source
-			)
+				sourceMap.source,
+			),
 		};
 	}
 	return {
@@ -101,7 +101,7 @@ module.exports.withReadableMappings = (sourceMap, generatedCode) => {
 			sourceMap.mappings,
 			sourceMap.sources,
 			sourceMap.names,
-			generatedCode
-		)
+			generatedCode,
+		),
 	};
 };

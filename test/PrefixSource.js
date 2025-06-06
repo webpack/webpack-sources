@@ -13,8 +13,8 @@ describe("prefixSource", () => {
 			"\t",
 			new OriginalSource(
 				"console.log('test');console.log('test2');\nconsole.log('test22');\n",
-				"console.js"
-			)
+				"console.js",
+			),
 		);
 		const expectedMap1 = {
 			version: 3,
@@ -23,28 +23,28 @@ describe("prefixSource", () => {
 			names: [],
 			sources: ["console.js"],
 			sourcesContent: [
-				"console.log('test');console.log('test2');\nconsole.log('test22');\n"
-			]
+				"console.log('test');console.log('test2');\nconsole.log('test22');\n",
+			],
 		};
 		const expectedSource = [
 			"\tconsole.log('test');console.log('test2');",
 			"\tconsole.log('test22');",
-			""
+			"",
 		].join("\n");
 		expect(source.size()).toBe(67);
 		expect(source.source()).toEqual(expectedSource);
 		expect(
 			source.map({
-				columns: false
-			})
+				columns: false,
+			}),
 		).toEqual(expectedMap1);
 		expect(
 			source.sourceAndMap({
-				columns: false
-			})
+				columns: false,
+			}),
 		).toEqual({
 			source: expectedSource,
-			map: expectedMap1
+			map: expectedMap1,
 		});
 		const expectedMap2 = {
 			version: 3,
@@ -53,16 +53,16 @@ describe("prefixSource", () => {
 			names: [],
 			sources: ["console.js"],
 			sourcesContent: [
-				"console.log('test');console.log('test2');\nconsole.log('test22');\n"
-			]
+				"console.log('test');console.log('test2');\nconsole.log('test22');\n",
+			],
 		};
 		const result = source.sourceAndMap();
 		expect(result.source).toEqual(expectedSource);
 		expect(withReadableMappings(result.map)).toEqual(
-			withReadableMappings(expectedMap2)
+			withReadableMappings(expectedMap2),
 		);
 		expect(withReadableMappings(source.map())).toEqual(
-			withReadableMappings(expectedMap2)
+			withReadableMappings(expectedMap2),
 		);
 	});
 
@@ -75,8 +75,8 @@ describe("prefixSource", () => {
 				new OriginalSource("\nconsole.log('test2');\n", "consoleC.js"),
 				new OriginalSource("console.log('test3');", "consoleD.js"),
 				new OriginalSource("\n", "empty.js"),
-				new OriginalSource("console.log('test4');", "consoleE.js")
-			)
+				new OriginalSource("console.log('test4');", "consoleE.js"),
+			),
 		);
 
 		const actualSource = source.source();
@@ -86,7 +86,7 @@ describe("prefixSource", () => {
 			"\t\n\tconsole.log('test2');\n",
 			"\tconsole.log('test3');",
 			"\n\t",
-			"console.log('test4');"
+			"console.log('test4');",
 		].join("");
 
 		expect(actualSource).toEqual(expectedSource);
@@ -102,8 +102,8 @@ describe("prefixSource", () => {
 				"double nl\n\n",
 				"nl\nline\nin\nline\n",
 				"\nstart with nl",
-				"\n\n\nempty lines"
-			)
+				"\n\n\nempty lines",
+			),
 		);
 
 		expect(source.sourceAndMap().source).toEqual(source.source());

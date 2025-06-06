@@ -29,7 +29,7 @@ const makeReplacements = (replaceSource, input) => {
 			match.index,
 			match.index + match[0].length - 1,
 			match[0].length % 4 === 0 ? "XXX\n" : "XXX",
-			match[0].replace(/\n[^]*$/, "").trim()
+			match[0].replace(/\n[^]*$/, "").trim(),
 		);
 		match = regexp.exec(input);
 	}
@@ -58,7 +58,7 @@ describe("fuzzy", () => {
 			const code = source.source();
 			const replaceSource = new ReplaceSource(
 				new OriginalSource(code, "lorem.txt"),
-				"replaced.txt"
+				"replaced.txt",
 			);
 			const input = source.source();
 			makeReplacements(replaceSource, input);
@@ -73,29 +73,29 @@ describe("fuzzy", () => {
 						(sourceAndMap.map),
 						code,
 						map,
-						true
+						true,
 					)
 				: new SourceMapSource(
 						sourceAndMap.source,
 						"lorem.txt",
 						/** @type {RawSourceMap} */
-						(sourceAndMap.map)
+						(sourceAndMap.map),
 					);
 		},
-		CachedSource: (source) => new CachedSource(source)
+		CachedSource: (source) => new CachedSource(source),
 	};
 
 	const createTests = (remaining, snapshot, list, offset) => {
 		if (remaining === 0) {
 			for (const [inputName, input] of [
 				["lorem", LOREM],
-				["lorem lines", LOREM_LINES]
+				["lorem lines", LOREM_LINES],
 			]) {
 				const validNames = getReplacementNames(input);
 				const validateSourceMap = async (sourceMap, code) => {
 					try {
 						expect(sourceMap.mappings).toMatch(
-							/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/
+							/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/,
 						);
 						expect(sourceMap.sources).toContain("lorem.txt");
 						for (const name of sourceMap.names) {
@@ -106,12 +106,12 @@ describe("fuzzy", () => {
 							if (offset === 0) {
 								// TODO test for other offset too
 								expect(
-									consumer.originalPositionFor({ line: 1, column: 0 })
+									consumer.originalPositionFor({ line: 1, column: 0 }),
 								).toEqual({
 									source: "lorem.txt",
 									line: 1,
 									column: 0,
-									name: null
+									name: null,
 								});
 							}
 						});
@@ -124,17 +124,17 @@ describe("fuzzy", () => {
 				};
 				const rawSourceFn = list.reduceRight(
 					(result, fn) => () => fn(result()),
-					() => new RawSource(input)
+					() => new RawSource(input),
 				);
 				const originalSourceFn = list.reduceRight(
 					(result, fn) => () => fn(result()),
-					() => new OriginalSource(input, "lorem.txt")
+					() => new OriginalSource(input, "lorem.txt"),
 				);
 				for (const options of [undefined, { columns: false }]) {
 					const o = JSON.stringify(options);
 					for (const [inputSourceName, sourceFn] of [
 						["raw", rawSourceFn],
-						["original", originalSourceFn]
+						["original", originalSourceFn],
 					]) {
 						if (options === undefined) {
 							it(`${inputSourceName} ${inputName} should return correct .source()`, () => {
@@ -178,7 +178,7 @@ describe("fuzzy", () => {
 							result.map = withReadableMappings(result.map);
 							if (result.map) {
 								expect(result.map.mappings).toMatch(
-									/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/
+									/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/,
 								);
 								await validateSourceMap(result.map, result.source);
 							}
@@ -186,7 +186,7 @@ describe("fuzzy", () => {
 							result2.map = withReadableMappings(result.map);
 							expect(result).toEqual(result2);
 							expect(result.map).toEqual(
-								withReadableMappings(sourceFn().map(options))
+								withReadableMappings(sourceFn().map(options)),
 							);
 							if (snapshot) {
 								expect(result).toMatchSnapshot();
@@ -200,7 +200,7 @@ describe("fuzzy", () => {
 
 					it(`${inputName} RawSource and OriginalSource should return equal .sourceAndMap(${o}).source`, () => {
 						expect(originalSourceFn().sourceAndMap(options).source).toEqual(
-							rawSourceFn().sourceAndMap(options).source
+							rawSourceFn().sourceAndMap(options).source,
 						);
 					});
 				}
@@ -214,7 +214,7 @@ describe("fuzzy", () => {
 						remaining - 1,
 						snapshot,
 						[...list, fn],
-						offset + (key === "PrefixSource" ? 7 : 0)
+						offset + (key === "PrefixSource" ? 7 : 0),
 					);
 				});
 			}

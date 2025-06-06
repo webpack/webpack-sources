@@ -12,7 +12,7 @@ const {
 	enableDualStringBufferCaching,
 	enterStringInterningRange,
 	exitStringInterningRange,
-	disableDualStringBufferCaching
+	disableDualStringBufferCaching,
 } = require("../lib/helpers/stringBufferUtils");
 
 class TrackedSource extends Source {
@@ -34,7 +34,7 @@ class TrackedSource extends Source {
 			buffer: this.bufferCalled,
 			map: this.mapCalled,
 			sourceAndMap: this.sourceAndMapCalled,
-			hash: this.updateHashCalled
+			hash: this.updateHashCalled,
 		};
 	}
 
@@ -77,11 +77,11 @@ const getHash = (source) => {
 
 describe.each([
 	{
-		enableMemoryOptimizations: false
+		enableMemoryOptimizations: false,
 	},
 	{
-		enableMemoryOptimizations: true
-	}
+		enableMemoryOptimizations: true,
+	},
 ])("cachedSource %s", ({ enableMemoryOptimizations }) => {
 	beforeEach(() => {
 		if (enableMemoryOptimizations) {
@@ -100,7 +100,7 @@ describe.each([
 	it("should return the correct size for binary files", () => {
 		const source = new OriginalSource(
 			Buffer.from(Array.from({ length: 256 })),
-			"file.wasm"
+			"file.wasm",
 		);
 		const cachedSource = new CachedSource(source);
 
@@ -111,7 +111,7 @@ describe.each([
 	it("should return the correct size for cached binary sources", () => {
 		const source = new OriginalSource(
 			Buffer.from(Array.from({ length: 256 })),
-			"file.wasm"
+			"file.wasm",
 		);
 		const cachedSource = new CachedSource(source);
 
@@ -169,7 +169,7 @@ describe.each([
 			buffer: 0,
 			map: 0,
 			sourceAndMap: 0,
-			hash: 1
+			hash: 1,
 		});
 	});
 
@@ -195,13 +195,13 @@ describe.each([
 			buffer: 0,
 			map: 1,
 			sourceAndMap: 0,
-			hash: 1
+			hash: 1,
 		});
 	});
 
 	it("should not use buffer for source", () => {
 		const source = new TrackedSource(
-			new OriginalSource("TestTestTest", "file.js")
+			new OriginalSource("TestTestTest", "file.js"),
 		);
 		const cachedSource = new CachedSource(source);
 
@@ -217,13 +217,13 @@ describe.each([
 			buffer: 1,
 			map: 0,
 			sourceAndMap: 0,
-			hash: 0
+			hash: 0,
 		});
 	});
 
 	it("should use map for sourceAndMap", () => {
 		const source = new TrackedSource(
-			new OriginalSource("TestTestTest", "file.js")
+			new OriginalSource("TestTestTest", "file.js"),
 		);
 		const cachedSource = new CachedSource(source);
 
@@ -243,7 +243,7 @@ describe.each([
 			buffer: 0,
 			map: 1,
 			sourceAndMap: 0,
-			hash: 0
+			hash: 0,
 		});
 	});
 
@@ -265,7 +265,7 @@ describe.each([
 			buffer: 0,
 			map: 0,
 			sourceAndMap: 1,
-			hash: 0
+			hash: 0,
 		});
 	});
 
@@ -286,7 +286,7 @@ describe.each([
 			buffer: 0,
 			map: 0,
 			sourceAndMap: 0,
-			hash: 0
+			hash: 0,
 		});
 	});
 
@@ -304,7 +304,7 @@ describe.each([
 		expect(
 			enableMemoryOptimizations
 				? cachedSource.buffer().equals(buffer)
-				: cachedSource.buffer()
+				: cachedSource.buffer(),
 		).toBe(enableMemoryOptimizations ? true : buffer);
 		expect(cachedSource.source()).toBe(string);
 		expect(cachedSource.source()).toBe(string);
@@ -314,7 +314,7 @@ describe.each([
 			buffer: 0,
 			map: 0,
 			sourceAndMap: 0,
-			hash: 0
+			hash: 0,
 		});
 	});
 
@@ -331,7 +331,7 @@ describe.each([
 			{},
 			() => {},
 			() => {},
-			() => {}
+			() => {},
 		);
 
 		const cachedData = cachedSource.getCachedData();

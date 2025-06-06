@@ -6,7 +6,7 @@
 "use strict";
 
 const createMappingsSerializer = jest.requireActual(
-	"../createMappingsSerializer"
+	"../createMappingsSerializer",
 );
 
 module.exports = (options) => {
@@ -19,7 +19,7 @@ module.exports = (options) => {
 		sourceIndex,
 		originalLine,
 		originalColumn,
-		nameIndex
+		nameIndex,
 	) => {
 		if (
 			generatedLine >= lastLine &&
@@ -39,7 +39,7 @@ module.exports = (options) => {
 				sourceIndex,
 				originalLine,
 				originalColumn,
-				nameIndex
+				nameIndex,
 			);
 		}
 		throw new Error(`Invalid mapping passed to mapping serializer:

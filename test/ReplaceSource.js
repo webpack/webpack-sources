@@ -26,10 +26,10 @@ describe("replaceSource", () => {
 					(line4 = "Line 4"),
 					(line5 = "Line 5"),
 					"Last",
-					"Line"
+					"Line",
 				].join("\n"),
-				"file.txt"
-			)
+				"file.txt",
+			),
 		);
 		const startLine3 = line1.length + line2.length + 2;
 		const startLine6 =
@@ -37,7 +37,7 @@ describe("replaceSource", () => {
 		source.replace(
 			startLine3,
 			startLine3 + line3.length + line4.length + line5.length + 2,
-			""
+			"",
 		);
 		source.replace(1, 4, "i ");
 		source.replace(1, 4, "bye");
@@ -48,16 +48,16 @@ describe("replaceSource", () => {
 		const originalText = originalSource.source();
 		const resultText = source.source();
 		const result = source.sourceAndMap({
-			columns: true
+			columns: true,
 		});
 		const resultListMap = source.sourceAndMap({
-			columns: false
+			columns: false,
 		});
 
 		// @ts-expect-error for tests
 		expect(originalSource).toEqual(source._source);
 		expect(originalText).toBe(
-			"Hello World!\n{}\nLine 3\nLine 4\nLine 5\nLast\nLine"
+			"Hello World!\n{}\nLine 3\nLine 4\nLine 5\nLast\nLine",
 		);
 		// const resultText = "Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line";
 		expect(resultText).toBe("Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line");
@@ -89,16 +89,16 @@ describe("replaceSource", () => {
 	it("should replace multiple items correctly", () => {
 		let line1;
 		const source = new ReplaceSource(
-			new OriginalSource([(line1 = "Hello"), "World!"].join("\n"), "file.txt")
+			new OriginalSource([(line1 = "Hello"), "World!"].join("\n"), "file.txt"),
 		);
 		source.insert(0, "Message: ");
 		source.replace(2, line1.length + 4, "y A");
 		const resultText = source.source();
 		const result = source.sourceAndMap({
-			columns: true
+			columns: true,
 		});
 		const resultListMap = source.sourceAndMap({
-			columns: false
+			columns: false,
 		});
 
 		expect(resultText).toBe("Message: Hey Ad!");
@@ -120,10 +120,10 @@ describe("replaceSource", () => {
 		source.insert(-1, "Line 0\n");
 		const resultText = source.source();
 		const result = source.sourceAndMap({
-			columns: true
+			columns: true,
 		});
 		const resultListMap = source.sourceAndMap({
-			columns: false
+			columns: false,
 		});
 
 		expect(resultText).toBe("Line -1\nLine 0\nLine 1");
@@ -141,16 +141,16 @@ describe("replaceSource", () => {
 
 	it("should prepend items with replace at start correctly", () => {
 		const source = new ReplaceSource(
-			new OriginalSource(["Line 1", "Line 2"].join("\n"), "file.txt")
+			new OriginalSource(["Line 1", "Line 2"].join("\n"), "file.txt"),
 		);
 		source.insert(-1, "Line 0\n");
 		source.replace(0, 5, "Hello");
 		const resultText = source.source();
 		const result = source.sourceAndMap({
-			columns: true
+			columns: true,
 		});
 		const resultListMap = source.sourceAndMap({
-			columns: false
+			columns: false,
 		});
 
 		expect(resultText).toBe("Line 0\nHello\nLine 2");
@@ -169,15 +169,15 @@ describe("replaceSource", () => {
 	it("should append items correctly", () => {
 		let line1;
 		const source = new ReplaceSource(
-			new OriginalSource((line1 = "Line 1\n"), "file.txt")
+			new OriginalSource((line1 = "Line 1\n"), "file.txt"),
 		);
 		source.insert(line1.length + 1, "Line 2\n");
 		const resultText = source.source();
 		const result = source.sourceAndMap({
-			columns: true
+			columns: true,
 		});
 		const resultListMap = source.sourceAndMap({
-			columns: false
+			columns: false,
 		});
 
 		expect(resultText).toBe("Line 1\nLine 2\n");
@@ -198,7 +198,7 @@ describe("replaceSource", () => {
 
 		expect(() => {
 			const source = new ReplaceSource(
-				new OriginalSource(bootstrapCode, "file.js")
+				new OriginalSource(bootstrapCode, "file.js"),
 			);
 			source.replace(7, 11, "h", "incorrect");
 			source.replace(20, 24, "w", "identifiers");
@@ -207,7 +207,7 @@ describe("replaceSource", () => {
 		}).toThrow(/mismatched names/);
 
 		const source = new ReplaceSource(
-			new OriginalSource(bootstrapCode, "file.js")
+			new OriginalSource(bootstrapCode, "file.js"),
 		);
 		source.replace(7, 11, "h", "hello");
 		source.replace(20, 24, "w", "world");
@@ -234,9 +234,9 @@ describe("replaceSource", () => {
 				`export default function StaticPage({ data }) {
   return <div>{data.foo}</div>
 }
-`
+`,
 			],
-			file: "x"
+			file: "x",
 		};
 		const code = `import { jsx as _jsx } from "react/jsx-runtime";
 export var __N_SSG = true;
@@ -247,7 +247,7 @@ export default function StaticPage(_ref) {
 	});
 }`;
 		const source = new ReplaceSource(
-			new SourceMapSource(code, "source.js", map)
+			new SourceMapSource(code, "source.js", map),
 		);
 		source.replace(0, 47, "");
 		source.replace(49, 55, "");
@@ -255,7 +255,7 @@ export default function StaticPage(_ref) {
 		source.replace(
 			165,
 			168,
-			"(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)"
+			"(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)",
 		);
 		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
 		Object {
@@ -290,9 +290,9 @@ export default function StaticPage(_ref) {
 		const source = new ReplaceSource(
 			new OriginalSource(
 				["if (a;b;c) {", "  a; b; c;", "}"].join("\n"),
-				"document.js"
+				"document.js",
 			),
-			"_document.js"
+			"_document.js",
 		);
 		source.replace(4, 8, "false");
 		source.replace(12, 23, "");

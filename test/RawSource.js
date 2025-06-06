@@ -9,7 +9,7 @@ const {
 	enableDualStringBufferCaching,
 	enterStringInterningRange,
 	exitStringInterningRange,
-	disableDualStringBufferCaching
+	disableDualStringBufferCaching,
 } = require("../lib/helpers/stringBufferUtils");
 
 const CODE_STRING =
@@ -38,8 +38,8 @@ describe("rawSource", () => {
 		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],
 		[
 			"xxhash64",
-			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())]
-		]
+			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())],
+		],
 	]) {
 		it(`should have the same hash (${hash[0]}) for string and Buffer`, () => {
 			const sourceString = new RawSource("Text");
@@ -60,8 +60,8 @@ describe("rawSource", () => {
 		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],
 		[
 			"xxhash64",
-			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())]
-		]
+			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())],
+		],
 	]) {
 		it(`should have the same hash (${hash[0]}) for string and Buffer (convert to string)`, () => {
 			const sourceString = new RawSource("Text", true);

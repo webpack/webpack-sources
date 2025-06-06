@@ -13,17 +13,17 @@ const {
 	enableDualStringBufferCaching,
 	enterStringInterningRange,
 	exitStringInterningRange,
-	disableDualStringBufferCaching
+	disableDualStringBufferCaching,
 } = require("../lib/helpers/stringBufferUtils");
 const { OriginalSource } = require("../");
 
 describe.each([
 	{
-		enableMemoryOptimizations: false
+		enableMemoryOptimizations: false,
 	},
 	{
-		enableMemoryOptimizations: true
-	}
+		enableMemoryOptimizations: true,
+	},
 ])("originalSource %s", ({ enableMemoryOptimizations }) => {
 	beforeEach(() => {
 		if (enableMemoryOptimizations) {
@@ -43,10 +43,10 @@ describe.each([
 		const source = new OriginalSource("Line1\n\nLine3\n", "file.js");
 		const resultText = source.source();
 		const result = source.sourceAndMap({
-			columns: true
+			columns: true,
 		});
 		const resultList = source.sourceAndMap({
-			columns: false
+			columns: false,
 		});
 
 		expect(resultText).toBe("Line1\n\nLine3\n");
@@ -68,10 +68,10 @@ describe.each([
 		const source = new OriginalSource("", "file.js");
 		const resultText = source.source();
 		const resultMap = source.sourceAndMap({
-			columns: true
+			columns: true,
 		});
 		const resultListMap = source.sourceAndMap({
-			columns: false
+			columns: false,
 		});
 
 		expect(resultText).toBe("");
@@ -87,7 +87,7 @@ describe.each([
 			/** @type {RawSourceMap} */
 			(
 				source.map({
-					columns: false
+					columns: false,
 				})
 			);
 
@@ -97,7 +97,7 @@ describe.each([
 	it("should return the correct size for binary files", () => {
 		const source = new OriginalSource(
 			Buffer.from(Array.from({ length: 256 })),
-			"file.wasm"
+			"file.wasm",
 		);
 		expect(source.size()).toBe(256);
 	});
@@ -110,7 +110,7 @@ describe.each([
 	it("should split code into statements", () => {
 		const input = [
 			"if (hello()) { world(); hi(); there(); } done();",
-			"if (hello()) { world(); hi(); there(); } done();"
+			"if (hello()) { world(); hi(); there(); } done();",
 		].join("\n");
 		const expected = "AAAA,eAAe,SAAS,MAAM,WAAW;AACzC,eAAe,SAAS,MAAM,WAAW";
 		const expected2 = "AAAA;AACA";
@@ -120,15 +120,15 @@ describe.each([
 		expect(/** @type {RawSourceMap} */ (source.map()).mappings).toBe(expected);
 		expect(
 			/** @type {RawSourceMap} */
-			(source.sourceAndMap().map).mappings
+			(source.sourceAndMap().map).mappings,
 		).toBe(expected);
 		expect(
 			/** @type {RawSourceMap} */
-			(source.map({ columns: false })).mappings
+			(source.map({ columns: false })).mappings,
 		).toBe(expected2);
 		expect(
 			/** @type {RawSourceMap} */
-			(source.sourceAndMap({ columns: false }).map).mappings
+			(source.sourceAndMap({ columns: false }).map).mappings,
 		).toBe(expected2);
 	});
 
@@ -137,8 +137,8 @@ describe.each([
 		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],
 		[
 			"xxhash64",
-			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())]
-		]
+			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())],
+		],
 	]) {
 		it(`should have the same hash (${hash[0]}) for string and Buffer`, () => {
 			const sourceString = new OriginalSource("Text", "file.js");

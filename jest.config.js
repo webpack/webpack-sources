@@ -6,7 +6,7 @@ const config = {
 	forceExit: true,
 	testMatch: ["<rootDir>/test/*.js"],
 	transformIgnorePatterns: ["<rootDir>"],
-	testEnvironment: "node"
+	testEnvironment: "node",
 };
 
 module.exports = config;

@@ -13,8 +13,8 @@ describe("concatSource", () => {
 			new RawSource("Hello World\n"),
 			new OriginalSource(
 				"console.log('test');\nconsole.log('test2');\n",
-				"console.js"
-			)
+				"console.js",
+			),
 		);
 		source.add(new OriginalSource("Hello2\n", "hello.md"));
 		const expectedMap1 = {
@@ -25,30 +25,30 @@ describe("concatSource", () => {
 			sources: ["console.js", "hello.md"],
 			sourcesContent: [
 				"console.log('test');\nconsole.log('test2');\n",
-				"Hello2\n"
-			]
+				"Hello2\n",
+			],
 		};
 		const expectedSource = [
 			"Hello World",
 			"console.log('test');",
 			"console.log('test2');",
 			"Hello2",
-			""
+			"",
 		].join("\n");
 		expect(source.size()).toBe(62);
 		expect(source.source()).toEqual(expectedSource);
 		expect(
 			source.map({
-				columns: false
-			})
+				columns: false,
+			}),
 		).toEqual(expectedMap1);
 		expect(
 			source.sourceAndMap({
-				columns: false
-			})
+				columns: false,
+			}),
 		).toEqual({
 			source: expectedSource,
-			map: expectedMap1
+			map: expectedMap1,
 		});
 
 		const expectedMap2 = {
@@ -59,13 +59,13 @@ describe("concatSource", () => {
 			sources: ["console.js", "hello.md"],
 			sourcesContent: [
 				"console.log('test');\nconsole.log('test2');\n",
-				"Hello2\n"
-			]
+				"Hello2\n",
+			],
 		};
 		expect(source.map()).toEqual(expectedMap2);
 		expect(source.sourceAndMap()).toEqual({
 			source: expectedSource,
-			map: expectedMap2
+			map: expectedMap2,
 		});
 	});
 
@@ -74,8 +74,8 @@ describe("concatSource", () => {
 			new RawSource("Hello World\n"),
 			new OriginalSource(
 				"console.log('test');\nconsole.log('test2');\n",
-				"console.js"
-			)
+				"console.js",
+			),
 		);
 		const innerSource = new ConcatSource("(", "'string'", ")");
 		innerSource.buffer(); // force optimization
@@ -87,7 +87,7 @@ describe("concatSource", () => {
 			"Hello World",
 			"console.log('test');",
 			"console.log('test2');",
-			"console.log('string')"
+			"console.log('string')",
 		].join("\n");
 		const expectedMap1 = {
 			version: 3,
@@ -95,23 +95,23 @@ describe("concatSource", () => {
 			mappings: ";AAAA;AACA",
 			names: [],
 			sources: ["console.js"],
-			sourcesContent: ["console.log('test');\nconsole.log('test2');\n"]
+			sourcesContent: ["console.log('test');\nconsole.log('test2');\n"],
 		};
 		expect(source.size()).toBe(76);
 		expect(source.source()).toEqual(expectedSource);
 		expect(source.buffer()).toEqual(Buffer.from(expectedSource, "utf8"));
 		expect(
 			source.map({
-				columns: false
-			})
+				columns: false,
+			}),
 		).toEqual(expectedMap1);
 		expect(
 			source.sourceAndMap({
-				columns: false
-			})
+				columns: false,
+			}),
 		).toEqual({
 			source: expectedSource,
-			map: expectedMap1
+			map: expectedMap1,
 		});
 
 		const hash = require("node:crypto").createHash("sha256");
@@ -119,7 +119,7 @@ describe("concatSource", () => {
 		source.updateHash(hash);
 		const digest = hash.digest("hex");
 		expect(digest).toBe(
-			"183e6e9393eddb8480334aebeebb3366d6cce0124bc429c6e9246cc216167cb2"
+			"183e6e9393eddb8480334aebeebb3366d6cce0124bc429c6e9246cc216167cb2",
 		);
 
 		const hash2 = require("node:crypto").createHash("sha256");
@@ -128,9 +128,9 @@ describe("concatSource", () => {
 			"Hello World\n",
 			new OriginalSource(
 				"console.log('test');\nconsole.log('test2');\n",
-				"console.js"
+				"console.js",
 			),
-			"console.log('string')"
+			"console.log('string')",
 		);
 		source2.updateHash(hash2);
 		expect(hash2.digest("hex")).toEqual(digest);
@@ -150,15 +150,15 @@ describe("concatSource", () => {
 		const source = new ConcatSource(
 			"Hello World\n",
 			new RawSource("Hello World\n"),
-			""
+			"",
 		);
 
 		const resultText = source.source();
 		const resultMap = source.sourceAndMap({
-			columns: true
+			columns: true,
 		});
 		const resultListMap = source.sourceAndMap({
-			columns: false
+			columns: false,
 		});
 
 		expect(resultText).toBe("Hello World\nHello World\n");
@@ -177,7 +177,7 @@ describe("concatSource", () => {
 			new OriginalSource("Hello\n", "hello.txt"),
 			" \n",
 			new OriginalSource("World\n", "world.txt"),
-			"is here"
+			"is here",
 		);
 
 		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
