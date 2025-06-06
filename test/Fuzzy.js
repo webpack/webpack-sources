@@ -29,17 +29,15 @@ const makeReplacements = (replaceSource, input) => {
 			match.index,
 			match.index + match[0].length - 1,
 			match[0].length % 4 === 0 ? "XXX\n" : "XXX",
-			match[0].replace(/\n[^]*$/, "").trim()
+			match[0].replace(/\n[^]*$/, "").trim(),
 		);
 		match = regexp.exec(input);
 	}
 };
 
-const getReplacementNames = (input) => {
-	return input.match(/\w{6,}/g);
-};
+const getReplacementNames = (input) => input.match(/\w{6,}/g);
 
-describe("Fuzzy", () => {
+describe("fuzzy", () => {
 	const variants = {
 		CompatSource: (source) => new CompatSource(source),
 		PrefixSource: (source) => new PrefixSource("lorem: ", source),
@@ -60,7 +58,7 @@ describe("Fuzzy", () => {
 			const code = source.source();
 			const replaceSource = new ReplaceSource(
 				new OriginalSource(code, "lorem.txt"),
-				"replaced.txt"
+				"replaced.txt",
 			);
 			const input = source.source();
 			makeReplacements(replaceSource, input);
@@ -75,29 +73,29 @@ describe("Fuzzy", () => {
 						(sourceAndMap.map),
 						code,
 						map,
-						true
-				  )
+						true,
+					)
 				: new SourceMapSource(
 						sourceAndMap.source,
 						"lorem.txt",
 						/** @type {RawSourceMap} */
-						(sourceAndMap.map)
-				  );
+						(sourceAndMap.map),
+					);
 		},
-		CachedSource: (source) => new CachedSource(source)
+		CachedSource: (source) => new CachedSource(source),
 	};
 
 	const createTests = (remaining, snapshot, list, offset) => {
 		if (remaining === 0) {
 			for (const [inputName, input] of [
 				["lorem", LOREM],
-				["lorem lines", LOREM_LINES]
+				["lorem lines", LOREM_LINES],
 			]) {
 				const validNames = getReplacementNames(input);
 				const validateSourceMap = async (sourceMap, code) => {
 					try {
 						expect(sourceMap.mappings).toMatch(
-							/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/
+							/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/,
 						);
 						expect(sourceMap.sources).toContain("lorem.txt");
 						for (const name of sourceMap.names) {
@@ -108,35 +106,35 @@ describe("Fuzzy", () => {
 							if (offset === 0) {
 								// TODO test for other offset too
 								expect(
-									consumer.originalPositionFor({ line: 1, column: 0 })
+									consumer.originalPositionFor({ line: 1, column: 0 }),
 								).toEqual({
 									source: "lorem.txt",
 									line: 1,
 									column: 0,
-									name: null
+									name: null,
 								});
 							}
 						});
-					} catch (e) {
-						e.message += `\n${JSON.stringify(sourceMap, undefined, 2)}\n${
+					} catch (err) {
+						err.message += `\n${JSON.stringify(sourceMap, undefined, 2)}\n${
 							withReadableMappings(sourceMap, code)._mappings
 						}`;
-						throw e;
+						throw err;
 					}
 				};
 				const rawSourceFn = list.reduceRight(
 					(result, fn) => () => fn(result()),
-					() => new RawSource(input)
+					() => new RawSource(input),
 				);
 				const originalSourceFn = list.reduceRight(
 					(result, fn) => () => fn(result()),
-					() => new OriginalSource(input, "lorem.txt")
+					() => new OriginalSource(input, "lorem.txt"),
 				);
 				for (const options of [undefined, { columns: false }]) {
 					const o = JSON.stringify(options);
 					for (const [inputSourceName, sourceFn] of [
 						["raw", rawSourceFn],
-						["original", originalSourceFn]
+						["original", originalSourceFn],
 					]) {
 						if (options === undefined) {
 							it(`${inputSourceName} ${inputName} should return correct .source()`, () => {
@@ -147,6 +145,7 @@ describe("Fuzzy", () => {
 									expect(result).toMatchSnapshot();
 								}
 							});
+
 							it(`${inputSourceName} ${inputName} should return correct .size()`, () => {
 								const source = sourceFn();
 								const result = source.size();
@@ -156,6 +155,7 @@ describe("Fuzzy", () => {
 								}
 							});
 						}
+
 						it(`${inputSourceName} ${inputName} should return correct .map(${o})`, async () => {
 							const source = sourceFn();
 							const result = withReadableMappings(source.map(options));
@@ -171,13 +171,14 @@ describe("Fuzzy", () => {
 								expect(result).toMatchSnapshot();
 							}
 						});
+
 						it(`${inputSourceName} ${inputName} should return correct .sourceAndMap(${o})`, async () => {
 							const source = sourceFn();
 							const result = source.sourceAndMap(options);
 							result.map = withReadableMappings(result.map);
 							if (result.map) {
 								expect(result.map.mappings).toMatch(
-									/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/
+									/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/,
 								);
 								await validateSourceMap(result.map, result.source);
 							}
@@ -185,19 +186,21 @@ describe("Fuzzy", () => {
 							result2.map = withReadableMappings(result.map);
 							expect(result).toEqual(result2);
 							expect(result.map).toEqual(
-								withReadableMappings(sourceFn().map(options))
+								withReadableMappings(sourceFn().map(options)),
 							);
 							if (snapshot) {
 								expect(result).toMatchSnapshot();
 							}
 						});
 					}
+
 					it(`${inputName} RawSource and OriginalSource should return equal .source(${o})`, () => {
 						expect(originalSourceFn().source()).toEqual(rawSourceFn().source());
 					});
+
 					it(`${inputName} RawSource and OriginalSource should return equal .sourceAndMap(${o}).source`, () => {
 						expect(originalSourceFn().sourceAndMap(options).source).toEqual(
-							rawSourceFn().sourceAndMap(options).source
+							rawSourceFn().sourceAndMap(options).source,
 						);
 					});
 				}
@@ -205,19 +208,32 @@ describe("Fuzzy", () => {
 		} else {
 			for (const key of Object.keys(variants)) {
 				const fn = variants[key];
+
 				describe(key, () => {
 					createTests(
 						remaining - 1,
 						snapshot,
-						list.concat(fn),
-						offset + (key === "PrefixSource" ? 7 : 0)
+						[...list, fn],
+						offset + (key === "PrefixSource" ? 7 : 0),
 					);
 				});
 			}
 		}
 	};
-	describe("single source", () => createTests(1, true, [], 0));
-	describe("2 sources", () => createTests(2, true, [], 0));
-	describe("3 sources", () => createTests(3, false, [], 0));
-	describe("4 sources", () => createTests(4, false, [], 0));
+
+	describe("single source", () => {
+		createTests(1, true, [], 0);
+	});
+
+	describe("2 sources", () => {
+		createTests(2, true, [], 0);
+	});
+
+	describe("3 sources", () => {
+		createTests(3, false, [], 0);
+	});
+
+	describe("4 sources", () => {
+		createTests(4, false, [], 0);
+	});
 });
