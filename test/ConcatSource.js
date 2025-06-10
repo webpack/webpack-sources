@@ -218,6 +218,8 @@ describe("concatSource", () => {
 		);
 		const innerSource = "ab\nc";
 		const innerMap = {
+			names: [],
+			file: "x",
 			version: 3,
 			sources: ["main.js"],
 			sourcesContent: ["a\nc"],
