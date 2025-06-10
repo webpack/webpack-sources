@@ -5,5 +5,8 @@ import config from "eslint-config-webpack";
 export default defineConfig([
 	{
 		extends: [config],
+		rules: {
+			"n/prefer-node-protocol": "off"
+		}
 	},
 ]);

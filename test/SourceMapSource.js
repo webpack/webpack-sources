@@ -12,8 +12,8 @@ const { ReplaceSource } = require("../");
 const { CachedSource } = require("../");
 const createMappingsSerializer = require("../lib/helpers/createMappingsSerializer");
 const { SourceNode } = require("source-map");
-const fs = require("node:fs");
-const path = require("node:path");
+const fs = require("fs");
+const path = require("path");
 const { withReadableMappings } = require("./helpers");
 const {
 	enableDualStringBufferCaching,
@@ -21,7 +21,7 @@ const {
 	exitStringInterningRange,
 	disableDualStringBufferCaching,
 } = require("../lib/helpers/stringBufferUtils");
-const crypto = require("node:crypto");
+const crypto = require("crypto");
 const BatchedHash = require("webpack/lib/util/hash/BatchedHash");
 const createMd4 = require("webpack/lib/util/hash/md4");
 const createXXHash64 = require("webpack/lib/util/hash/xxhash64");
@@ -151,7 +151,7 @@ describe.each([
 		}
 	`);
 
-		const hash = require("node:crypto").createHash("sha256");
+		const hash = require("crypto").createHash("sha256");
 
 		sourceMapSource1.updateHash(hash);
 		const digest = hash.digest("hex");
@@ -162,7 +162,7 @@ describe.each([
 		const clone = new SourceMapSource(...sourceMapSource1.getArgsAsBuffers());
 		expect(clone.sourceAndMap()).toEqual(sourceMapSource1.sourceAndMap());
 
-		const hash2 = require("node:crypto").createHash("sha256");
+		const hash2 = require("crypto").createHash("sha256");
 
 		clone.updateHash(hash2);
 		const digest2 = hash2.digest("hex");

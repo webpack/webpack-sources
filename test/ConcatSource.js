@@ -114,7 +114,7 @@ describe("concatSource", () => {
 			map: expectedMap1,
 		});
 
-		const hash = require("node:crypto").createHash("sha256");
+		const hash = require("crypto").createHash("sha256");
 
 		source.updateHash(hash);
 		const digest = hash.digest("hex");
@@ -122,7 +122,7 @@ describe("concatSource", () => {
 			"183e6e9393eddb8480334aebeebb3366d6cce0124bc429c6e9246cc216167cb2",
 		);
 
-		const hash2 = require("node:crypto").createHash("sha256");
+		const hash2 = require("crypto").createHash("sha256");
 
 		const source2 = new ConcatSource(
 			"Hello World\n",
@@ -140,7 +140,7 @@ describe("concatSource", () => {
 
 		expect(clone.source()).toEqual(source.source());
 
-		const hash3 = require("node:crypto").createHash("sha256");
+		const hash3 = require("crypto").createHash("sha256");
 
 		clone.updateHash(hash3);
 		expect(hash3.digest("hex")).toEqual(digest);

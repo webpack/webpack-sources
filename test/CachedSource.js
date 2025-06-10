@@ -2,7 +2,7 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
-const crypto = require("node:crypto");
+const crypto = require("crypto");
 const { CachedSource } = require("../");
 const { OriginalSource } = require("../");
 const { RawSource } = require("../");
