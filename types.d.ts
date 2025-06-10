@@ -86,14 +86,14 @@ declare class CachedSource extends Source {
 			sourceIndex: number,
 			originalLine: number,
 			originalColumn: number,
-			nameIndex: number
+			nameIndex: number,
 		) => void,
 		onSource: (
 			sourceIndex: number,
 			source: null | string,
-			sourceContent?: string
+			sourceContent?: string,
 		) => void,
-		onName: (nameIndex: number, name: string) => void
+		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
 }
 declare class CompatSource extends Source {
@@ -114,14 +114,14 @@ declare class ConcatSource extends Source {
 			sourceIndex: number,
 			originalLine: number,
 			originalColumn: number,
-			nameIndex: number
+			nameIndex: number,
 		) => void,
 		onSource: (
 			sourceIndex: number,
 			source: null | string,
-			sourceContent?: string
+			sourceContent?: string,
 		) => void,
-		onName: (nameIndex: number, name: string) => void
+		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
 }
 type ConcatSourceChild = string | Source | SourceLike;
@@ -175,14 +175,14 @@ declare class OriginalSource extends Source {
 			sourceIndex: number,
 			originalLine: number,
 			originalColumn: number,
-			nameIndex: number
+			nameIndex: number,
 		) => void,
 		onSource: (
 			sourceIndex: number,
 			source: null | string,
-			sourceContent?: string
+			sourceContent?: string,
 		) => void,
-		_onName: (nameIndex: number, name: string) => void
+		_onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
 }
 declare class PrefixSource extends Source {
@@ -198,14 +198,14 @@ declare class PrefixSource extends Source {
 			sourceIndex: number,
 			originalLine: number,
 			originalColumn: number,
-			nameIndex: number
+			nameIndex: number,
 		) => void,
 		onSource: (
 			sourceIndex: number,
 			source: null | string,
-			sourceContent?: string
+			sourceContent?: string,
 		) => void,
-		onName: (nameIndex: number, name: string) => void
+		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
 }
 declare class RawSource extends Source {
@@ -220,14 +220,14 @@ declare class RawSource extends Source {
 			sourceIndex: number,
 			originalLine: number,
 			originalColumn: number,
-			nameIndex: number
+			nameIndex: number,
 		) => void,
 		onSource: (
 			sourceIndex: number,
 			source: null | string,
-			sourceContent?: string
+			sourceContent?: string,
 		) => void,
-		onName: (nameIndex: number, name: string) => void
+		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
 }
 declare interface RawSourceMap {
@@ -292,14 +292,14 @@ declare class ReplaceSource extends Source {
 			sourceIndex: number,
 			originalLine: number,
 			originalColumn: number,
-			nameIndex: number
+			nameIndex: number,
 		) => void,
 		onSource: (
 			sourceIndex: number,
 			source: null | string,
-			sourceContent?: string
+			sourceContent?: string,
 		) => void,
-		onName: (nameIndex: number, name: string) => void
+		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
 	static Replacement: typeof Replacement;
 }
@@ -372,7 +372,7 @@ declare class SourceMapSource extends Source {
 		sourceMap?: string | RawSourceMap | Buffer,
 		originalSource?: string | Buffer,
 		innerSourceMap?: string | RawSourceMap | Buffer,
-		removeOriginalSource?: boolean
+		removeOriginalSource?: boolean,
 	);
 	getArgsAsBuffers(): [
 		Buffer,
@@ -380,7 +380,7 @@ declare class SourceMapSource extends Source {
 		Buffer,
 		undefined | Buffer,
 		undefined | Buffer,
-		undefined | boolean
+		undefined | boolean,
 	];
 	streamChunks(
 		options: StreamChunksOptions,
@@ -391,14 +391,14 @@ declare class SourceMapSource extends Source {
 			sourceIndex: number,
 			originalLine: number,
 			originalColumn: number,
-			nameIndex: number
+			nameIndex: number,
 		) => void,
 		onSource: (
 			sourceIndex: number,
 			source: null | string,
-			sourceContent?: string
+			sourceContent?: string,
 		) => void,
-		onName: (nameIndex: number, name: string) => void
+		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
 }
 type SourceValue = string | Buffer;
@@ -425,13 +425,13 @@ declare namespace exports {
 		sourceIndex: number,
 		originalLine: number,
 		originalColumn: number,
-		nameIndex: number
+		nameIndex: number,
 	) => void;
 	export type OnName = (nameIndex: number, name: string) => void;
 	export type OnSource = (
 		sourceIndex: number,
 		source: null | string,
-		sourceContent?: string
+		sourceContent?: string,
 	) => void;
 	export {
 		Source,
@@ -454,7 +454,7 @@ declare namespace exports {
 		SourceAndMap,
 		SourceValue,
 		GeneratedSourceInfo,
-		StreamChunksOptions
+		StreamChunksOptions,
 	};
 }
 

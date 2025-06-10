@@ -6,7 +6,7 @@ export default defineConfig([
 	{
 		extends: [config],
 		rules: {
-			"n/prefer-node-protocol": "off"
-		}
+			"n/prefer-node-protocol": "off",
+		},
 	},
 ]);

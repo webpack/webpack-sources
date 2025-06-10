@@ -5410,9 +5410,9 @@ to-regex-range@^5.0.1:
   dependencies:
     is-number "^7.0.0"
 
-tooling@webpack/tooling#v1.23.9:
-  version "1.23.9"
-  resolved "https://codeload.github.com/webpack/tooling/tar.gz/877a9a9f5ab0bac3d60f595dd0ffc92234356a49"
+tooling@webpack/tooling#v1.23.10:
+  version "1.23.10"
+  resolved "https://codeload.github.com/webpack/tooling/tar.gz/94a68183eaddff8f27a229a5cc169cf0d24a5a20"
   dependencies:
     "@yarnpkg/lockfile" "^1.1.0"
     ajv "^8.1.0"
