@@ -2070,10 +2070,10 @@ eslint-config-prettier@^10.1.5:
   resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-10.1.5.tgz#00c18d7225043b6fbce6a665697377998d453782"
   integrity sha512-zc1UmCpNltmVY34vuLRV61r1K27sWuX39E+uyUnY8xS2Bex88VV9cugG+UZbRSRGtGyFboj+D8JODyme1plMpw==
 
-eslint-config-webpack@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/eslint-config-webpack/-/eslint-config-webpack-4.0.1.tgz#3454d41c41cde6726edf8697441d0ea0c0aa77b1"
-  integrity sha512-ztc9I4eep1rRZUKbaDdKEL2I8WFCxGhPI0Ajtk+Csn1QclTUwaJEmbCtT4Xzv/lAREla5DL0VsC1M0dkkzYWpA==
+eslint-config-webpack@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/eslint-config-webpack/-/eslint-config-webpack-4.0.2.tgz#d1a081b812dee62412105bdd91f8888da8b8474d"
+  integrity sha512-gVT0dasb2qaCBJpepABBiTH10Eu1VDxCQKHqypqojStWh5TZBuk+nV3gEkR3d257b9QTmSJM3jHku1y+h16MjA==
   dependencies:
     semver "^7.7.2"
 
