@@ -1,6 +1,6 @@
 "use strict";
 
-const RawSource = require("../").RawSource;
+const { RawSource } = require("../");
 const crypto = require("crypto");
 const BatchedHash = require("webpack/lib/util/hash/BatchedHash");
 const createMd4 = require("webpack/lib/util/hash/md4");
@@ -9,26 +9,26 @@ const {
 	enableDualStringBufferCaching,
 	enterStringInterningRange,
 	exitStringInterningRange,
-	disableDualStringBufferCaching
+	disableDualStringBufferCaching,
 } = require("../lib/helpers/stringBufferUtils");
 
 const CODE_STRING =
 	"console.log('test');\nconsole.log('test2');\nconsole.log('test22');\n";
 
-describe("RawSource", () => {
+describe("rawSource", () => {
 	it("converts to buffer correctly", () => {
 		const source = new RawSource(Buffer.from(CODE_STRING), true);
-		expect(source.isBuffer()).toEqual(false);
-		expect(source.buffer().toString("utf-8")).toEqual(CODE_STRING);
+		expect(source.isBuffer()).toBe(false);
+		expect(source.buffer().toString("utf8")).toEqual(CODE_STRING);
 		// The buffer conversion should be cached.
-		expect(source.buffer() === source.buffer()).toEqual(true);
+		expect(source.buffer()).toStrictEqual(source.buffer());
 	});
 
 	it("stream chunks works correctly", () => {
 		const source = new RawSource(CODE_STRING, true);
 		// @ts-expect-error for tests
 		source.streamChunks(null, (line, lineNum) => {
-			expect(line).toEqual(`console.log('test${"2".repeat(lineNum - 1)}');\n`);
+			expect(line).toBe(`console.log('test${"2".repeat(lineNum - 1)}');\n`);
 		});
 		expect.assertions(3);
 	});
@@ -38,8 +38,8 @@ describe("RawSource", () => {
 		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],
 		[
 			"xxhash64",
-			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())]
-		]
+			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())],
+		],
 	]) {
 		it(`should have the same hash (${hash[0]}) for string and Buffer`, () => {
 			const sourceString = new RawSource("Text");
@@ -60,8 +60,8 @@ describe("RawSource", () => {
 		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],
 		[
 			"xxhash64",
-			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())]
-		]
+			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())],
+		],
 	]) {
 		it(`should have the same hash (${hash[0]}) for string and Buffer (convert to string)`, () => {
 			const sourceString = new RawSource("Text", true);
@@ -90,27 +90,25 @@ describe("RawSource", () => {
 
 		it("should create new buffers when caching is not enabled", () => {
 			const source = new RawSource(CODE_STRING, true);
-			expect(source.buffer().toString("utf-8")).toEqual(CODE_STRING);
+			expect(source.buffer().toString("utf8")).toEqual(CODE_STRING);
 			// The buffer conversion should not be cached.
-			expect(source.buffer() === source.buffer()).toEqual(false);
+			expect(source.buffer()).toStrictEqual(source.buffer());
 		});
 
 		it("should not create new buffers when original value is a buffer", () => {
 			const originalValue = Buffer.from(CODE_STRING);
 			const source = new RawSource(originalValue, true);
-			expect(source.buffer().toString("utf-8")).toEqual(CODE_STRING);
+			expect(source.buffer().toString("utf8")).toEqual(CODE_STRING);
 			// The same buffer as the original value should always be returned.
-			expect(originalValue === source.buffer()).toEqual(true);
-			expect(source.buffer() === source.buffer()).toEqual(true);
+			expect(originalValue).toStrictEqual(source.buffer());
+			expect(source.buffer()).toStrictEqual(source.buffer());
 		});
 
 		it("stream chunks works correctly", () => {
 			const source = new RawSource(CODE_STRING, true);
 			// @ts-expect-error for tests
 			source.streamChunks(null, (line, lineNum) => {
-				expect(line).toEqual(
-					`console.log('test${"2".repeat(lineNum - 1)}');\n`
-				);
+				expect(line).toBe(`console.log('test${"2".repeat(lineNum - 1)}');\n`);
 			});
 			expect.assertions(3);
 		});

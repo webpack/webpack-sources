@@ -4,14 +4,14 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
-const SourceMapSource = require("../").SourceMapSource;
-const OriginalSource = require("../").OriginalSource;
-const ConcatSource = require("../").ConcatSource;
-const PrefixSource = require("../").PrefixSource;
-const ReplaceSource = require("../").ReplaceSource;
-const CachedSource = require("../").CachedSource;
+const { SourceMapSource } = require("../");
+const { OriginalSource } = require("../");
+const { ConcatSource } = require("../");
+const { PrefixSource } = require("../");
+const { ReplaceSource } = require("../");
+const { CachedSource } = require("../");
 const createMappingsSerializer = require("../lib/helpers/createMappingsSerializer");
-const SourceNode = require("source-map").SourceNode;
+const { SourceNode } = require("source-map");
 const fs = require("fs");
 const path = require("path");
 const { withReadableMappings } = require("./helpers");
@@ -19,7 +19,7 @@ const {
 	enableDualStringBufferCaching,
 	enterStringInterningRange,
 	exitStringInterningRange,
-	disableDualStringBufferCaching
+	disableDualStringBufferCaching,
 } = require("../lib/helpers/stringBufferUtils");
 const crypto = require("crypto");
 const BatchedHash = require("webpack/lib/util/hash/BatchedHash");
@@ -28,12 +28,12 @@ const createXXHash64 = require("webpack/lib/util/hash/xxhash64");
 
 describe.each([
 	{
-		enableMemoryOptimizations: false
+		enableMemoryOptimizations: false,
 	},
 	{
-		enableMemoryOptimizations: true
-	}
-])("SourceMapSource %s", ({ enableMemoryOptimizations }) => {
+		enableMemoryOptimizations: true,
+	},
+])("sourceMapSource %s", ({ enableMemoryOptimizations }) => {
 	beforeEach(() => {
 		if (enableMemoryOptimizations) {
 			disableDualStringBufferCaching();
@@ -49,12 +49,13 @@ describe.each([
 	});
 
 	it("map correctly", () => {
-		const innerSourceCode =
-			["Hello World", "is a test string"].join("\n") + "\n";
+		const innerSourceCode = `${["Hello World", "is a test string"].join(
+			"\n",
+		)}\n`;
 		const innerSource = new ConcatSource(
 			new OriginalSource(innerSourceCode, "hello-world.txt"),
 			new OriginalSource("Translate: ", "header.txt"),
-			"Other text"
+			"Other text",
 		);
 
 		const source = new SourceNode(null, null, null, [
@@ -67,12 +68,12 @@ describe.each([
 			new SourceNode(2, 10, "text", "Text\n"),
 			new SourceNode(3, 11, "text", "Anderer"),
 			" ",
-			new SourceNode(3, 17, "text", "Text")
+			new SourceNode(3, 17, "text", "Text"),
 		]);
 		source.setSourceContent("text", innerSourceCode);
 
 		const sourceR = source.toStringWithSourceMap({
-			file: "translated.txt"
+			file: "translated.txt",
 		});
 
 		const sourceMapSource1 = new SourceMapSource(
@@ -81,7 +82,7 @@ describe.each([
 			sourceR.map.toJSON(),
 			innerSource.source(),
 			/** @type {RawSourceMap} */
-			(innerSource.map())
+			(innerSource.map()),
 		);
 		const sourceMapSource2 = new SourceMapSource(
 			sourceR.code,
@@ -90,13 +91,13 @@ describe.each([
 			innerSource.source(),
 			/** @type {RawSourceMap} */
 			(innerSource.map()),
-			true
+			true,
 		);
 
 		const expectedContent = [
 			"Translated: Hallo Welt",
 			"ist ein test Text",
-			"Anderer Text"
+			"Anderer Text",
 		].join("\n");
 		expect(sourceMapSource1.source()).toEqual(expectedContent);
 		expect(sourceMapSource2.source()).toEqual(expectedContent);
@@ -151,16 +152,18 @@ describe.each([
 	`);
 
 		const hash = require("crypto").createHash("sha256");
+
 		sourceMapSource1.updateHash(hash);
 		const digest = hash.digest("hex");
 		expect(digest).toMatchInlineSnapshot(
-			`"a61a2da7f3d541e458b1af9c0ec25d853fb929339d7d8b22361468be67326a52"`
+			'"a61a2da7f3d541e458b1af9c0ec25d853fb929339d7d8b22361468be67326a52"',
 		);
 
 		const clone = new SourceMapSource(...sourceMapSource1.getArgsAsBuffers());
 		expect(clone.sourceAndMap()).toEqual(sourceMapSource1.sourceAndMap());
 
 		const hash2 = require("crypto").createHash("sha256");
+
 		clone.updateHash(hash2);
 		const digest2 = hash2.digest("hex");
 		expect(digest2).toEqual(digest);
@@ -173,7 +176,7 @@ describe.each([
 			sources: [null],
 			// @ts-expect-error for tests
 			sourcesContent: [null],
-			mappings: "AAAA"
+			mappings: "AAAA",
 		});
 		const b = new SourceMapSource("hello world\n", "hello.txt", {
 			version: 3,
@@ -181,7 +184,7 @@ describe.each([
 			sourcesContent: [],
 			mappings: "AAAA",
 			names: [],
-			file: ""
+			file: "",
 		});
 		const c = new SourceMapSource("hello world\n", "hello.txt", {
 			version: 3,
@@ -189,7 +192,7 @@ describe.each([
 			sourcesContent: ["hello world\n"],
 			mappings: "AAAA",
 			names: [],
-			file: ""
+			file: "",
 		});
 		const sources = [a, b, c].map((s) => {
 			const r = new ReplaceSource(s);
@@ -230,7 +233,7 @@ describe.each([
 		}
 	`);
 		expect(
-			withReadableMappings(source.map({ columns: false }), source.source())
+			withReadableMappings(source.map({ columns: false }), source.source()),
 		).toMatchInlineSnapshot(`
 		Object {
 		  "_mappings": "1:0 -> [null] 1:0
@@ -260,13 +263,13 @@ describe.each([
 	it("should handle es6-promise correctly", () => {
 		const code = fs.readFileSync(
 			path.resolve(__dirname, "fixtures", "es6-promise.js"),
-			"utf-8"
+			"utf8",
 		);
 		const map = JSON.parse(
 			fs.readFileSync(
 				path.resolve(__dirname, "fixtures", "es6-promise.map"),
-				"utf-8"
-			)
+				"utf8",
+			),
 		);
 		const inner = new SourceMapSource(code, "es6-promise.js", map);
 		const source = new ConcatSource(inner, inner);
@@ -280,28 +283,28 @@ describe.each([
 			mappings: "AAAA;AACA",
 			sources: ["hello1"],
 			names: [],
-			file: ""
+			file: "",
 		});
 		const b = new SourceMapSource("hi", "b", {
 			version: 3,
 			mappings: "AAAA,EAAE",
 			sources: ["hello2"],
 			names: [],
-			file: ""
+			file: "",
 		});
 		const b2 = new SourceMapSource("hi", "b", {
 			version: 3,
 			mappings: "AAAA,EAAE",
 			sources: ["hello3"],
 			names: [],
-			file: ""
+			file: "",
 		});
 		const c = new SourceMapSource("", "c", {
 			version: 3,
 			mappings: "AAAA",
 			sources: ["hello4"],
 			names: [],
-			file: ""
+			file: "",
 		});
 		const source = new ConcatSource(
 			a,
@@ -317,7 +320,7 @@ describe.each([
 			b2,
 			c,
 			a,
-			b
+			b,
 		);
 		source.sourceAndMap();
 		expect(withReadableMappings(source.map(), source.source()))
@@ -399,7 +402,7 @@ describe.each([
 				sources: ["hello.txt"],
 				mappings: "AAAAA",
 				names: ["hello"],
-				file: ""
+				file: "",
 			},
 			"hello",
 			{
@@ -407,9 +410,9 @@ describe.each([
 				sources: ["hello world.txt"],
 				mappings: "AAAA",
 				names: [],
-				file: ""
+				file: "",
 			},
-			false
+			false,
 		);
 		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
 		Object {
@@ -439,10 +442,10 @@ describe.each([
 					m(1, 0, 0, 1, 0, 0),
 					m(1, 9, 1, 1, 0, 1),
 					m(1, 11, 1, 1, 6, 2),
-					m(1, 12, -1, -1, -1, -1)
+					m(1, 12, -1, -1, -1, -1),
 				].join(""),
 				names: ["Message", "hello", "world"],
-				file: ""
+				file: "",
 			},
 			"HELLO WORLD",
 			{
@@ -451,9 +454,9 @@ describe.each([
 				mappings: [m2(1, 0, 0, 1, 0, 0), m2(1, 6, -1, -1, -1, -1)].join(""),
 				sourcesContent: ["hello world"],
 				names: [],
-				file: ""
+				file: "",
 			},
-			false
+			false,
 		);
 		expect(withReadableMappings(source.sourceAndMap())).toMatchInlineSnapshot(`
 		Object {
@@ -489,25 +492,24 @@ describe.each([
 		const sourceMapSource = new SourceMapSource("source", "name");
 
 		const buffer1 = sourceMapSource.buffer();
-		expect(buffer1.length).toBe(6);
+		expect(buffer1).toHaveLength(6);
 
 		const buffer2 = sourceMapSource.buffer();
-		if (enableMemoryOptimizations) {
-			// When memory optimizations are enabled, the buffer is not cached.
-			expect(buffer1.equals(buffer2)).toBe(true);
-		} else {
-			expect(buffer2).toBe(buffer1);
-		}
+
+		// When memory optimizations are enabled, the buffer is not cached.
+		expect(enableMemoryOptimizations ? buffer1.equals(buffer2) : buffer2).toBe(
+			enableMemoryOptimizations ? true : buffer1,
+		);
 	});
 
 	it("provides buffer when backed by buffer", () => {
 		const sourceMapSource = new SourceMapSource(
-			Buffer.from("source", "utf-8"),
-			"name"
+			Buffer.from("source", "utf8"),
+			"name",
 		);
 
 		const buffer1 = sourceMapSource.buffer();
-		expect(buffer1.length).toBe(6);
+		expect(buffer1).toHaveLength(6);
 
 		const buffer2 = sourceMapSource.buffer();
 		expect(buffer2).toBe(buffer1);
@@ -518,8 +520,8 @@ describe.each([
 		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],
 		[
 			"xxhash64",
-			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())]
-		]
+			[new BatchedHash(createXXHash64()), new BatchedHash(createXXHash64())],
+		],
 	]) {
 		it(`should have the same hash (${hash[0]}) for string and Buffer`, () => {
 			const sourceString = new SourceMapSource("hello world\n", "hello.txt", {
@@ -528,7 +530,7 @@ describe.each([
 				sourcesContent: ["hello world\n"],
 				mappings: "AAAA",
 				names: [],
-				file: ""
+				file: "",
 			});
 			const sourceBuffer = new SourceMapSource(
 				Buffer.from("hello world\n"),
@@ -540,9 +542,9 @@ describe.each([
 						sourcesContent: ["hello world\n"],
 						mappings: "AAAA",
 						names: [],
-						file: ""
-					})
-				)
+						file: "",
+					}),
+				),
 			);
 
 			expect(sourceString.source()).toBe("hello world\n");

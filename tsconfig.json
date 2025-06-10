@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2018",
     "module": "commonjs",
     "lib": ["es2017"],
     "allowJs": true,

@@ -2,19 +2,19 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
-const ConcatSource = require("../").ConcatSource;
-const RawSource = require("../").RawSource;
-const OriginalSource = require("../").OriginalSource;
+const { ConcatSource } = require("../");
+const { RawSource } = require("../");
+const { OriginalSource } = require("../");
 const { withReadableMappings } = require("./helpers");
 
-describe("ConcatSource", () => {
+describe("concatSource", () => {
 	it("should concat two sources", () => {
 		const source = new ConcatSource(
 			new RawSource("Hello World\n"),
 			new OriginalSource(
 				"console.log('test');\nconsole.log('test2');\n",
-				"console.js"
-			)
+				"console.js",
+			),
 		);
 		source.add(new OriginalSource("Hello2\n", "hello.md"));
 		const expectedMap1 = {
@@ -25,30 +25,30 @@ describe("ConcatSource", () => {
 			sources: ["console.js", "hello.md"],
 			sourcesContent: [
 				"console.log('test');\nconsole.log('test2');\n",
-				"Hello2\n"
-			]
+				"Hello2\n",
+			],
 		};
 		const expectedSource = [
 			"Hello World",
 			"console.log('test');",
 			"console.log('test2');",
 			"Hello2",
-			""
+			"",
 		].join("\n");
 		expect(source.size()).toBe(62);
 		expect(source.source()).toEqual(expectedSource);
 		expect(
 			source.map({
-				columns: false
-			})
+				columns: false,
+			}),
 		).toEqual(expectedMap1);
 		expect(
 			source.sourceAndMap({
-				columns: false
-			})
+				columns: false,
+			}),
 		).toEqual({
 			source: expectedSource,
-			map: expectedMap1
+			map: expectedMap1,
 		});
 
 		const expectedMap2 = {
@@ -59,13 +59,13 @@ describe("ConcatSource", () => {
 			sources: ["console.js", "hello.md"],
 			sourcesContent: [
 				"console.log('test');\nconsole.log('test2');\n",
-				"Hello2\n"
-			]
+				"Hello2\n",
+			],
 		};
 		expect(source.map()).toEqual(expectedMap2);
 		expect(source.sourceAndMap()).toEqual({
 			source: expectedSource,
-			map: expectedMap2
+			map: expectedMap2,
 		});
 	});
 
@@ -74,8 +74,8 @@ describe("ConcatSource", () => {
 			new RawSource("Hello World\n"),
 			new OriginalSource(
 				"console.log('test');\nconsole.log('test2');\n",
-				"console.js"
-			)
+				"console.js",
+			),
 		);
 		const innerSource = new ConcatSource("(", "'string'", ")");
 		innerSource.buffer(); // force optimization
@@ -87,7 +87,7 @@ describe("ConcatSource", () => {
 			"Hello World",
 			"console.log('test');",
 			"console.log('test2');",
-			"console.log('string')"
+			"console.log('string')",
 		].join("\n");
 		const expectedMap1 = {
 			version: 3,
@@ -95,40 +95,42 @@ describe("ConcatSource", () => {
 			mappings: ";AAAA;AACA",
 			names: [],
 			sources: ["console.js"],
-			sourcesContent: ["console.log('test');\nconsole.log('test2');\n"]
+			sourcesContent: ["console.log('test');\nconsole.log('test2');\n"],
 		};
 		expect(source.size()).toBe(76);
 		expect(source.source()).toEqual(expectedSource);
-		expect(source.buffer()).toEqual(Buffer.from(expectedSource, "utf-8"));
+		expect(source.buffer()).toEqual(Buffer.from(expectedSource, "utf8"));
 		expect(
 			source.map({
-				columns: false
-			})
+				columns: false,
+			}),
 		).toEqual(expectedMap1);
 		expect(
 			source.sourceAndMap({
-				columns: false
-			})
+				columns: false,
+			}),
 		).toEqual({
 			source: expectedSource,
-			map: expectedMap1
+			map: expectedMap1,
 		});
 
 		const hash = require("crypto").createHash("sha256");
+
 		source.updateHash(hash);
 		const digest = hash.digest("hex");
 		expect(digest).toBe(
-			"183e6e9393eddb8480334aebeebb3366d6cce0124bc429c6e9246cc216167cb2"
+			"183e6e9393eddb8480334aebeebb3366d6cce0124bc429c6e9246cc216167cb2",
 		);
 
 		const hash2 = require("crypto").createHash("sha256");
+
 		const source2 = new ConcatSource(
 			"Hello World\n",
 			new OriginalSource(
 				"console.log('test');\nconsole.log('test2');\n",
-				"console.js"
+				"console.js",
 			),
-			"console.log('string')"
+			"console.log('string')",
 		);
 		source2.updateHash(hash2);
 		expect(hash2.digest("hex")).toEqual(digest);
@@ -139,6 +141,7 @@ describe("ConcatSource", () => {
 		expect(clone.source()).toEqual(source.source());
 
 		const hash3 = require("crypto").createHash("sha256");
+
 		clone.updateHash(hash3);
 		expect(hash3.digest("hex")).toEqual(digest);
 	});
@@ -147,22 +150,22 @@ describe("ConcatSource", () => {
 		const source = new ConcatSource(
 			"Hello World\n",
 			new RawSource("Hello World\n"),
-			""
+			"",
 		);
 
 		const resultText = source.source();
 		const resultMap = source.sourceAndMap({
-			columns: true
+			columns: true,
 		});
 		const resultListMap = source.sourceAndMap({
-			columns: false
+			columns: false,
 		});
 
 		expect(resultText).toBe("Hello World\nHello World\n");
 		expect(resultMap.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map).toBe(null);
-		expect(resultMap.map).toBe(null);
+		expect(resultListMap.map).toBeNull();
+		expect(resultMap.map).toBeNull();
 	});
 
 	it("should allow to concatenate in a single line", () => {
@@ -174,7 +177,7 @@ describe("ConcatSource", () => {
 			new OriginalSource("Hello\n", "hello.txt"),
 			" \n",
 			new OriginalSource("World\n", "world.txt"),
-			"is here"
+			"is here",
 		);
 
 		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
