@@ -52,9 +52,9 @@ jobs:
           architecture: ${{ steps.calculate_architecture.outputs.result }}
           cache: "yarn"
       - run: yarn --frozen-lockfile --ignore-engines
-        if: matrix.node-version == '10.x' || matrix.node-version == '12.x' || matrix.node-version == '14.x' || matrix.node-version == '16.x' || matrix.node-version == '18.x'
+        if: matrix.node-version == '10.x' || matrix.node-version == '12.x' || matrix.node-version == '14.x' || matrix.node-version == '16.x'
       - run: yarn --frozen-lockfile
-        if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x' && matrix.node-version != '16.x' && matrix.node-version != '18.x'
+        if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x' && matrix.node-version != '16.x'
       - run: yarn cover
       - uses: codecov/codecov-action@v5
         with:
