@@ -5,6 +5,7 @@ jest.mock("./__mocks__/createMappingsSerializer");
 const { ConcatSource } = require("../");
 const { RawSource } = require("../");
 const { OriginalSource } = require("../");
+const { SourceMapSource } = require("../");
 const { withReadableMappings } = require("./helpers");
 
 describe("concatSource", () => {
@@ -209,5 +210,42 @@ describe("concatSource", () => {
 		  "source": "abc",
 		}
 	`);
+	});
+
+	it("should handle column mapping correctly with missing sources", () => {
+		const source = new ConcatSource(
+			"/*! For license information please see main.js.LICENSE.txt */",
+		);
+		const innerSource = "ab\nc";
+		const innerMap = {
+			names: [],
+			file: "x",
+			version: 3,
+			sources: ["main.js"],
+			sourcesContent: ["a\nc"],
+			mappings: "AAAA,CCAA;ADCA",
+			// ______________↑ The column mapping (CCAA) references one missing source
+		};
+		source.add(new SourceMapSource(innerSource, "main.js", innerMap));
+		const expected = {
+			source:
+				"/*! For license information please see main.js.LICENSE.txt */ab\nc",
+			map: {
+				version: 3,
+				file: "x",
+				mappings: "6DAAA,C;AACA",
+				sources: ["main.js"],
+				sourcesContent: ["a\nc"],
+				names: [],
+			},
+		};
+		expect(
+			source.sourceAndMap({
+				columns: true,
+			}),
+		).toEqual({
+			source: expected.source,
+			map: expected.map,
+		});
 	});
 });
