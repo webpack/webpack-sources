@@ -12,6 +12,7 @@ All methods should be considered as expensive as they may need to do computation
 
 #### `source`
 
+<!-- eslint-skip -->
 ```typescript
 Source.prototype.source() -> String | Buffer
 ```
@@ -20,6 +21,7 @@ Returns the represented source code as string or Buffer (for binary Sources).
 
 #### `buffer`
 
+<!-- eslint-skip -->
 ```typescript
 Source.prototype.buffer() -> Buffer
 ```
@@ -28,6 +30,7 @@ Returns the represented source code as Buffer. Strings are converted to utf-8.
 
 #### `size`
 
+<!-- eslint-skip -->
 ```typescript
 Source.prototype.size() -> Number
 ```
@@ -36,6 +39,7 @@ Returns the size in bytes of the represented source code.
 
 #### `map`
 
+<!-- eslint-skip -->
 ```typescript
 Source.prototype.map(options?: Object) -> Object | null
 ```
@@ -48,6 +52,7 @@ The `options` object can contain the following keys:
 
 #### `sourceAndMap`
 
+<!-- eslint-skip -->
 ```typescript
 Source.prototype.sourceAndMap(options?: Object) -> {
 	source: String | Buffer,
@@ -61,6 +66,7 @@ See `map()` for `options`.
 
 #### `updateHash`
 
+<!-- eslint-skip -->
 ```typescript
 Source.prototype.updateHash(hash: Hash) -> void
 ```
@@ -71,6 +77,7 @@ Updates the provided `Hash` object with the content of the represented source co
 
 Represents source code without SourceMap.
 
+<!-- eslint-skip -->
 ```typescript
 new RawSource(sourceCode: String | Buffer)
 ```
@@ -79,6 +86,7 @@ new RawSource(sourceCode: String | Buffer)
 
 Represents source code, which is a copy of the original file.
 
+<!-- eslint-skip -->
 ```typescript
 new OriginalSource(
 	sourceCode: String | Buffer,
@@ -95,6 +103,7 @@ OriginalSource tries to create column mappings if requested, by splitting the so
 
 Represents source code with SourceMap, optionally having an additional SourceMap for the original source.
 
+<!-- eslint-skip -->
 ```typescript
 new SourceMapSource(
 	sourceCode: String | Buffer,
@@ -121,6 +130,7 @@ When original source matches generated source for a mapping it's assumed to be m
 Decorates a `Source` and caches returned results of `map`, `source`, `buffer`, `size` and `sourceAndMap` in memory. `updateHash` is not cached.
 It tries to reused cached results from other methods to avoid calculations, i. e. when `source` is already cached, calling `size` will get the size from the cached source, calling `sourceAndMap` will only call `map` on the wrapped Source.
 
+<!-- eslint-skip -->
 ```typescript
 new CachedSource(source: Source)
 new CachedSource(source: Source | () => Source, cachedData?: CachedData)
@@ -146,6 +156,7 @@ Returns the original `Source` object or a function returning these.
 
 Prefix every line of the decorated `Source` with a provided string.
 
+<!-- eslint-skip -->
 ```typescript
 new PrefixSource(
 	prefix: String,
@@ -157,6 +168,7 @@ new PrefixSource(
 
 Concatenate multiple `Source`s or strings to a single source.
 
+<!-- eslint-skip -->
 ```typescript
 new ConcatSource(
 	...items?: Source | String
@@ -167,6 +179,7 @@ new ConcatSource(
 
 #### `add`
 
+<!-- eslint-skip -->
 ```typescript
 ConcatSource.prototype.add(item: Source | String)
 ```
@@ -184,6 +197,7 @@ When original source matches generated source for a mapping it's assumed to be m
 
 #### `replace`
 
+<!-- eslint-skip -->
 ```typescript
 ReplaceSource.prototype.replace(
 	start: Number,
@@ -198,6 +212,7 @@ Locations represents locations in the original source and are not influenced by 
 
 #### `insert`
 
+<!-- eslint-skip -->
 ```typescript
 ReplaceSource.prototype.insert(
 	pos: Number,
@@ -221,6 +236,7 @@ Converts a Source-like object into a real Source object.
 
 #### static `from`
 
+<!-- eslint-skip -->
 ```typescript
 CompatSource.from(sourceLike: any | Source)
 ```

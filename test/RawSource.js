@@ -1,15 +1,15 @@
 "use strict";
 
-const { RawSource } = require("../");
 const crypto = require("crypto");
 const BatchedHash = require("webpack/lib/util/hash/BatchedHash");
 const createMd4 = require("webpack/lib/util/hash/md4");
 const createXXHash64 = require("webpack/lib/util/hash/xxhash64");
+const { RawSource } = require("../");
 const {
+	disableDualStringBufferCaching,
 	enableDualStringBufferCaching,
 	enterStringInterningRange,
 	exitStringInterningRange,
-	disableDualStringBufferCaching,
 } = require("../lib/helpers/stringBufferUtils");
 
 const CODE_STRING =

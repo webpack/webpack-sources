@@ -412,10 +412,10 @@ declare namespace exports {
 		export namespace stringBufferUtils {
 			export let disableDualStringBufferCaching: () => void;
 			export let enableDualStringBufferCaching: () => void;
-			export let internString: (str: string) => string;
-			export let isDualStringBufferCachingEnabled: () => boolean;
 			export let enterStringInterningRange: () => void;
 			export let exitStringInterningRange: () => void;
+			export let internString: (str: string) => string;
+			export let isDualStringBufferCachingEnabled: () => boolean;
 		}
 	}
 	export type OnChunk = (

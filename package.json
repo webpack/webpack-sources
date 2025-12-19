@@ -2,8 +2,20 @@
   "name": "webpack-sources",
   "version": "3.3.3",
   "description": "Source code handling classes for webpack",
+  "keywords": ["webpack", "source-map"],
+  "homepage": "https://github.com/webpack/webpack-sources#readme",
+  "bugs": {
+    "url": "https://github.com/webpack/webpack-sources/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webpack/webpack-sources.git"
+  },
+  "license": "MIT",
+  "author": "Tobias Koppers @sokra",
   "main": "lib/index.js",
   "types": "types.d.ts",
+  "files": ["lib/", "types.d.ts"],
   "scripts": {
     "lint": "npm run lint:code && npm run lint:types && npm run lint:types-test && npm run lint:special",
     "lint:code": "eslint --cache .",
@@ -40,29 +52,11 @@
     "prettier-2": "npm:prettier@^2",
     "source-map": "^0.7.3",
     "sourcemap-validator": "^2.1.0",
-    "tooling": "webpack/tooling#v1.23.10",
+    "tooling": "webpack/tooling#v1.24.4",
     "typescript": "^5.3.3",
     "webpack": "^5.99.9"
   },
-  "files": [
-    "lib/",
-    "types.d.ts"
-  ],
   "engines": {
     "node": ">=10.13.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/webpack/webpack-sources.git"
-  },
-  "keywords": [
-    "webpack",
-    "source-map"
-  ],
-  "author": "Tobias Koppers @sokra",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/webpack/webpack-sources/issues"
-  },
-  "homepage": "https://github.com/webpack/webpack-sources#readme"
+  }
 }
