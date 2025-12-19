@@ -3,6 +3,7 @@
 jest.mock("./__mocks__/createMappingsSerializer");
 
 const { SourceMapConsumer } = require("source-map");
+const validate = require("sourcemap-validator");
 const CachedSource = require("../lib/CachedSource");
 const CompatSource = require("../lib/CompatSource");
 const ConcatSource = require("../lib/ConcatSource");
@@ -12,7 +13,6 @@ const RawSource = require("../lib/RawSource");
 const ReplaceSource = require("../lib/ReplaceSource");
 const SourceMapSource = require("../lib/SourceMapSource");
 const { withReadableMappings } = require("./helpers");
-const validate = require("sourcemap-validator");
 
 /** @typedef {import("../lib/Source").RawSourceMap} RawSourceMap */
 

@@ -9,10 +9,10 @@ const { RawSource } = require("../");
 const { Source } = require("../");
 const streamChunks = require("../lib/helpers/streamChunks");
 const {
+	disableDualStringBufferCaching,
 	enableDualStringBufferCaching,
 	enterStringInterningRange,
 	exitStringInterningRange,
-	disableDualStringBufferCaching,
 } = require("../lib/helpers/stringBufferUtils");
 
 class TrackedSource extends Source {

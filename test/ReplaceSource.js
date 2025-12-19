@@ -4,10 +4,10 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
+const validate = require("sourcemap-validator");
 const { ReplaceSource } = require("../");
 const { OriginalSource } = require("../");
 const { SourceMapSource } = require("../");
-const validate = require("sourcemap-validator");
 const { withReadableMappings } = require("./helpers");
 
 describe("replaceSource", () => {

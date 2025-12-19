@@ -4,6 +4,13 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
+const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
+const { SourceNode } = require("source-map");
+const BatchedHash = require("webpack/lib/util/hash/BatchedHash");
+const createMd4 = require("webpack/lib/util/hash/md4");
+const createXXHash64 = require("webpack/lib/util/hash/xxhash64");
 const { SourceMapSource } = require("../");
 const { OriginalSource } = require("../");
 const { ConcatSource } = require("../");
@@ -11,20 +18,13 @@ const { PrefixSource } = require("../");
 const { ReplaceSource } = require("../");
 const { CachedSource } = require("../");
 const createMappingsSerializer = require("../lib/helpers/createMappingsSerializer");
-const { SourceNode } = require("source-map");
-const fs = require("fs");
-const path = require("path");
-const { withReadableMappings } = require("./helpers");
 const {
+	disableDualStringBufferCaching,
 	enableDualStringBufferCaching,
 	enterStringInterningRange,
 	exitStringInterningRange,
-	disableDualStringBufferCaching,
 } = require("../lib/helpers/stringBufferUtils");
-const crypto = require("crypto");
-const BatchedHash = require("webpack/lib/util/hash/BatchedHash");
-const createMd4 = require("webpack/lib/util/hash/md4");
-const createXXHash64 = require("webpack/lib/util/hash/xxhash64");
+const { withReadableMappings } = require("./helpers");
 
 describe.each([
 	{

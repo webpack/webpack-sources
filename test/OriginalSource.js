@@ -9,13 +9,13 @@ const createXXHash64 = require("webpack/lib/util/hash/xxhash64");
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
+const { OriginalSource } = require("../");
 const {
+	disableDualStringBufferCaching,
 	enableDualStringBufferCaching,
 	enterStringInterningRange,
 	exitStringInterningRange,
-	disableDualStringBufferCaching,
 } = require("../lib/helpers/stringBufferUtils");
-const { OriginalSource } = require("../");
 
 describe.each([
 	{
