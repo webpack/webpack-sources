@@ -52,9 +52,9 @@ jobs:
           architecture: ${{ steps.calculate_architecture.outputs.result }}
           cache: "npm"
       - run: npm install
-        if: matrix.node-version == '10.x' || matrix.node-version == '12.x'
+        if: matrix.node-version == '10.x' || matrix.node-version == '12.x' || matrix.node-version == '14.x'
       - run: npm ci
-        if: matrix.node-version != '10.x' && matrix.node-version != '12.x'
+        if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x'
       - run: npm run cover
       - uses: codecov/codecov-action@v5
         with:
