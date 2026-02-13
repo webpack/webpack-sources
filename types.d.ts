@@ -371,7 +371,7 @@ declare class SourceMapSource extends Source {
 		name: string,
 		sourceMap?: string | RawSourceMap | Buffer,
 		originalSource?: string | Buffer,
-		innerSourceMap?: string | RawSourceMap | Buffer,
+		innerSourceMap?: null | string | RawSourceMap | Buffer,
 		removeOriginalSource?: boolean,
 	);
 	getArgsAsBuffers(): [
