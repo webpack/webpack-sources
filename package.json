@@ -1,6 +1,6 @@
 {
   "name": "webpack-sources",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "description": "Source code handling classes for webpack",
   "keywords": ["webpack", "source-map"],
   "homepage": "https://github.com/webpack/webpack-sources#readme",
