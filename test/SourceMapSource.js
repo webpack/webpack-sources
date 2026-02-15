@@ -260,6 +260,69 @@ describe.each([
 	`);
 	});
 
+	it("should handle null innerSourceMap", () => {
+		const sourceWithNull = new SourceMapSource(
+			"h",
+			"hello.txt",
+			{
+				version: 3,
+				sources: ["hello.txt"],
+				mappings: "AAAAA",
+				names: ["hello"],
+				file: "",
+			},
+			"hello",
+			null,
+			false,
+		);
+		const nullMap = withReadableMappings(sourceWithNull.map());
+		expect(nullMap).toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:0 -> [hello.txt] 1:0 (hello)",
+		  "file": "",
+		  "mappings": "AAAAA",
+		  "names": Array [
+		    "hello",
+		  ],
+		  "sources": Array [
+		    "hello.txt",
+		  ],
+		  "version": 3,
+		}
+	`);
+		const sourceWithUndefined = new SourceMapSource(
+			"h",
+			"hello.txt",
+			{
+				version: 3,
+				sources: ["hello.txt"],
+				mappings: "AAAAA",
+				names: ["hello"],
+				file: "",
+			},
+			"hello",
+			undefined,
+			false,
+		);
+		const undefinedMap = withReadableMappings(sourceWithUndefined.map());
+		expect(undefinedMap).toMatchInlineSnapshot(`
+		Object {
+		  "_mappings": "1:0 -> [hello.txt] 1:0 (hello)",
+		  "file": "",
+		  "mappings": "AAAAA",
+		  "names": Array [
+		    "hello",
+		  ],
+		  "sources": Array [
+		    "hello.txt",
+		  ],
+		  "version": 3,
+		}
+	`);
+
+		expect(nullMap).toEqual(undefinedMap);
+	});
+
 	it("should handle es6-promise correctly", () => {
 		const code = fs.readFileSync(
 			path.resolve(__dirname, "fixtures", "es6-promise.js"),
