@@ -62,7 +62,9 @@ jobs:
           architecture: ${{ steps.calculate_architecture.outputs.result }}
           cache: npm
 
-      - run: npm install
+      - run: |
+          npm install --save-dev jest@27
+          npm install
         if: matrix.node-version == '10.x' || matrix.node-version == '12.x' || matrix.node-version == '14.x'
 
       - run: npm ci
