@@ -16,11 +16,11 @@ const changelogFunctions = {
 	getDependencyReleaseLine: async (
 		changesets,
 		dependenciesUpdated,
-		options
+		options,
 	) => {
 		if (!options.repo) {
 			throw new Error(
-				'Please provide a repo to this changelog generator like this:\n"changelog": ["@changesets/changelog-github", { "repo": "org/repo" }]'
+				'Please provide a repo to this changelog generator like this:\n"changelog": ["@changesets/changelog-github", { "repo": "org/repo" }]',
 			);
 		}
 		if (dependenciesUpdated.length === 0) return "";
@@ -31,18 +31,18 @@ const changelogFunctions = {
 					if (cs.commit) {
 						const { links } = await getInfo({
 							repo: options.repo,
-							commit: cs.commit
+							commit: cs.commit,
 						});
 						return links.commit;
 					}
-				})
+				}),
 			)
 		)
 			.filter(Boolean)
 			.join(", ")}]:`;
 
 		const updatedDependenciesList = dependenciesUpdated.map(
-			(dependency) => `  - ${dependency.name}@${dependency.newVersion}`
+			(dependency) => `  - ${dependency.name}@${dependency.newVersion}`,
 		);
 
 		return [changesetLink, ...updatedDependenciesList].join("\n");
@@ -51,7 +51,7 @@ const changelogFunctions = {
 		const { GITHUB_SERVER_URL } = readEnv();
 		if (!options || !options.repo) {
 			throw new Error(
-				'Please provide a repo to this changelog generator like this:\n"changelog": ["@changesets/changelog-github", { "repo": "org/repo" }]'
+				'Please provide a repo to this changelog generator like this:\n"changelog": ["@changesets/changelog-github", { "repo": "org/repo" }]',
 			);
 		}
 
@@ -86,13 +86,13 @@ const changelogFunctions = {
 			if (prFromSummary !== undefined) {
 				let { links } = await getInfoFromPullRequest({
 					repo: options.repo,
-					pull: prFromSummary
+					pull: prFromSummary,
 				});
 				if (commitFromSummary) {
 					const shortCommitId = commitFromSummary.slice(0, 7);
 					links = {
 						...links,
-						commit: `[\`${shortCommitId}\`](${GITHUB_SERVER_URL}/${options.repo}/commit/${commitFromSummary})`
+						commit: `[\`${shortCommitId}\`](${GITHUB_SERVER_URL}/${options.repo}/commit/${commitFromSummary})`,
 					};
 				}
 				return links;
@@ -101,14 +101,14 @@ const changelogFunctions = {
 			if (commitToFetchFrom) {
 				const { links } = await getInfo({
 					repo: options.repo,
-					commit: commitToFetchFrom
+					commit: commitToFetchFrom,
 				});
 				return links;
 			}
 			return {
 				commit: null,
 				pull: null,
-				user: null
+				user: null,
 			};
 		})();
 
@@ -116,7 +116,7 @@ const changelogFunctions = {
 			? usersFromSummary
 					.map(
 						(userFromSummary) =>
-							`[@${userFromSummary}](${GITHUB_SERVER_URL}/${userFromSummary})`
+							`[@${userFromSummary}](${GITHUB_SERVER_URL}/${userFromSummary})`,
 					)
 					.join(", ")
 			: links.user;
@@ -127,7 +127,7 @@ const changelogFunctions = {
 		}
 
 		return `\n\n- ${firstLine} ${suffix}\n${futureLines.map((l) => `  ${l}`).join("\n")}`;
-	}
+	},
 };
 
 export default changelogFunctions;
