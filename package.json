@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",
-    "eslint": "^9.28.0",
+    "eslint": "^10.1.0",
     "eslint-config-webpack": "^4.0.8",
     "jest": "^27.5.1",
     "prettier": "^3.5.3",
