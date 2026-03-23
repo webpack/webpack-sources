@@ -8,6 +8,10 @@ const config = {
 	testPathIgnorePatterns: ["<rootDir>/test/helpers.js"],
 	transformIgnorePatterns: ["<rootDir>"],
 	testEnvironment: "node",
+	snapshotFormat: {
+		escapeString: true,
+		printBasicPrototype: true,
+	},
 };
 
 module.exports = config;
