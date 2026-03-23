@@ -30,9 +30,13 @@
     "fix:special": "node node_modules/tooling/inherit-types --write && node node_modules/tooling/format-file-header --write && node node_modules/tooling/generate-types --write",
     "pretest": "npm run lint",
     "test": "jest",
-    "cover": "jest --coverage"
+    "cover": "jest --coverage",
+    "version": "changeset version",
+    "release": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.30.0",
+    "@changesets/get-github-info": "^0.8.0",
     "@types/jest": "^27.5.2",
     "eslint": "^9.28.0",
     "eslint-config-webpack": "^4.0.8",
