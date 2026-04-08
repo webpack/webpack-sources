@@ -46,7 +46,7 @@
     "source-map": "^0.7.3",
     "sourcemap-validator": "^2.1.0",
     "tooling": "webpack/tooling#v1.25.0",
-    "typescript": "^5.3.3",
+    "typescript": "^6.0.2",
     "webpack": "^5.99.9"
   },
   "engines": {
