@@ -37,14 +37,14 @@
     "pretest": "npm run lint",
     "test": "jest",
     "cover": "jest --coverage",
-    "bench": "node benchmarks/index.js",
+    "benchmark": "node --max-old-space-size=4096 --hash-seed=1 --random-seed=1 --no-opt --predictable --predictable-gc-schedule --interpreted-frames-native-stack --allow-natives-syntax --expose-gc --no-concurrent-sweeping ./benchmark/run.mjs",
     "version": "changeset version",
     "release": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
     "@changesets/get-github-info": "^0.8.0",
-    "@codspeed/tinybench-plugin": "^5.2.0",
+    "@codspeed/core": "^5.2.0",
     "@types/jest": "^30.0.0",
     "eslint": "^9.28.0",
     "eslint-config-webpack": "^4.0.8",

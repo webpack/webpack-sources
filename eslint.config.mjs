@@ -9,13 +9,29 @@ export default defineConfig([
 		},
 	},
 	{
-		files: ["benchmarks/**/*.js"],
+		// Benchmarks run only on a modern LTS Node (see .github/workflows/codspeed.yml)
+		// so we disable the engine-version-aware rules and other style checks
+		// that don't make sense for benchmark entry points.
+		files: ["benchmark/**/*.{js,mjs}"],
+		languageOptions: {
+			sourceType: "module",
+			ecmaVersion: "latest",
+		},
 		rules: {
 			"no-console": "off",
 			"no-new": "off",
+			"camelcase": "off",
 			"n/no-process-exit": "off",
 			"n/no-unpublished-require": "off",
+			"n/no-unpublished-import": "off",
+			"n/no-missing-import": "off",
+			"n/hashbang": "off",
+			"n/no-unsupported-features/es-syntax": "off",
+			"n/no-unsupported-features/node-builtins": "off",
+			"import/extensions": "off",
 			"jsdoc/require-jsdoc": "off",
+			"jsdoc/no-restricted-syntax": "off",
+			"jsdoc/tag-lines": "off",
 			"import/order": "off",
 			"prettier/prettier": "off",
 			"prefer-destructuring": "off",
