@@ -2,7 +2,10 @@
   "name": "webpack-sources",
   "version": "3.3.4",
   "description": "Source code handling classes for webpack",
-  "keywords": ["webpack", "source-map"],
+  "keywords": [
+    "webpack",
+    "source-map"
+  ],
   "homepage": "https://github.com/webpack/webpack-sources#readme",
   "bugs": {
     "url": "https://github.com/webpack/webpack-sources/issues"
@@ -15,7 +18,10 @@
   "author": "Tobias Koppers @sokra",
   "main": "lib/index.js",
   "types": "types.d.ts",
-  "files": ["lib/", "types.d.ts"],
+  "files": [
+    "lib/",
+    "types.d.ts"
+  ],
   "scripts": {
     "lint": "npm run lint:code && npm run lint:types && npm run lint:types-test && npm run lint:special",
     "lint:code": "eslint --cache .",
@@ -31,12 +37,14 @@
     "pretest": "npm run lint",
     "test": "jest",
     "cover": "jest --coverage",
+    "bench": "node benchmarks/index.js",
     "version": "changeset version",
     "release": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
     "@changesets/get-github-info": "^0.8.0",
+    "@codspeed/tinybench-plugin": "^5.2.0",
     "@types/jest": "^30.0.0",
     "eslint": "^9.28.0",
     "eslint-config-webpack": "^4.0.8",
@@ -45,6 +53,7 @@
     "prettier-2": "npm:prettier@^2",
     "source-map": "^0.7.3",
     "sourcemap-validator": "^2.1.0",
+    "tinybench": "^6.0.0",
     "tooling": "webpack/tooling#v1.26.1",
     "typescript": "^6.0.2",
     "webpack": "^5.99.9"
