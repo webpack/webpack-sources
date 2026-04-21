@@ -107,6 +107,23 @@ const rows = bench.tasks.map((task) => {
 console.log();
 console.table(rows);
 
+// Optional JSON dump for diff-runner (see benchmark/compare.mjs).
+if (process.env.BENCH_OUTPUT) {
+	const dump = bench.tasks.map((task) => {
+		const r = task.result;
+		return {
+			name: task.name,
+			opsPerSec: r?.throughput?.mean ?? 0,
+			meanMs: r?.latency?.mean ?? 0,
+			p99Ms: r?.latency?.p99 ?? 0,
+			rme: r?.latency?.rme ?? 0,
+			samples: r?.latency?.samplesCount ?? 0,
+		};
+	});
+	await fs.writeFile(process.env.BENCH_OUTPUT, JSON.stringify(dump, null, 2));
+	console.log(`Wrote ${dump.length} rows to ${process.env.BENCH_OUTPUT}`);
+}
+
 // Exit non-zero if any task threw, so CI picks it up.
 const failed = bench.tasks.filter((t) => t.result?.error);
 if (failed.length > 0) {
