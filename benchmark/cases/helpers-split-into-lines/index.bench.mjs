@@ -1,0 +1,31 @@
+/*
+ * helpers: splitIntoLines
+ *
+ * Core scanning primitive used by every streaming code path. We cover the
+ * fixture, a synthetic many-lines source, a few-very-long-lines source,
+ * and the empty-string fast path.
+ */
+
+import splitIntoLines from "../../../lib/helpers/splitIntoLines.js";
+import { bigSource, fixtureCode, longLineSource } from "../../fixtures.mjs";
+
+/**
+ * @param {import("tinybench").Bench} bench bench
+ */
+export default function register(bench) {
+	bench.add("helpers/splitIntoLines: fixture", () => {
+		for (let i = 0; i < 100; i++) splitIntoLines(fixtureCode);
+	});
+
+	bench.add("helpers/splitIntoLines: big source", () => {
+		splitIntoLines(bigSource);
+	});
+
+	bench.add("helpers/splitIntoLines: long lines", () => {
+		for (let i = 0; i < 100; i++) splitIntoLines(longLineSource);
+	});
+
+	bench.add("helpers/splitIntoLines: empty", () => {
+		for (let i = 0; i < 10000; i++) splitIntoLines("");
+	});
+}
