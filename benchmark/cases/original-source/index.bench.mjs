@@ -6,17 +6,14 @@
  * (for column-aware output) or splitIntoLines (for lines-only).
  */
 
-import { createRequire } from "module";
 import { createHash } from "crypto";
+import { OriginalSource } from "../../../lib/index.js";
 import {
-	fixtureCode,
-	fixtureBuffer,
 	bigSource,
+	fixtureBuffer,
+	fixtureCode,
 	noop,
 } from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const { OriginalSource } = require("../../../lib");
 
 /**
  * @param {import("tinybench").Bench} bench bench

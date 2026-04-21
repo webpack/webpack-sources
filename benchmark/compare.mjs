@@ -32,11 +32,11 @@ for (const [name, aRow] of aMap) {
 		"delta (%)": ((ratio - 1) * 100).toFixed(1),
 	});
 }
-rows.sort((x, y) => Number(y["speedup (×)"]) - Number(x["speedup (×)"]));
+rows.sort((i1, i2) => Number(i1["speedup (×)"]) - Number(i2["speedup (×)"]));
 console.table(rows);
 
 const overall =
-	rows.reduce((s, r) => s + Number(r["speedup (×)"]), 0) / rows.length;
+	rows.reduce((i1, i2) => i1 + Number(i2["speedup (×)"]), 0) / rows.length;
 const wins = rows.filter((r) => Number(r["speedup (×)"]) > 1.05).length;
 const losses = rows.filter((r) => Number(r["speedup (×)"]) < 0.95).length;
 

@@ -6,17 +6,14 @@
  * store cached state to disk via getCachedData() / re-hydrate.
  */
 
-import { createRequire } from "module";
 import { createHash } from "crypto";
-import { fixtureCode, fixtureMap, noop } from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const {
+import {
 	CachedSource,
 	OriginalSource,
 	RawSource,
 	SourceMapSource,
-} = require("../../../lib");
+} from "../../../lib/index.js";
+import { fixtureCode, fixtureMap, noop } from "../../fixtures.mjs";
 
 /**
  * A CachedSource with all the common caches already populated. Reused
@@ -107,9 +104,7 @@ export default function register(bench) {
 
 	bench.add("cached-source: getCachedData() then restore", () => {
 		for (let i = 0; i < 10; i++) {
-			const a = new CachedSource(
-				new OriginalSource(fixtureCode, "fixture.js"),
-			);
+			const a = new CachedSource(new OriginalSource(fixtureCode, "fixture.js"));
 			a.source();
 			a.map({});
 			const data = a.getCachedData();

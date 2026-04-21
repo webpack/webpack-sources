@@ -6,15 +6,8 @@
  * and the empty-string fast path.
  */
 
-import { createRequire } from "module";
-import {
-	fixtureCode,
-	bigSource,
-	longLineSource,
-} from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const splitIntoLines = require("../../../lib/helpers/splitIntoLines");
+import splitIntoLines from "../../../lib/helpers/splitIntoLines.js";
+import { bigSource, fixtureCode, longLineSource } from "../../fixtures.mjs";
 
 /**
  * @param {import("tinybench").Bench} bench bench

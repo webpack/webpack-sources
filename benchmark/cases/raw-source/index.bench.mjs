@@ -6,16 +6,9 @@
  * throughput reflects per-batch cost rather than per-op overhead.
  */
 
-import { createRequire } from "module";
 import { createHash } from "crypto";
-import {
-	fixtureCode,
-	fixtureBuffer,
-	noop,
-} from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const { RawSource } = require("../../../lib");
+import { RawSource } from "../../../lib/index.js";
+import { fixtureBuffer, fixtureCode, noop } from "../../fixtures.mjs";
 
 /**
  * @param {import("tinybench").Bench} bench bench

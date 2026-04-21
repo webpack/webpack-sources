@@ -7,10 +7,7 @@
  * factory.
  */
 
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
-const { SizeOnlySource } = require("../../../lib");
+import { SizeOnlySource } from "../../../lib/index.js";
 
 /**
  * @param {import("tinybench").Bench} bench bench

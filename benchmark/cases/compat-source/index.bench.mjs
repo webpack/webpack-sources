@@ -6,12 +6,9 @@
  * Source.prototype fallback (when it doesn't).
  */
 
-import { createRequire } from "module";
 import { createHash } from "crypto";
+import { CompatSource, OriginalSource, RawSource } from "../../../lib/index.js";
 import { fixtureCode } from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const { CompatSource, OriginalSource, RawSource } = require("../../../lib");
 
 const fixtureBuffer = Buffer.from(fixtureCode, "utf8");
 

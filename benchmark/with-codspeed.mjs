@@ -60,8 +60,11 @@ function getCallingFile() {
 	return path.relative(repoRoot, file);
 }
 
+// eslint-disable-next-line jsdoc/require-property
+/** @typedef {object} EXPECTED_OBJECT */
+
 /**
- * @typedef {{ uri: string, fn: Fn, opts: object | undefined }} TaskMeta
+ * @typedef {{ uri: string, fn: Fn, opts: EXPECTED_OBJECT | undefined }} TaskMeta
  * @type {WeakMap<Bench, Map<string, TaskMeta>>}
  */
 const metaMap = new WeakMap();
@@ -82,7 +85,6 @@ function getOrCreateMeta(bench) {
 /**
  * Wrap a tinybench Bench so that CodSpeed simulation mode instruments each
  * task. In "disabled" and "walltime" modes the bench is returned as-is.
- *
  * @param {Bench} bench bench
  * @returns {Bench} bench
  */
@@ -120,10 +122,12 @@ export function withCodSpeed(bench) {
 	 */
 	const wrapFrame = (fn, isAsync) => {
 		if (isAsync) {
+			// eslint-disable-next-line camelcase
 			return async function __codspeed_root_frame__() {
 				await fn();
 			};
 		}
+		// eslint-disable-next-line camelcase
 		return function __codspeed_root_frame__() {
 			fn();
 		};

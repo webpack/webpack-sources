@@ -5,13 +5,8 @@
  * path on big sources was optimised to use String#indexOf in a loop.
  */
 
-import { createRequire } from "module";
-import { fixtureCode, bigSource } from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const getGeneratedSourceInfo = require(
-	"../../../lib/helpers/getGeneratedSourceInfo",
-);
+import getGeneratedSourceInfo from "../../../lib/helpers/getGeneratedSourceInfo.js";
+import { bigSource, fixtureCode } from "../../fixtures.mjs";
 
 /**
  * @param {import("tinybench").Bench} bench bench

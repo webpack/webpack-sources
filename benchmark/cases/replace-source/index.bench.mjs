@@ -7,17 +7,13 @@
  * `source()` hot path optimised in this branch.
  */
 
-import { createRequire } from "module";
 import { createHash } from "crypto";
 import {
-	fixtureCode,
-	bigSource,
-	smallSource,
-	noop,
-} from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const { OriginalSource, RawSource, ReplaceSource } = require("../../../lib");
+	OriginalSource,
+	RawSource,
+	ReplaceSource,
+} from "../../../lib/index.js";
+import { bigSource, fixtureCode, noop, smallSource } from "../../fixtures.mjs";
 
 /**
  * @param {number} count count
@@ -104,9 +100,7 @@ export default function register(bench) {
 
 	bench.add("replace-source: map()", () => {
 		for (let i = 0; i < 10; i++) {
-			const src = new ReplaceSource(
-				new OriginalSource(fixtureCode, "fix.js"),
-			);
+			const src = new ReplaceSource(new OriginalSource(fixtureCode, "fix.js"));
 			src.replace(0, 10, "/* hdr */");
 			src.insert(200, "// inj\n");
 			src.map({});
@@ -115,9 +109,7 @@ export default function register(bench) {
 
 	bench.add("replace-source: sourceAndMap()", () => {
 		for (let i = 0; i < 10; i++) {
-			const src = new ReplaceSource(
-				new OriginalSource(fixtureCode, "fix.js"),
-			);
+			const src = new ReplaceSource(new OriginalSource(fixtureCode, "fix.js"));
 			src.replace(0, 10, "/* hdr */");
 			src.insert(200, "// inj\n");
 			src.sourceAndMap({});

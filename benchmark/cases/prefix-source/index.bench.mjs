@@ -6,17 +6,14 @@
  * adjustment with special-casing for column==0).
  */
 
-import { createRequire } from "module";
 import { createHash } from "crypto";
-import { fixtureCode, fixtureMap, noop } from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const {
+import {
 	OriginalSource,
 	PrefixSource,
 	RawSource,
 	SourceMapSource,
-} = require("../../../lib");
+} from "../../../lib/index.js";
+import { fixtureCode, fixtureMap, noop } from "../../fixtures.mjs";
 
 /**
  * @param {import("tinybench").Bench} bench bench
@@ -67,10 +64,9 @@ export default function register(bench) {
 
 	bench.add("prefix-source: map()", () => {
 		for (let i = 0; i < 5; i++) {
-			new PrefixSource(
-				"\t",
-				new OriginalSource(fixtureCode, "fixture.js"),
-			).map({});
+			new PrefixSource("\t", new OriginalSource(fixtureCode, "fixture.js")).map(
+				{},
+			);
 		}
 	});
 

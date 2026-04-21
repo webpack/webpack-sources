@@ -2,10 +2,7 @@
   "name": "webpack-sources",
   "version": "3.3.4",
   "description": "Source code handling classes for webpack",
-  "keywords": [
-    "webpack",
-    "source-map"
-  ],
+  "keywords": ["webpack", "source-map"],
   "homepage": "https://github.com/webpack/webpack-sources#readme",
   "bugs": {
     "url": "https://github.com/webpack/webpack-sources/issues"
@@ -18,10 +15,7 @@
   "author": "Tobias Koppers @sokra",
   "main": "lib/index.js",
   "types": "types.d.ts",
-  "files": [
-    "lib/",
-    "types.d.ts"
-  ],
+  "files": ["lib/", "types.d.ts"],
   "scripts": {
     "lint": "npm run lint:code && npm run lint:types && npm run lint:types-test && npm run lint:special",
     "lint:code": "eslint --cache .",

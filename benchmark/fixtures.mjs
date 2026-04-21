@@ -41,7 +41,8 @@ export const longLineSource = `${"a".repeat(100000)}\n${"b".repeat(
 
 // Small source useful when we want the constructor / method pair to
 // dominate the measurement.
-export const smallSource = `function hello(name) {\n\tconsole.log("hi " + name);\n}\nhello("world");\n`;
+export const smallSource =
+	'function hello(name) {\n\tconsole.log("hi " + name);\n}\nhello("world");\n';
 
 // Noop callbacks for streamChunks benchmarks. Reused so V8 can optimise
 // them into a known-shape function.

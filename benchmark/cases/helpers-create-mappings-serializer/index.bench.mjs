@@ -6,12 +6,7 @@
  * (column-aware) and the lines-only serializers.
  */
 
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
-const createMappingsSerializer = require(
-	"../../../lib/helpers/createMappingsSerializer",
-);
+import createMappingsSerializer from "../../../lib/helpers/createMappingsSerializer.js";
 
 /**
  * Build a deterministic stream of mapping events that resembles what the
@@ -55,15 +50,12 @@ export default function register(bench) {
 		if (out.length === 0) throw new Error("unreachable");
 	});
 
-	bench.add(
-		"helpers/createMappingsSerializer: lines-only serializer",
-		() => {
-			const addMapping = createMappingsSerializer({ columns: false });
-			let out = "";
-			for (const [gl, gc, si, ol, oc, ni] of events) {
-				out += addMapping(gl, gc, si, ol, oc, ni);
-			}
-			if (out.length === 0) throw new Error("unreachable");
-		},
-	);
+	bench.add("helpers/createMappingsSerializer: lines-only serializer", () => {
+		const addMapping = createMappingsSerializer({ columns: false });
+		let out = "";
+		for (const [gl, gc, si, ol, oc, ni] of events) {
+			out += addMapping(gl, gc, si, ol, oc, ni);
+		}
+		if (out.length === 0) throw new Error("unreachable");
+	});
 }

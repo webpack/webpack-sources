@@ -7,19 +7,16 @@
  * string / Buffer), and both streaming layouts (full / lines-only).
  */
 
-import { createRequire } from "module";
 import { createHash } from "crypto";
+import { SourceMapSource } from "../../../lib/index.js";
 import {
-	fixtureCode,
 	fixtureBuffer,
+	fixtureCode,
 	fixtureMap,
-	fixtureMapString,
 	fixtureMapBuffer,
+	fixtureMapString,
 	noop,
 } from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const { SourceMapSource } = require("../../../lib");
 
 /**
  * @param {import("tinybench").Bench} bench bench

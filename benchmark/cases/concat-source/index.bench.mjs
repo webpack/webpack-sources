@@ -7,17 +7,14 @@
  * SourceMapSource or nested ConcatSource participates in streaming.
  */
 
-import { createRequire } from "module";
 import { createHash } from "crypto";
-import { fixtureCode, fixtureMap, noop } from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const {
+import {
 	ConcatSource,
 	OriginalSource,
 	RawSource,
 	SourceMapSource,
-} = require("../../../lib");
+} from "../../../lib/index.js";
+import { fixtureCode, fixtureMap, noop } from "../../fixtures.mjs";
 
 /**
  * @returns {ConcatSource} mixed 4-child ConcatSource

@@ -7,17 +7,14 @@
  * adds.
  */
 
-import { createRequire } from "module";
+import readMappings from "../../../lib/helpers/readMappings.js";
 import { fixtureMap, noop } from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const readMappings = require("../../../lib/helpers/readMappings");
 
 /**
  * @param {import("tinybench").Bench} bench bench
  */
 export default function register(bench) {
-	const mappings = fixtureMap.mappings;
+	const { mappings } = fixtureMap;
 
 	bench.add("helpers/readMappings: fixture (noop callback)", () => {
 		for (let i = 0; i < 20; i++) readMappings(mappings, noop);

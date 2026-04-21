@@ -5,13 +5,8 @@
  * for \n ; { } and runs of separator characters.
  */
 
-import { createRequire } from "module";
-import { fixtureCode, bigSource } from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const splitIntoPotentialTokens = require(
-	"../../../lib/helpers/splitIntoPotentialTokens",
-);
+import splitIntoPotentialTokens from "../../../lib/helpers/splitIntoPotentialTokens.js";
+import { bigSource, fixtureCode } from "../../fixtures.mjs";
 
 /**
  * @param {import("tinybench").Bench} bench bench

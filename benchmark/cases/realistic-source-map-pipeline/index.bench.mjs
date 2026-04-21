@@ -11,18 +11,15 @@
  * This is the case that most directly reflects "compile one chunk" cost.
  */
 
-import { createRequire } from "module";
-import { fixtureCode, fixtureMap } from "../../fixtures.mjs";
-
-const require = createRequire(import.meta.url);
-const {
+import {
 	CachedSource,
 	ConcatSource,
 	OriginalSource,
 	RawSource,
 	ReplaceSource,
 	SourceMapSource,
-} = require("../../../lib");
+} from "../../../lib/index.js";
+import { fixtureCode, fixtureMap } from "../../fixtures.mjs";
 
 /**
  * @returns {ConcatSource} source
@@ -73,21 +70,15 @@ export default function register(bench) {
 		},
 	);
 
-	bench.add(
-		"realistic-source-map-pipeline: cold map() only",
-		() => {
-			const chunk = new CachedSource(buildFreshChunk());
-			chunk.map({});
-		},
-	);
+	bench.add("realistic-source-map-pipeline: cold map() only", () => {
+		const chunk = new CachedSource(buildFreshChunk());
+		chunk.map({});
+	});
 
-	bench.add(
-		"realistic-source-map-pipeline: cold source() only",
-		() => {
-			const chunk = new CachedSource(buildFreshChunk());
-			chunk.source();
-		},
-	);
+	bench.add("realistic-source-map-pipeline: cold source() only", () => {
+		const chunk = new CachedSource(buildFreshChunk());
+		chunk.source();
+	});
 
 	bench.add(
 		"realistic-source-map-pipeline: serialize through getCachedData()",
