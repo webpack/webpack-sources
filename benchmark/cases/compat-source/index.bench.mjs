@@ -7,7 +7,7 @@
  */
 
 import { createHash } from "crypto";
-import { CompatSource, OriginalSource, RawSource } from "../../../lib/index.js";
+import sources from "../../../lib/index.js";
 import { fixtureCode } from "../../fixtures.mjs";
 
 const fixtureBuffer = Buffer.from(fixtureCode, "utf8");
@@ -33,62 +33,64 @@ const richSourceLike = {
  */
 export default function register(bench) {
 	bench.add("compat-source: CompatSource.from(Source)", () => {
-		const src = new RawSource(fixtureCode);
-		for (let i = 0; i < 100; i++) CompatSource.from(src);
+		const src = new sources.RawSource(fixtureCode);
+		for (let i = 0; i < 100; i++) sources.CompatSource.from(src);
 	});
 
 	bench.add("compat-source: CompatSource.from(SourceLike)", () => {
-		for (let i = 0; i < 100; i++) CompatSource.from(sourceLike);
+		for (let i = 0; i < 100; i++) sources.CompatSource.from(sourceLike);
 	});
 
 	bench.add("compat-source: source() (wrapping SourceLike)", () => {
-		const cs = new CompatSource(sourceLike);
+		const cs = new sources.CompatSource(sourceLike);
 		for (let i = 0; i < 500; i++) cs.source();
 	});
 
 	bench.add("compat-source: buffer() (fallback via super)", () => {
-		const cs = new CompatSource({ source: () => fixtureCode });
+		const cs = new sources.CompatSource({ source: () => fixtureCode });
 		for (let i = 0; i < 50; i++) cs.buffer();
 	});
 
 	bench.add("compat-source: buffer() (delegated)", () => {
-		const cs = new CompatSource(sourceLike);
+		const cs = new sources.CompatSource(sourceLike);
 		for (let i = 0; i < 500; i++) cs.buffer();
 	});
 
 	bench.add("compat-source: size() (fallback via super)", () => {
-		const cs = new CompatSource({ source: () => fixtureCode });
+		const cs = new sources.CompatSource({ source: () => fixtureCode });
 		for (let i = 0; i < 50; i++) cs.size();
 	});
 
 	bench.add("compat-source: size() (delegated)", () => {
-		const cs = new CompatSource(richSourceLike);
+		const cs = new sources.CompatSource(richSourceLike);
 		for (let i = 0; i < 500; i++) cs.size();
 	});
 
 	bench.add("compat-source: map()", () => {
-		const cs = new CompatSource(richSourceLike);
+		const cs = new sources.CompatSource(richSourceLike);
 		for (let i = 0; i < 500; i++) cs.map({});
 	});
 
 	bench.add("compat-source: sourceAndMap()", () => {
-		const cs = new CompatSource(richSourceLike);
+		const cs = new sources.CompatSource(richSourceLike);
 		for (let i = 0; i < 500; i++) cs.sourceAndMap({});
 	});
 
 	bench.add("compat-source: updateHash() (delegated)", () => {
-		const cs = new CompatSource(richSourceLike);
+		const cs = new sources.CompatSource(richSourceLike);
 		for (let i = 0; i < 20; i++) cs.updateHash(createHash("sha256"));
 	});
 
 	bench.add("compat-source: updateHash() (fallback)", () => {
-		const cs = new CompatSource({ source: () => fixtureCode });
+		const cs = new sources.CompatSource({ source: () => fixtureCode });
 		for (let i = 0; i < 20; i++) cs.updateHash(createHash("sha256"));
 	});
 
 	bench.add("compat-source: wraps OriginalSource", () => {
 		for (let i = 0; i < 20; i++) {
-			const cs = new CompatSource(new OriginalSource(fixtureCode, "fix.js"));
+			const cs = new sources.CompatSource(
+				new sources.OriginalSource(fixtureCode, "fix.js"),
+			);
 			cs.source();
 			cs.buffer();
 			cs.size();

@@ -8,23 +8,18 @@
  */
 
 import { createHash } from "crypto";
-import {
-	ConcatSource,
-	OriginalSource,
-	RawSource,
-	SourceMapSource,
-} from "../../../lib/index.js";
+import sources from "../../../lib/index.js";
 import { fixtureCode, fixtureMap, noop } from "../../fixtures.mjs";
 
 /**
  * @returns {ConcatSource} mixed 4-child ConcatSource
  */
 function buildMixed() {
-	return new ConcatSource(
-		new RawSource("// header\n"),
-		new OriginalSource(fixtureCode, "a.js"),
+	return new sources.ConcatSource(
+		new sources.RawSource("// header\n"),
+		new sources.OriginalSource(fixtureCode, "a.js"),
 		"\n// middle\n",
-		new OriginalSource(fixtureCode, "b.js"),
+		new sources.OriginalSource(fixtureCode, "b.js"),
 	);
 }
 
@@ -35,33 +30,35 @@ export default function register(bench) {
 	bench.add("concat-source: new ConcatSource() (10 raw)", () => {
 		for (let iter = 0; iter < 20; iter++) {
 			const parts = [];
-			for (let i = 0; i < 10; i++) parts.push(new RawSource(fixtureCode));
-			new ConcatSource(...parts);
+			for (let i = 0; i < 10; i++) {
+				parts.push(new sources.RawSource(fixtureCode));
+			}
+			new sources.ConcatSource(...parts);
 		}
 	});
 
 	bench.add("concat-source: new ConcatSource() (strings)", () => {
 		for (let i = 0; i < 100; i++) {
-			new ConcatSource("a", "b", "c", "d", "e", "f");
+			new sources.ConcatSource("a", "b", "c", "d", "e", "f");
 		}
 	});
 
 	bench.add("concat-source: add() x50", () => {
-		const cs = new ConcatSource();
-		for (let i = 0; i < 50; i++) cs.add(new RawSource(fixtureCode));
+		const cs = new sources.ConcatSource();
+		for (let i = 0; i < 50; i++) cs.add(new sources.RawSource(fixtureCode));
 	});
 
 	bench.add("concat-source: addAllSkipOptimizing()", () => {
-		const cs = new ConcatSource();
+		const cs = new sources.ConcatSource();
 		const parts = [];
-		for (let i = 0; i < 50; i++) parts.push(new RawSource(fixtureCode));
+		for (let i = 0; i < 50; i++) parts.push(new sources.RawSource(fixtureCode));
 		cs.addAllSkipOptimizing(parts);
 	});
 
 	bench.add("concat-source: source() (10 raw)", () => {
 		const parts = [];
-		for (let i = 0; i < 10; i++) parts.push(new RawSource(fixtureCode));
-		const cs = new ConcatSource(...parts);
+		for (let i = 0; i < 10; i++) parts.push(new sources.RawSource(fixtureCode));
+		const cs = new sources.ConcatSource(...parts);
 		for (let i = 0; i < 10; i++) cs.source();
 	});
 
@@ -72,8 +69,8 @@ export default function register(bench) {
 
 	bench.add("concat-source: buffer() (10 raw)", () => {
 		const parts = [];
-		for (let i = 0; i < 10; i++) parts.push(new RawSource(fixtureCode));
-		const cs = new ConcatSource(...parts);
+		for (let i = 0; i < 10; i++) parts.push(new sources.RawSource(fixtureCode));
+		const cs = new sources.ConcatSource(...parts);
 		for (let i = 0; i < 10; i++) cs.buffer();
 	});
 
@@ -109,9 +106,9 @@ export default function register(bench) {
 
 	bench.add("concat-source: streamChunks() with SourceMapSource child", () => {
 		for (let i = 0; i < 5; i++) {
-			const cs = new ConcatSource(
-				new SourceMapSource(fixtureCode, "fixture.js", fixtureMap),
-				new RawSource("// trailer\n"),
+			const cs = new sources.ConcatSource(
+				new sources.SourceMapSource(fixtureCode, "fixture.js", fixtureMap),
+				new sources.RawSource("// trailer\n"),
 			);
 			cs.streamChunks({}, noop, noop, noop);
 		}
@@ -119,12 +116,16 @@ export default function register(bench) {
 
 	bench.add("concat-source: nested flattening", () => {
 		for (let i = 0; i < 50; i++) {
-			const inner = new ConcatSource(
-				new RawSource("a"),
-				new RawSource("b"),
-				new RawSource("c"),
+			const inner = new sources.ConcatSource(
+				new sources.RawSource("a"),
+				new sources.RawSource("b"),
+				new sources.RawSource("c"),
 			);
-			new ConcatSource(inner, new RawSource("d"), inner).source();
+			new sources.ConcatSource(
+				inner,
+				new sources.RawSource("d"),
+				inner,
+			).source();
 		}
 	});
 

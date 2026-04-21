@@ -8,7 +8,7 @@
  */
 
 import { createHash } from "crypto";
-import { SourceMapSource } from "../../../lib/index.js";
+import sources from "../../../lib/index.js";
 import {
 	fixtureBuffer,
 	fixtureCode,
@@ -24,49 +24,57 @@ import {
 export default function register(bench) {
 	bench.add("source-map-source: new (object map)", () => {
 		for (let i = 0; i < 50; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap);
+			new sources.SourceMapSource(fixtureCode, "fixture.js", fixtureMap);
 		}
 	});
 
 	bench.add("source-map-source: new (string map)", () => {
 		for (let i = 0; i < 50; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMapString);
+			new sources.SourceMapSource(fixtureCode, "fixture.js", fixtureMapString);
 		}
 	});
 
 	bench.add("source-map-source: new (buffer map)", () => {
 		for (let i = 0; i < 50; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMapBuffer);
+			new sources.SourceMapSource(fixtureCode, "fixture.js", fixtureMapBuffer);
 		}
 	});
 
 	bench.add("source-map-source: new (buffer value)", () => {
 		for (let i = 0; i < 50; i++) {
-			new SourceMapSource(fixtureBuffer, "fixture.js", fixtureMap);
+			new sources.SourceMapSource(fixtureBuffer, "fixture.js", fixtureMap);
 		}
 	});
 
 	bench.add("source-map-source: source()", () => {
 		for (let i = 0; i < 100; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).source();
+			new sources.SourceMapSource(
+				fixtureCode,
+				"fixture.js",
+				fixtureMap,
+			).source();
 		}
 	});
 
 	bench.add("source-map-source: buffer()", () => {
 		for (let i = 0; i < 50; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).buffer();
+			new sources.SourceMapSource(
+				fixtureCode,
+				"fixture.js",
+				fixtureMap,
+			).buffer();
 		}
 	});
 
 	bench.add("source-map-source: size()", () => {
 		for (let i = 0; i < 50; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).size();
+			new sources.SourceMapSource(fixtureCode, "fixture.js", fixtureMap).size();
 		}
 	});
 
 	bench.add("source-map-source: getArgsAsBuffers()", () => {
 		for (let i = 0; i < 20; i++) {
-			new SourceMapSource(
+			new sources.SourceMapSource(
 				fixtureCode,
 				"fixture.js",
 				fixtureMap,
@@ -76,13 +84,15 @@ export default function register(bench) {
 
 	bench.add("source-map-source: map()", () => {
 		for (let i = 0; i < 100; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).map({});
+			new sources.SourceMapSource(fixtureCode, "fixture.js", fixtureMap).map(
+				{},
+			);
 		}
 	});
 
 	bench.add("source-map-source: map({columns:false})", () => {
 		for (let i = 0; i < 100; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).map({
+			new sources.SourceMapSource(fixtureCode, "fixture.js", fixtureMap).map({
 				columns: false,
 			});
 		}
@@ -90,15 +100,21 @@ export default function register(bench) {
 
 	bench.add("source-map-source: sourceAndMap()", () => {
 		for (let i = 0; i < 50; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).sourceAndMap(
-				{},
-			);
+			new sources.SourceMapSource(
+				fixtureCode,
+				"fixture.js",
+				fixtureMap,
+			).sourceAndMap({});
 		}
 	});
 
 	bench.add("source-map-source: sourceAndMap({columns:false})", () => {
 		for (let i = 0; i < 50; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).sourceAndMap({
+			new sources.SourceMapSource(
+				fixtureCode,
+				"fixture.js",
+				fixtureMap,
+			).sourceAndMap({
 				columns: false,
 			});
 		}
@@ -106,40 +122,37 @@ export default function register(bench) {
 
 	bench.add("source-map-source: streamChunks()", () => {
 		for (let i = 0; i < 5; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).streamChunks(
-				{},
-				noop,
-				noop,
-				noop,
-			);
+			new sources.SourceMapSource(
+				fixtureCode,
+				"fixture.js",
+				fixtureMap,
+			).streamChunks({}, noop, noop, noop);
 		}
 	});
 
 	bench.add("source-map-source: streamChunks({columns:false})", () => {
 		for (let i = 0; i < 5; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).streamChunks(
-				{ columns: false },
-				noop,
-				noop,
-				noop,
-			);
+			new sources.SourceMapSource(
+				fixtureCode,
+				"fixture.js",
+				fixtureMap,
+			).streamChunks({ columns: false }, noop, noop, noop);
 		}
 	});
 
 	bench.add("source-map-source: streamChunks({finalSource:true})", () => {
 		for (let i = 0; i < 5; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).streamChunks(
-				{ finalSource: true },
-				noop,
-				noop,
-				noop,
-			);
+			new sources.SourceMapSource(
+				fixtureCode,
+				"fixture.js",
+				fixtureMap,
+			).streamChunks({ finalSource: true }, noop, noop, noop);
 		}
 	});
 
 	bench.add("source-map-source: streamChunks() (combined inner map)", () => {
 		for (let i = 0; i < 3; i++) {
-			new SourceMapSource(
+			new sources.SourceMapSource(
 				fixtureCode,
 				"fixture.js",
 				fixtureMap,
@@ -151,9 +164,11 @@ export default function register(bench) {
 
 	bench.add("source-map-source: updateHash()", () => {
 		for (let i = 0; i < 10; i++) {
-			new SourceMapSource(fixtureCode, "fixture.js", fixtureMap).updateHash(
-				createHash("sha256"),
-			);
+			new sources.SourceMapSource(
+				fixtureCode,
+				"fixture.js",
+				fixtureMap,
+			).updateHash(createHash("sha256"));
 		}
 	});
 }

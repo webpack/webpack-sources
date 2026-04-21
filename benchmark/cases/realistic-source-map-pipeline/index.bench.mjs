@@ -11,14 +11,7 @@
  * This is the case that most directly reflects "compile one chunk" cost.
  */
 
-import {
-	CachedSource,
-	ConcatSource,
-	OriginalSource,
-	RawSource,
-	ReplaceSource,
-	SourceMapSource,
-} from "../../../lib/index.js";
+import sources from "../../../lib/index.js";
 import { fixtureCode, fixtureMap } from "../../fixtures.mjs";
 
 /**
@@ -27,22 +20,24 @@ import { fixtureCode, fixtureMap } from "../../fixtures.mjs";
 function buildFreshChunk() {
 	const parts = [];
 	for (let i = 0; i < 4; i++) {
-		const orig = new OriginalSource(fixtureCode, `m${i}.js`);
-		const replaced = new ReplaceSource(orig);
+		const orig = new sources.OriginalSource(fixtureCode, `m${i}.js`);
+		const replaced = new sources.ReplaceSource(orig);
 		replaced.replace(0, 6, "/* h */");
 		replaced.insert(100, "// injected\n");
 		parts.push(replaced);
 	}
-	parts.push(new SourceMapSource(fixtureCode, "bundled.js", fixtureMap));
-	return new ConcatSource(
-		new RawSource("/* chunk header */\n"),
+	parts.push(
+		new sources.SourceMapSource(fixtureCode, "bundled.js", fixtureMap),
+	);
+	return new sources.ConcatSource(
+		new sources.RawSource("/* chunk header */\n"),
 		...parts,
-		new RawSource("/* chunk footer */\n"),
+		new sources.RawSource("/* chunk footer */\n"),
 	);
 }
 
 const warmChunk = (() => {
-	const cached = new CachedSource(buildFreshChunk());
+	const cached = new sources.CachedSource(buildFreshChunk());
 	cached.source();
 	cached.map({});
 	cached.sourceAndMap({});
@@ -58,7 +53,7 @@ export default function register(bench) {
 	bench.add(
 		"realistic-source-map-pipeline: cold sourceAndMap() (fresh pipeline)",
 		() => {
-			const chunk = new CachedSource(buildFreshChunk());
+			const chunk = new sources.CachedSource(buildFreshChunk());
 			chunk.sourceAndMap({});
 		},
 	);
@@ -71,23 +66,23 @@ export default function register(bench) {
 	);
 
 	bench.add("realistic-source-map-pipeline: cold map() only", () => {
-		const chunk = new CachedSource(buildFreshChunk());
+		const chunk = new sources.CachedSource(buildFreshChunk());
 		chunk.map({});
 	});
 
 	bench.add("realistic-source-map-pipeline: cold source() only", () => {
-		const chunk = new CachedSource(buildFreshChunk());
+		const chunk = new sources.CachedSource(buildFreshChunk());
 		chunk.source();
 	});
 
 	bench.add(
 		"realistic-source-map-pipeline: serialize through getCachedData()",
 		() => {
-			const chunk = new CachedSource(buildFreshChunk());
+			const chunk = new sources.CachedSource(buildFreshChunk());
 			chunk.source();
 			chunk.map({});
 			const data = chunk.getCachedData();
-			new CachedSource(buildFreshChunk(), data).sourceAndMap({});
+			new sources.CachedSource(buildFreshChunk(), data).sourceAndMap({});
 		},
 	);
 

@@ -7,12 +7,7 @@
  */
 
 import { createHash } from "crypto";
-import {
-	CachedSource,
-	OriginalSource,
-	RawSource,
-	SourceMapSource,
-} from "../../../lib/index.js";
+import sources from "../../../lib/index.js";
 import { fixtureCode, fixtureMap, noop } from "../../fixtures.mjs";
 
 /**
@@ -20,8 +15,8 @@ import { fixtureCode, fixtureMap, noop } from "../../fixtures.mjs";
  * across tasks that explicitly measure the warm path.
  */
 const warmed = (() => {
-	const cached = new CachedSource(
-		new SourceMapSource(fixtureCode, "fixture.js", fixtureMap),
+	const cached = new sources.CachedSource(
+		new sources.SourceMapSource(fixtureCode, "fixture.js", fixtureMap),
 	);
 	cached.source();
 	cached.map({});
@@ -37,13 +32,13 @@ const warmed = (() => {
 export default function register(bench) {
 	bench.add("cached-source: new CachedSource()", () => {
 		for (let i = 0; i < 100; i++) {
-			new CachedSource(new RawSource(fixtureCode));
+			new sources.CachedSource(new sources.RawSource(fixtureCode));
 		}
 	});
 
 	bench.add("cached-source: source() (cold)", () => {
 		for (let i = 0; i < 50; i++) {
-			new CachedSource(new RawSource(fixtureCode)).source();
+			new sources.CachedSource(new sources.RawSource(fixtureCode)).source();
 		}
 	});
 
@@ -61,8 +56,8 @@ export default function register(bench) {
 
 	bench.add("cached-source: map() (cold SourceMapSource)", () => {
 		for (let i = 0; i < 10; i++) {
-			new CachedSource(
-				new SourceMapSource(fixtureCode, "fixture.js", fixtureMap),
+			new sources.CachedSource(
+				new sources.SourceMapSource(fixtureCode, "fixture.js", fixtureMap),
 			).map({});
 		}
 	});
@@ -73,8 +68,8 @@ export default function register(bench) {
 
 	bench.add("cached-source: sourceAndMap() (cold)", () => {
 		for (let i = 0; i < 10; i++) {
-			new CachedSource(
-				new OriginalSource(fixtureCode, "fixture.js"),
+			new sources.CachedSource(
+				new sources.OriginalSource(fixtureCode, "fixture.js"),
 			).sourceAndMap({});
 		}
 	});
@@ -85,8 +80,8 @@ export default function register(bench) {
 
 	bench.add("cached-source: streamChunks() (cold)", () => {
 		for (let i = 0; i < 5; i++) {
-			new CachedSource(
-				new OriginalSource(fixtureCode, "fixture.js"),
+			new sources.CachedSource(
+				new sources.OriginalSource(fixtureCode, "fixture.js"),
 			).streamChunks({}, noop, noop, noop);
 		}
 	});
@@ -98,17 +93,24 @@ export default function register(bench) {
 	});
 
 	bench.add("cached-source: originalLazy()", () => {
-		const lazy = new CachedSource(() => new RawSource(fixtureCode));
+		const lazy = new sources.CachedSource(
+			() => new sources.RawSource(fixtureCode),
+		);
 		for (let i = 0; i < 500; i++) lazy.originalLazy();
 	});
 
 	bench.add("cached-source: getCachedData() then restore", () => {
 		for (let i = 0; i < 10; i++) {
-			const a = new CachedSource(new OriginalSource(fixtureCode, "fixture.js"));
+			const a = new sources.CachedSource(
+				new sources.OriginalSource(fixtureCode, "fixture.js"),
+			);
 			a.source();
 			a.map({});
 			const data = a.getCachedData();
-			new CachedSource(new OriginalSource(fixtureCode, "fixture.js"), data);
+			new sources.CachedSource(
+				new sources.OriginalSource(fixtureCode, "fixture.js"),
+				data,
+			);
 		}
 	});
 

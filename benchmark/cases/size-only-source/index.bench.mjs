@@ -7,23 +7,23 @@
  * factory.
  */
 
-import { SizeOnlySource } from "../../../lib/index.js";
+import sources from "../../../lib/index.js";
 
 /**
  * @param {import("tinybench").Bench} bench bench
  */
 export default function register(bench) {
 	bench.add("size-only-source: new SizeOnlySource()", () => {
-		for (let i = 0; i < 500; i++) new SizeOnlySource(1024);
+		for (let i = 0; i < 500; i++) new sources.SizeOnlySource(1024);
 	});
 
 	bench.add("size-only-source: size()", () => {
-		const src = new SizeOnlySource(1024);
+		const src = new sources.SizeOnlySource(1024);
 		for (let i = 0; i < 1000; i++) src.size();
 	});
 
 	bench.add("size-only-source: source() (throws)", () => {
-		const src = new SizeOnlySource(1024);
+		const src = new sources.SizeOnlySource(1024);
 		for (let i = 0; i < 100; i++) {
 			try {
 				src.source();
@@ -34,7 +34,7 @@ export default function register(bench) {
 	});
 
 	bench.add("size-only-source: buffer() (throws)", () => {
-		const src = new SizeOnlySource(1024);
+		const src = new sources.SizeOnlySource(1024);
 		for (let i = 0; i < 100; i++) {
 			try {
 				src.buffer();
@@ -45,7 +45,7 @@ export default function register(bench) {
 	});
 
 	bench.add("size-only-source: map() (throws)", () => {
-		const src = new SizeOnlySource(1024);
+		const src = new sources.SizeOnlySource(1024);
 		for (let i = 0; i < 100; i++) {
 			try {
 				src.map({});

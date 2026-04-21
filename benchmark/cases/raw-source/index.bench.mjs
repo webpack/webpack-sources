@@ -7,7 +7,7 @@
  */
 
 import { createHash } from "crypto";
-import { RawSource } from "../../../lib/index.js";
+import sources from "../../../lib/index.js";
 import { fixtureBuffer, fixtureCode, noop } from "../../fixtures.mjs";
 
 /**
@@ -15,60 +15,62 @@ import { fixtureBuffer, fixtureCode, noop } from "../../fixtures.mjs";
  */
 export default function register(bench) {
 	bench.add("raw-source: new RawSource(string)", () => {
-		for (let i = 0; i < 50; i++) new RawSource(fixtureCode);
+		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureCode);
 	});
 
 	bench.add("raw-source: new RawSource(buffer)", () => {
-		for (let i = 0; i < 50; i++) new RawSource(fixtureBuffer);
+		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureBuffer);
 	});
 
 	bench.add("raw-source: new RawSource(buffer, true)", () => {
-		for (let i = 0; i < 50; i++) new RawSource(fixtureBuffer, true);
+		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureBuffer, true);
 	});
 
 	bench.add("raw-source: source() (string)", () => {
-		for (let i = 0; i < 50; i++) new RawSource(fixtureCode).source();
+		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureCode).source();
 	});
 
 	bench.add("raw-source: source() cached", () => {
-		const src = new RawSource(fixtureCode);
+		const src = new sources.RawSource(fixtureCode);
 		for (let i = 0; i < 500; i++) src.source();
 	});
 
 	bench.add("raw-source: buffer() (from string)", () => {
-		for (let i = 0; i < 50; i++) new RawSource(fixtureCode).buffer();
+		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureCode).buffer();
 	});
 
 	bench.add("raw-source: buffer() (from buffer)", () => {
-		for (let i = 0; i < 50; i++) new RawSource(fixtureBuffer).buffer();
+		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureBuffer).buffer();
 	});
 
 	bench.add("raw-source: size()", () => {
-		for (let i = 0; i < 50; i++) new RawSource(fixtureCode).size();
+		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureCode).size();
 	});
 
 	bench.add("raw-source: isBuffer()", () => {
-		const src = new RawSource(fixtureBuffer);
+		const src = new sources.RawSource(fixtureBuffer);
 		for (let i = 0; i < 500; i++) src.isBuffer();
 	});
 
 	bench.add("raw-source: map()", () => {
-		for (let i = 0; i < 50; i++) new RawSource(fixtureCode).map({});
+		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureCode).map({});
 	});
 
 	bench.add("raw-source: sourceAndMap()", () => {
-		for (let i = 0; i < 50; i++) new RawSource(fixtureCode).sourceAndMap({});
+		for (let i = 0; i < 50; i++) {
+			new sources.RawSource(fixtureCode).sourceAndMap({});
+		}
 	});
 
 	bench.add("raw-source: streamChunks()", () => {
 		for (let i = 0; i < 20; i++) {
-			new RawSource(fixtureCode).streamChunks({}, noop, noop, noop);
+			new sources.RawSource(fixtureCode).streamChunks({}, noop, noop, noop);
 		}
 	});
 
 	bench.add("raw-source: streamChunks({finalSource:true})", () => {
 		for (let i = 0; i < 20; i++) {
-			new RawSource(fixtureCode).streamChunks(
+			new sources.RawSource(fixtureCode).streamChunks(
 				{ finalSource: true },
 				noop,
 				noop,
@@ -79,7 +81,7 @@ export default function register(bench) {
 
 	bench.add("raw-source: updateHash()", () => {
 		for (let i = 0; i < 20; i++) {
-			new RawSource(fixtureCode).updateHash(createHash("sha256"));
+			new sources.RawSource(fixtureCode).updateHash(createHash("sha256"));
 		}
 	});
 }
