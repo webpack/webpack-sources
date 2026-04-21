@@ -11,6 +11,16 @@ import sources from "../../../lib/index.js";
 import { fixtureCode, fixtureMap, noop } from "../../fixtures.mjs";
 
 /**
+ * Pre-sized sink used by allocation-heavy tasks to retain the constructed
+ * instances past the loop so V8 cannot dead-code-eliminate them and so
+ * memory pressure is predictable between samples. Overwriting existing
+ * slots (rather than push/length reset) keeps the sink's hidden class
+ * stable and avoids resize allocations during measurement.
+ */
+const CONSTRUCT_BATCH = 100;
+const sink = Array.from({ length: CONSTRUCT_BATCH });
+
+/**
  * A CachedSource with all the common caches already populated. Reused
  * across tasks that explicitly measure the warm path.
  */
@@ -31,8 +41,8 @@ const warmed = (() => {
  */
 export default function register(bench) {
 	bench.add("cached-source: new CachedSource()", () => {
-		for (let i = 0; i < 100; i++) {
-			new sources.CachedSource(new sources.RawSource(fixtureCode));
+		for (let i = 0; i < CONSTRUCT_BATCH; i++) {
+			sink[i] = new sources.CachedSource(new sources.RawSource(fixtureCode));
 		}
 	});
 
