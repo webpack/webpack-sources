@@ -578,6 +578,98 @@ describe.each([
 		expect(buffer2).toBe(buffer1);
 	});
 
+	it("should accept source map as string", () => {
+		const mapObj = {
+			version: 3,
+			sources: ["hello-source.txt"],
+			sourcesContent: ["hello world\n"],
+			mappings: "AAAA",
+			names: [],
+			file: "",
+		};
+		const source = new SourceMapSource(
+			"hello world\n",
+			"hello.txt",
+			JSON.stringify(mapObj),
+		);
+		expect(source.source()).toBe("hello world\n");
+		const map = source.map();
+		expect(map).toEqual({ ...mapObj });
+		// call again to hit the cached string path in _sourceMapString
+		source.updateHash({
+			// @ts-expect-error for tests
+			update() {},
+		});
+	});
+
+	it("should accept inner source map as string", () => {
+		const outerMap = {
+			version: 3,
+			sources: ["hello.txt"],
+			mappings: "AAAA",
+			names: [],
+			file: "",
+		};
+		const innerMap = {
+			version: 3,
+			sources: ["hello-world.txt"],
+			mappings: "AAAA",
+			names: [],
+			file: "",
+		};
+		const source = new SourceMapSource(
+			"hello world\n",
+			"hello.txt",
+			outerMap,
+			"hello world\n",
+			JSON.stringify(innerMap),
+		);
+		// exercise _innerSourceMapBuffer via updateHash, then map() which
+		// calls _innerSourceMapObject which uses _innerSourceMapString - the string was already provided
+		source.updateHash({
+			// @ts-expect-error for tests
+			update() {},
+		});
+		// also call map which will trigger _innerSourceMapObject (reads string)
+		expect(source.map()).not.toBeNull();
+	});
+
+	it("should include remove original source flag in the hash", () => {
+		const outerMap = {
+			version: 3,
+			sources: ["hello.txt"],
+			mappings: "AAAA",
+			names: [],
+			file: "",
+		};
+		const sourceA = new SourceMapSource(
+			"hello\n",
+			"hello.txt",
+			outerMap,
+			"hello\n",
+			null,
+			false,
+		);
+		const sourceB = new SourceMapSource(
+			"hello\n",
+			"hello.txt",
+			outerMap,
+			"hello\n",
+			null,
+			true,
+		);
+
+		const hashA = crypto.createHash("md5");
+		sourceA.updateHash(hashA);
+		const digestA = hashA.digest("hex");
+
+		const hashB = crypto.createHash("md5");
+		sourceB.updateHash(hashB);
+		const digestB = hashB.digest("hex");
+
+		expect(digestA).not.toBe(digestB);
+	});
+
 	for (const hash of [
 		["md5", [crypto.createHash("md5"), crypto.createHash("md5")]],
 		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],

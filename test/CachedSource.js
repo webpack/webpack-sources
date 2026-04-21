@@ -419,4 +419,151 @@ describe.each([
 		expect(getHash(clone())).toBe(getHash(original));
 		expect(calls).toBe(3);
 	});
+
+	it("should expose originalLazy (function form) and original()", () => {
+		const original = new RawSource("Hello World");
+		const lazy = () => original;
+		const source = new CachedSource(lazy);
+		expect(source.originalLazy()).toBe(lazy);
+		expect(source.original()).toBe(original);
+		// After original() resolves the function, originalLazy returns the resolved source
+		expect(source.originalLazy()).toBe(original);
+	});
+
+	it("should compute size from cached buffer when _cachedSize is undefined", () => {
+		const buffer = Buffer.from("Hello World");
+		// Provide cachedData with buffer but no size
+		const cachedSource = new CachedSource(new RawSource("Hello World"), {
+			buffer,
+			maps: new Map(),
+		});
+		expect(cachedSource.size()).toBe(buffer.length);
+		expect(cachedSource.size()).toBe(buffer.length);
+	});
+
+	it("should return null for missing map when cached entry is empty", () => {
+		const cachedSource = new CachedSource(new RawSource("Hello World"), {
+			buffer: Buffer.from("Hello World"),
+			size: 11,
+			maps: new Map([["{}", {}]]),
+		});
+		expect(cachedSource.map()).toBeNull();
+	});
+
+	it("should flush accumulated hash strings when they exceed the threshold", () => {
+		class StringyHashSource extends Source {
+			source() {
+				return "ignored";
+			}
+
+			buffer() {
+				return Buffer.from("ignored");
+			}
+
+			size() {
+				return 7;
+			}
+
+			map() {
+				return null;
+			}
+
+			updateHash(hash) {
+				for (let i = 0; i < 15000; i++) {
+					hash.update(`chunk-${i}-`);
+				}
+			}
+		}
+
+		const cachedSource = new CachedSource(new StringyHashSource());
+
+		const hashA = crypto.createHash("md5");
+		cachedSource.updateHash(hashA);
+		const digestA = hashA.digest("hex");
+
+		// When hashing again, the cached hash update is replayed directly
+		const hashB = crypto.createHash("md5");
+		cachedSource.updateHash(hashB);
+		const digestB = hashB.digest("hex");
+
+		expect(digestA).toBe(digestB);
+	});
+
+	it("should handle hash updates starting with a Buffer (no prior string to flush)", () => {
+		class BufferFirstHashSource extends Source {
+			source() {
+				return "text";
+			}
+
+			buffer() {
+				return Buffer.from("text");
+			}
+
+			size() {
+				return 4;
+			}
+
+			map() {
+				return null;
+			}
+
+			updateHash(hash) {
+				// Start with a Buffer so the tracker "else" branch runs
+				// with currentString === undefined, and also pass a long string
+				// so the length-gate in the "string" branch is exercised.
+				hash.update(Buffer.from("leading-buffer-"));
+				hash.update("a".repeat(11000));
+				hash.update("short-string");
+			}
+		}
+
+		const cachedSource = new CachedSource(new BufferFirstHashSource());
+		const hashA = crypto.createHash("md5");
+		cachedSource.updateHash(hashA);
+		const digestA = hashA.digest("hex");
+
+		const hashB = crypto.createHash("md5");
+		cachedSource.updateHash(hashB);
+		const digestB = hashB.digest("hex");
+
+		expect(digestA).toBe(digestB);
+	});
+
+	it("should allow streamChunks when cached map exists but source is not cached", () => {
+		const original = new OriginalSource("Hello World", "file.js");
+		const cachedSource = new CachedSource(original);
+
+		// Populate map cache only (no source/buffer cached yet)
+		cachedSource.map({});
+
+		const chunks = [];
+		cachedSource.streamChunks(
+			{},
+			(...args) => {
+				chunks.push(args);
+			},
+			() => {},
+			() => {},
+		);
+		expect(chunks.length).toBeGreaterThan(0);
+	});
+
+	it("should round-trip CachedSource with a Buffer-backed source", () => {
+		const buffer = Buffer.from(Array.from({ length: 64 }, (_, i) => i));
+		const original = new RawSource(buffer);
+		const source = new CachedSource(original);
+
+		// Populate _cachedSource with the Buffer
+		source.source();
+		source.size();
+
+		const cachedData = source.getCachedData();
+		expect(cachedData.source).toBe(false);
+
+		// @ts-expect-error for tests
+		const clone = new CachedSource(null, cachedData);
+		expect(clone.source()).toEqual(source.source());
+		expect(clone.buffer()).toEqual(source.buffer());
+		expect(clone.size()).toEqual(source.size());
+	});
 });

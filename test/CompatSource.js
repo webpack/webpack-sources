@@ -36,4 +36,107 @@ describe("compatSource", () => {
 		});
 		expect(calledWith).toEqual([Buffer.from(CONTENT)]);
 	});
+
+	it("should use buffer from source-like when provided", () => {
+		const CONTENT = "Line1\n\nLine3\n";
+		const buffer = Buffer.from(CONTENT);
+		const source = CompatSource.from({
+			source() {
+				return CONTENT;
+			},
+			buffer() {
+				return buffer;
+			},
+		});
+		expect(source.buffer()).toBe(buffer);
+	});
+
+	it("should use size from super when sourceLike doesn't define size", () => {
+		const CONTENT = "Hello";
+		const source = CompatSource.from({
+			source() {
+				return CONTENT;
+			},
+		});
+		expect(source.size()).toBe(5);
+	});
+
+	it("should call map from sourceLike when provided", () => {
+		const map = {
+			version: 3,
+			sources: ["a.js"],
+			names: [],
+			mappings: "",
+			file: "x",
+		};
+		const source = CompatSource.from({
+			source() {
+				return "content";
+			},
+			map() {
+				return map;
+			},
+			updateHash(hash) {
+				hash.update("custom");
+			},
+		});
+		expect(source.map()).toBe(map);
+	});
+
+	it("should call sourceAndMap from sourceLike when provided", () => {
+		const map = {
+			version: 3,
+			sources: ["a.js"],
+			names: [],
+			mappings: "",
+			file: "x",
+		};
+		const sourceAndMap = { source: "content", map };
+		const source = CompatSource.from({
+			source() {
+				return "content";
+			},
+			sourceAndMap() {
+				return sourceAndMap;
+			},
+		});
+		expect(source.sourceAndMap()).toBe(sourceAndMap);
+	});
+
+	it("should call updateHash from sourceLike when provided", () => {
+		/** @type {(string | Buffer)[]} */
+		const calledWith = [];
+		const source = CompatSource.from({
+			source() {
+				return "content";
+			},
+			updateHash(hash) {
+				hash.update("custom-hash");
+			},
+		});
+		source.updateHash({
+			// @ts-expect-error for tests
+			update(value) {
+				calledWith.push(value);
+			},
+		});
+		expect(calledWith).toEqual(["custom-hash"]);
+	});
+
+	it("should throw when map is defined but updateHash is not", () => {
+		const source = CompatSource.from({
+			source() {
+				return "content";
+			},
+			map() {
+				return null;
+			},
+		});
+		expect(() => {
+			source.updateHash({
+				// @ts-expect-error for tests
+				update() {},
+			});
+		}).toThrow(/'map' method must also provide an 'updateHash' method/);
+	});
 });
