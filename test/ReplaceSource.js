@@ -4,9 +4,11 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
+const crypto = require("crypto");
 const validate = require("sourcemap-validator");
 const { ReplaceSource } = require("../");
 const { OriginalSource } = require("../");
+const { RawSource } = require("../");
 const { SourceMapSource } = require("../");
 const { withReadableMappings } = require("./helpers");
 
@@ -318,5 +320,135 @@ export default function StaticPage(_ref) {
 		  "version": 3,
 		}
 	`);
+	});
+
+	it("should return getName()", () => {
+		const source = new ReplaceSource(
+			new OriginalSource("Hello World", "file.txt"),
+			"named.txt",
+		);
+		expect(source.getName()).toBe("named.txt");
+	});
+
+	it("should return getName() as undefined when not provided", () => {
+		const source = new ReplaceSource(new OriginalSource("Hi", "file.txt"));
+		expect(source.getName()).toBeUndefined();
+	});
+
+	it("should return sorted replacements from getReplacements", () => {
+		const source = new ReplaceSource(
+			new OriginalSource("Hello World", "file.txt"),
+		);
+		source.replace(6, 10, "Claude");
+		source.replace(0, 4, "Howdy");
+		const replacements = source.getReplacements();
+		expect(replacements).toHaveLength(2);
+		expect(replacements[0].content).toBe("Howdy");
+		expect(replacements[1].content).toBe("Claude");
+	});
+
+	it("should throw when replace() gets non-string newValue", () => {
+		const source = new ReplaceSource(
+			new OriginalSource("Hello World", "file.txt"),
+		);
+		expect(() => {
+			// @ts-expect-error for tests
+			source.replace(0, 4, 123);
+		}).toThrow(/insertion must be a string/);
+	});
+
+	it("should throw when insert() gets non-string newValue", () => {
+		const source = new ReplaceSource(
+			new OriginalSource("Hello World", "file.txt"),
+		);
+		expect(() => {
+			// @ts-expect-error for tests
+			source.insert(0, 123);
+		}).toThrow(/insertion must be a string/);
+	});
+
+	it("should pass through source and map untouched when no replacements", () => {
+		const innerSource = new OriginalSource("Hello World", "file.txt");
+		const source = new ReplaceSource(innerSource);
+		expect(source.source()).toBe(innerSource.source());
+		expect(source.map()).toEqual(innerSource.map());
+		expect(source.sourceAndMap()).toEqual(innerSource.sourceAndMap());
+	});
+
+	it("should return original source when no replacements", () => {
+		const innerSource = new OriginalSource("Hello World", "file.txt");
+		const source = new ReplaceSource(innerSource);
+		expect(source.original()).toBe(innerSource);
+	});
+
+	it("should update hash consistently", () => {
+		const inner = new OriginalSource("Hello World", "file.txt");
+
+		const source1 = new ReplaceSource(inner, "name");
+		source1.replace(0, 4, "Howdy", "greeting");
+		source1.insert(6, "[ins]");
+
+		const source2 = new ReplaceSource(inner, "name");
+		source2.replace(0, 4, "Howdy", "greeting");
+		source2.insert(6, "[ins]");
+
+		const source3 = new ReplaceSource(inner);
+		source3.replace(0, 4, "Hey");
+
+		const hash1 = crypto.createHash("md5");
+		source1.updateHash(hash1);
+		const digest1 = hash1.digest("hex");
+
+		const hash2 = crypto.createHash("md5");
+		source2.updateHash(hash2);
+		const digest2 = hash2.digest("hex");
+
+		const hash3 = crypto.createHash("md5");
+		source3.updateHash(hash3);
+		const digest3 = hash3.digest("hex");
+
+		expect(digest1).toBe(digest2);
+		expect(digest1).not.toBe(digest3);
+	});
+
+	it("should handle replacements that skip a chunk ending with newline", () => {
+		const source = new ReplaceSource(
+			new OriginalSource(
+				["line1", "line2", "line3", "line4"].join("\n"),
+				"file.txt",
+			),
+		);
+		source.replace(6, 17, "X");
+		expect(source.source()).toBe("line1\nXline4");
+	});
+
+	it("should handle multi-line replacement content", () => {
+		const source = new ReplaceSource(
+			new OriginalSource("hello world", "file.txt"),
+		);
+		source.replace(6, 10, "multi\nline\nreplacement");
+		expect(source.source()).toBe("hello multi\nline\nreplacement");
+	});
+
+	it("should handle a replacement that happens at source end", () => {
+		const source = new ReplaceSource(new OriginalSource("hello", "file.txt"));
+		source.insert(5, " world");
+		source.insert(5, "!");
+		expect(source.source()).toBe("hello world!");
+	});
+
+	it("should handle replacements ending with newline", () => {
+		const source = new ReplaceSource(
+			new OriginalSource("abc\ndef\nghi", "file.txt"),
+		);
+		source.replace(0, 2, "xyz\n");
+		expect(source.source()).toBe("xyz\n\ndef\nghi");
+	});
+
+	it("should work with RawSource as source (no map)", () => {
+		const source = new ReplaceSource(new RawSource("Hello World"));
+		source.replace(6, 10, "You");
+		expect(source.source()).toBe("Hello You");
+		expect(source.sourceAndMap()).toHaveProperty("source", "Hello You");
 	});
 });

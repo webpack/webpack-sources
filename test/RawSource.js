@@ -24,6 +24,42 @@ describe("rawSource", () => {
 		expect(source.buffer()).toStrictEqual(source.buffer());
 	});
 
+	it("converts to string on source() when constructed from buffer with convertToString=true", () => {
+		const source = new RawSource(Buffer.from(CODE_STRING), true);
+		expect(source.source()).toBe(CODE_STRING);
+		// Called again to hit cache path
+		expect(source.source()).toBe(CODE_STRING);
+	});
+
+	it("should throw TypeError for non-string non-Buffer value", () => {
+		expect(() => {
+			// @ts-expect-error for tests
+			// eslint-disable-next-line no-new
+			new RawSource(42);
+		}).toThrow(TypeError);
+		expect(() => {
+			// @ts-expect-error for tests
+			// eslint-disable-next-line no-new
+			new RawSource(null);
+		}).toThrow(TypeError);
+		expect(() => {
+			// @ts-expect-error for tests
+			// eslint-disable-next-line no-new
+			new RawSource({});
+		}).toThrow(TypeError);
+	});
+
+	it("should report isBuffer() correctly for Buffer", () => {
+		const source = new RawSource(Buffer.from(CODE_STRING));
+		expect(source.isBuffer()).toBe(true);
+	});
+
+	it("should return null from map()", () => {
+		const source = new RawSource(CODE_STRING);
+		expect(source.map()).toBeNull();
+		expect(source.map({ columns: false })).toBeNull();
+	});
+
 	it("stream chunks works correctly", () => {
 		const source = new RawSource(CODE_STRING, true);
 		// @ts-expect-error for tests
@@ -111,6 +147,23 @@ describe("rawSource", () => {
 				expect(line).toBe(`console.log('test${"2".repeat(lineNum - 1)}');\n`);
 			});
 			expect.assertions(3);
+		});
+
+		it("should handle streamChunks when constructed from a Buffer without pre-caching", () => {
+			// Buffer backing, convertToString=false. _valueAsString remains undefined.
+			const source = new RawSource(Buffer.from(CODE_STRING));
+			/** @type {(string | undefined)[]} */
+			const chunks = [];
+			// @ts-expect-error for tests
+			source.streamChunks(null, (chunk) => {
+				chunks.push(chunk);
+			});
+			expect(chunks).toHaveLength(3);
+		});
+
+		it("should expose source() on a Buffer-backed RawSource", () => {
+			const source = new RawSource(Buffer.from(CODE_STRING));
+			expect(source.source().toString("utf8")).toEqual(CODE_STRING);
 		});
 	});
 });

@@ -2,9 +2,11 @@
 
 jest.mock("./__mocks__/createMappingsSerializer");
 
+const crypto = require("crypto");
 const { PrefixSource } = require("../");
 const { OriginalSource } = require("../");
 const { ConcatSource } = require("../");
+const { RawSource } = require("../");
 const { withReadableMappings } = require("./helpers");
 
 describe("prefixSource", () => {
@@ -107,5 +109,64 @@ describe("prefixSource", () => {
 		);
 
 		expect(source.sourceAndMap().source).toEqual(source.source());
+	});
+
+	it("should expose prefix and original source", () => {
+		const inner = new OriginalSource("Hello", "file.js");
+		const source = new PrefixSource("> ", inner);
+		expect(source.getPrefix()).toBe("> ");
+		expect(source.original()).toBe(inner);
+	});
+
+	it("should update hash consistently", () => {
+		const source1 = new PrefixSource(
+			"> ",
+			new OriginalSource("Hello", "file.js"),
+		);
+		const source2 = new PrefixSource(
+			"> ",
+			new OriginalSource("Hello", "file.js"),
+		);
+		const source3 = new PrefixSource(
+			"> ",
+			new OriginalSource("World", "file.js"),
+		);
+
+		const hash1 = crypto.createHash("md5");
+		source1.updateHash(hash1);
+		const digest1 = hash1.digest("hex");
+
+		const hash2 = crypto.createHash("md5");
+		source2.updateHash(hash2);
+		const digest2 = hash2.digest("hex");
+
+		const hash3 = crypto.createHash("md5");
+		source3.updateHash(hash3);
+		const digest3 = hash3.digest("hex");
+
+		expect(digest1).toBe(digest2);
+		expect(digest1).not.toBe(digest3);
+	});
+
+	it("should accept a raw string as source", () => {
+		const source = new PrefixSource("**", "line1\nline2");
+		expect(source.source()).toBe("**line1\n**line2");
+	});
+
+	it("should accept a Buffer as source", () => {
+		const source = new PrefixSource("**", Buffer.from("line1\nline2"));
+		expect(source.source()).toBe("**line1\n**line2");
+	});
+
+	it("should work with RawSource (no map)", () => {
+		const source = new PrefixSource("> ", new RawSource("hello\nworld"));
+		expect(source.source()).toBe("> hello\n> world");
+	});
+
+	it("should handle empty prefix (prefixOffset = 0)", () => {
+		const inner = new OriginalSource("hello\nworld\n", "file.js");
+		const source = new PrefixSource("", inner);
+		expect(source.source()).toBe("hello\nworld\n");
+		expect(source.sourceAndMap().source).toBe("hello\nworld\n");
 	});
 });

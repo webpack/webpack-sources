@@ -212,6 +212,89 @@ describe("concatSource", () => {
 	`);
 	});
 
+	it("should concat a SourceLike child without a buffer() method that returns a Buffer", () => {
+		const customBuffer = Buffer.from("custom-content");
+		const customSource = {
+			source() {
+				return customBuffer;
+			},
+			size() {
+				return customBuffer.length;
+			},
+		};
+		const source = new ConcatSource(customSource, new RawSource("-after"));
+		const result = source.buffer();
+		expect(result).toEqual(
+			Buffer.concat([customBuffer, Buffer.from("-after")]),
+		);
+	});
+
+	it("should concat a SourceLike child where source() returns a string (no buffer())", () => {
+		const customSource = {
+			source() {
+				return "custom-content";
+			},
+			size() {
+				return "custom-content".length;
+			},
+		};
+		const source = new ConcatSource(customSource, new RawSource("-after"));
+		const result = source.buffer();
+		expect(result).toEqual(
+			Buffer.concat([Buffer.from("custom-content"), Buffer.from("-after")]),
+		);
+	});
+
+	it("should optimize nested string-only ConcatSources across re-optimization", () => {
+		// Create two ConcatSources that produce RawSource (kept in stringsAsRawSources)
+		const c1 = new ConcatSource("a", "b");
+		c1.source(); // triggers _optimize, putting its RawSource("ab") into stringsAsRawSources
+
+		const c2 = new ConcatSource("c", "d");
+		c2.source(); // same, puts RawSource("cd") into stringsAsRawSources
+
+		const merged = new ConcatSource();
+		merged.add(c1); // flatten c1's children
+		merged.add("x");
+		merged.add(c2);
+		merged.add("y");
+		merged.add(c1);
+		expect(merged.source()).toBe("abxcdyab");
+	});
+
+	it("should re-optimize when raw source followed by regular source", () => {
+		const c1 = new ConcatSource("a", "b");
+		c1.source(); // places RawSource into stringsAsRawSources
+		const regular = new OriginalSource("Z", "z.js");
+		const merged = new ConcatSource();
+		merged.add(c1); // flatten
+		merged.add(regular);
+		expect(merged.source()).toBe("abZ");
+		expect(merged.getChildren()).toHaveLength(2);
+	});
+
+	it("should reflect empty ConcatSource", () => {
+		const source = new ConcatSource();
+		expect(source.source()).toBe("");
+		expect(source.size()).toBe(0);
+		expect(source.buffer()).toEqual(Buffer.alloc(0));
+	});
+
+	it("should flatten nested ConcatSource via add()", () => {
+		const inner = new ConcatSource("a", "b");
+		const outer = new ConcatSource();
+		outer.add(inner);
+		outer.add("c");
+		expect(outer.source()).toBe("abc");
+	});
+
+	it("should optimize on first getChildren() call", () => {
+		const source = new ConcatSource("a", "b", new RawSource("c"));
+		// Call getChildren without first calling source()/size()/buffer()
+		const children = source.getChildren();
+		expect(children.length).toBeGreaterThan(0);
+	});
+
 	it("should handle column mapping correctly with missing sources", () => {
 		const source = new ConcatSource(
 			"/*! For license information please see main.js.LICENSE.txt */",

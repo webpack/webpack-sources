@@ -17,4 +17,14 @@ describe("sizeOnlySource", () => {
 			}).toThrow(/not available/);
 		});
 	}
+
+	it("should throw on updateHash()", () => {
+		const source = new SizeOnlySource(42);
+		expect(() => {
+			source.updateHash({
+				// @ts-expect-error for tests
+				update() {},
+			});
+		}).toThrow(/not available/);
+	});
 });

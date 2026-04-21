@@ -102,6 +102,25 @@ describe.each([
 		expect(source.size()).toBe(256);
 	});
 
+	it("should expose getName()", () => {
+		const source = new OriginalSource("hi", "file.js");
+		expect(source.getName()).toBe("file.js");
+	});
+
+	it("should compute map correctly from buffer-backed source", () => {
+		const content = "Line1\nLine2\n";
+		const source = new OriginalSource(Buffer.from(content), "file.js");
+		expect(source.sourceAndMap().source).toBe(content);
+	});
+
+	it("should map correctly when constructed from a Buffer (streamChunks path)", () => {
+		const content = "Line1\nLine2\n";
+		const source = new OriginalSource(Buffer.from(content), "file.js");
+		// Calling map() without calling source() first to ensure streamChunks
+		// populates _value from the buffer
+		expect(source.map({ columns: false })).not.toBeNull();
+	});
+
 	it("should return the correct size for unicode files", () => {
 		const source = new OriginalSource("😋", "file.js");
 		expect(source.size()).toBe(4);
