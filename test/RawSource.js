@@ -22,7 +22,6 @@ describe("rawSource", () => {
 		expect(source.buffer().toString("utf8")).toEqual(CODE_STRING);
 		// The buffer conversion should be cached.
 		expect(source.buffer()).toStrictEqual(source.buffer());
-		console.log(source.size())
 	});
 
 	it("converts to string on source() when constructed from buffer with convertToString=true", () => {
