@@ -29,7 +29,9 @@ export default function register(bench) {
 
 	bench.add("prefix-source: getPrefix()", () => {
 		const ps = new sources.PrefixSource("\t", fixtureCode);
-		for (let i = 0; i < 500; i++) ps.getPrefix();
+		let sink = 0;
+		for (let i = 0; i < 50_000; i++) sink ^= ps.getPrefix().length;
+		if (sink === -1) throw new Error("unreachable");
 	});
 
 	bench.add("prefix-source: original()", () => {
@@ -37,7 +39,9 @@ export default function register(bench) {
 			"\t",
 			new sources.RawSource(fixtureCode),
 		);
-		for (let i = 0; i < 500; i++) ps.original();
+		let sink = 0;
+		for (let i = 0; i < 50_000; i++) sink ^= ps.original() === ps ? 1 : 0;
+		if (sink === -1) throw new Error("unreachable");
 	});
 
 	bench.add("prefix-source: source() (RawSource child)", () => {
