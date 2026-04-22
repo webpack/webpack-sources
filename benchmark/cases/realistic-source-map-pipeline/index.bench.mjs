@@ -9,6 +9,10 @@
  * reuse across calls).
  *
  * This is the case that most directly reflects "compile one chunk" cost.
+ *
+ * Fixture lifetime policy: warm fixtures are built in beforeAll hooks
+ * scoped to the tasks that need them (not at module scope) so that adding
+ * a new task to this file does not perturb pre-existing measurements.
  */
 
 import sources from "../../../lib/index.js";
@@ -36,7 +40,10 @@ function buildFreshChunk() {
 	);
 }
 
-const warmChunk = (() => {
+/**
+ * @returns {CachedSource} warm CachedSource with source/map/buffer populated
+ */
+function buildWarmChunk() {
 	const cached = new sources.CachedSource(buildFreshChunk());
 	cached.source();
 	cached.map({});
@@ -44,7 +51,7 @@ const warmChunk = (() => {
 	cached.buffer();
 	cached.size();
 	return cached;
-})();
+}
 
 /*
  * Reproduces the layering pattern called out in
@@ -83,12 +90,6 @@ function buildLayeredChunk() {
 	);
 }
 
-const warmLayeredChunk = (() => {
-	const chunk = buildLayeredChunk();
-	chunk.buffers();
-	return chunk;
-})();
-
 /**
  * @param {import("tinybench").Bench} bench bench
  */
@@ -101,11 +102,24 @@ export default function register(bench) {
 		},
 	);
 
+	/** @type {CachedSource | undefined} */
+	let warmChunk;
+	const warmChunkHooks = {
+		beforeAll() {
+			warmChunk = buildWarmChunk();
+		},
+		afterAll() {
+			warmChunk = undefined;
+		},
+	};
+
 	bench.add(
 		"realistic-source-map-pipeline: warm sourceAndMap() (reuse CachedSource)",
 		() => {
-			for (let i = 0; i < 50; i++) warmChunk.sourceAndMap({});
+			const chunk = /** @type {CachedSource} */ (warmChunk);
+			for (let i = 0; i < 50; i++) chunk.sourceAndMap({});
 		},
+		warmChunkHooks,
 	);
 
 	bench.add("realistic-source-map-pipeline: cold map() only", () => {
@@ -167,17 +181,34 @@ export default function register(bench) {
 		},
 	);
 
+	/** @type {CachedSource | undefined} */
+	let warmLayeredChunk;
+	const warmLayeredHooks = {
+		beforeAll() {
+			const chunk = buildLayeredChunk();
+			chunk.buffers();
+			warmLayeredChunk = chunk;
+		},
+		afterAll() {
+			warmLayeredChunk = undefined;
+		},
+	};
+
 	bench.add(
 		"realistic-source-map-pipeline: warm buffer() (Cached->Concat->Cached->Concat)",
 		() => {
-			for (let i = 0; i < 50; i++) warmLayeredChunk.buffer();
+			const chunk = /** @type {CachedSource} */ (warmLayeredChunk);
+			for (let i = 0; i < 50; i++) chunk.buffer();
 		},
+		warmLayeredHooks,
 	);
 
 	bench.add(
 		"realistic-source-map-pipeline: warm buffers() (Cached->Concat->Cached->Concat)",
 		() => {
-			for (let i = 0; i < 50; i++) warmLayeredChunk.buffers();
+			const chunk = /** @type {CachedSource} */ (warmLayeredChunk);
+			for (let i = 0; i < 50; i++) chunk.buffers();
 		},
+		warmLayeredHooks,
 	);
 }

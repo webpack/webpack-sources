@@ -30,6 +30,7 @@ import {
 /** @typedef {import("tinybench").Bench} Bench */
 /** @typedef {import("tinybench").Task} Task */
 /** @typedef {() => unknown | Promise<unknown>} Fn */
+/** @typedef {{ beforeAll?: Fn, afterAll?: Fn, beforeEach?: Fn, afterEach?: Fn }} HookOpts */
 
 const repoRoot = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
@@ -137,18 +138,29 @@ export function withCodSpeed(bench) {
 		setup();
 		for (const task of bench.tasks) {
 			const m = /** @type {TaskMeta} */ (meta.get(task.name));
+			const hooks = /** @type {HookOpts | undefined} */ (m.opts) || {};
+
+			if (hooks.beforeAll) await hooks.beforeAll.call(task);
 
 			// Warm-up: run the body a few times to stabilise caches / JIT.
+			// Honor beforeEach/afterEach so the measured iteration sees the
+			// same fixture state as the warmup iterations.
 			for (let i = 0; i < bench.iterations - 1; i++) {
+				if (hooks.beforeEach) await hooks.beforeEach.call(task);
 				await m.fn();
+				if (hooks.afterEach) await hooks.afterEach.call(task);
 			}
 
 			// Instrumented run.
+			if (hooks.beforeEach) await hooks.beforeEach.call(task);
 			global.gc?.();
 			InstrumentHooks.startBenchmark();
 			await wrapFrame(m.fn, true)();
 			InstrumentHooks.stopBenchmark();
+			if (hooks.afterEach) await hooks.afterEach.call(task);
 			InstrumentHooks.setExecutedBenchmark(process.pid, m.uri);
+
+			if (hooks.afterAll) await hooks.afterAll.call(task);
 
 			console.log(
 				`[CodSpeed] ${
@@ -163,14 +175,26 @@ export function withCodSpeed(bench) {
 		setup();
 		for (const task of bench.tasks) {
 			const m = /** @type {TaskMeta} */ (meta.get(task.name));
+			const hooks = /** @type {HookOpts | undefined} */ (m.opts) || {};
+
+			if (hooks.beforeAll) hooks.beforeAll.call(task);
+
 			for (let i = 0; i < bench.iterations - 1; i++) {
+				if (hooks.beforeEach) hooks.beforeEach.call(task);
 				m.fn();
+				if (hooks.afterEach) hooks.afterEach.call(task);
 			}
+
+			if (hooks.beforeEach) hooks.beforeEach.call(task);
 			global.gc?.();
 			InstrumentHooks.startBenchmark();
 			wrapFrame(m.fn, false)();
 			InstrumentHooks.stopBenchmark();
+			if (hooks.afterEach) hooks.afterEach.call(task);
 			InstrumentHooks.setExecutedBenchmark(process.pid, m.uri);
+
+			if (hooks.afterAll) hooks.afterAll.call(task);
+
 			console.log(
 				`[CodSpeed] ${
 					InstrumentHooks.isInstrumented() ? "Measured" : "Checked"
