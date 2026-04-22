@@ -112,7 +112,7 @@ stable than per-call timing for sub-microsecond work.
 
 | Case                              | What it measures                                                              |
 | --------------------------------- | ----------------------------------------------------------------------------- |
-| `realistic-source-map-pipeline`   | OriginalSource -> ReplaceSource -> ConcatSource -> CachedSource (cold + warm) |
+| `realistic-source-map-pipeline`   | OriginalSource -> ReplaceSource -> ConcatSource -> CachedSource (cold + warm); also `buffer()` vs `buffers()` over the `CachedSource -> ConcatSource -> CachedSource -> ConcatSource` layering from issue #157 |
 
 ## Adding a new case
 

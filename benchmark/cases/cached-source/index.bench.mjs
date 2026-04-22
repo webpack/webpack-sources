@@ -37,6 +37,18 @@ const warmed = (() => {
 })();
 
 /**
+ * A CachedSource wrapping a ConcatSource of 10 RawSources with buffers()
+ * already populated. Used to measure warm buffers()/buffer() delegation.
+ */
+const warmedConcat = (() => {
+	const parts = [];
+	for (let i = 0; i < 10; i++) parts.push(new sources.RawSource(fixtureCode));
+	const cached = new sources.CachedSource(new sources.ConcatSource(...parts));
+	cached.buffers();
+	return cached;
+})();
+
+/**
  * @param {import("tinybench").Bench} bench bench
  */
 export default function register(bench) {
@@ -58,6 +70,38 @@ export default function register(bench) {
 
 	bench.add("cached-source: buffer() (cached)", () => {
 		for (let i = 0; i < 500; i++) warmed.buffer();
+	});
+
+	bench.add("cached-source: buffers() (cached)", () => {
+		for (let i = 0; i < 500; i++) warmed.buffers();
+	});
+
+	bench.add("cached-source: buffer() (cold, wraps ConcatSource x10)", () => {
+		for (let i = 0; i < 10; i++) {
+			const parts = [];
+			for (let j = 0; j < 10; j++) {
+				parts.push(new sources.RawSource(fixtureCode));
+			}
+			new sources.CachedSource(new sources.ConcatSource(...parts)).buffer();
+		}
+	});
+
+	bench.add("cached-source: buffers() (cold, wraps ConcatSource x10)", () => {
+		for (let i = 0; i < 10; i++) {
+			const parts = [];
+			for (let j = 0; j < 10; j++) {
+				parts.push(new sources.RawSource(fixtureCode));
+			}
+			new sources.CachedSource(new sources.ConcatSource(...parts)).buffers();
+		}
+	});
+
+	bench.add("cached-source: buffer() (warm, wraps ConcatSource x10)", () => {
+		for (let i = 0; i < 500; i++) warmedConcat.buffer();
+	});
+
+	bench.add("cached-source: buffers() (warm, wraps ConcatSource x10)", () => {
+		for (let i = 0; i < 500; i++) warmedConcat.buffers();
 	});
 
 	bench.add("cached-source: size() (cached)", () => {

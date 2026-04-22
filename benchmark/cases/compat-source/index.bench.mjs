@@ -11,10 +11,17 @@ import sources from "../../../lib/index.js";
 import { fixtureCode } from "../../fixtures.mjs";
 
 const fixtureBuffer = Buffer.from(fixtureCode, "utf8");
+const fixtureBufferArray = [fixtureBuffer];
 
 const sourceLike = {
 	source: () => fixtureCode,
 	buffer: () => fixtureBuffer,
+};
+
+const sourceLikeWithBuffers = {
+	source: () => fixtureCode,
+	buffer: () => fixtureBuffer,
+	buffers: () => fixtureBufferArray,
 };
 
 const richSourceLike = {
@@ -54,6 +61,16 @@ export default function register(bench) {
 	bench.add("compat-source: buffer() (delegated)", () => {
 		const cs = new sources.CompatSource(sourceLike);
 		for (let i = 0; i < 500; i++) cs.buffer();
+	});
+
+	bench.add("compat-source: buffers() (fallback via super)", () => {
+		const cs = new sources.CompatSource({ source: () => fixtureCode });
+		for (let i = 0; i < 50; i++) cs.buffers();
+	});
+
+	bench.add("compat-source: buffers() (delegated)", () => {
+		const cs = new sources.CompatSource(sourceLikeWithBuffers);
+		for (let i = 0; i < 500; i++) cs.buffers();
 	});
 
 	bench.add("compat-source: size() (fallback via super)", () => {

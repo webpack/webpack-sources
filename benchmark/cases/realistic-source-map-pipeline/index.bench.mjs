@@ -46,6 +46,49 @@ const warmChunk = (() => {
 	return cached;
 })();
 
+/*
+ * Reproduces the layering pattern called out in
+ * https://github.com/webpack/webpack-sources/issues/157:
+ *
+ *   CachedSource -> ConcatSource -> CachedSource -> ConcatSource
+ *
+ * At every ConcatSource boundary, the legacy `buffer()` path calls
+ * Buffer.concat on the children's buffers, which copies all of the bytes
+ * through each layer. `buffers()` returns Buffer[] without concatenating,
+ * so the wrapping CachedSource can pass the chunks through to the consumer
+ * (e.g. fs.createWriteStream / writev) without ever materializing a single
+ * contiguous Buffer.
+ *
+ * Each inner chunk is ~5 raw sources of fixtureCode, the outer chunk stitches
+ * 4 of them together, mirroring "chunk-of-modules" nesting depth.
+ */
+/**
+ * @returns {CachedSource} cached source
+ */
+function buildLayeredChunk() {
+	const inner = [];
+	for (let i = 0; i < 4; i++) {
+		const parts = [];
+		for (let j = 0; j < 5; j++) {
+			parts.push(new sources.RawSource(fixtureCode));
+		}
+		inner.push(new sources.CachedSource(new sources.ConcatSource(...parts)));
+	}
+	return new sources.CachedSource(
+		new sources.ConcatSource(
+			new sources.RawSource("/* outer header */\n"),
+			...inner,
+			new sources.RawSource("/* outer footer */\n"),
+		),
+	);
+}
+
+const warmLayeredChunk = (() => {
+	const chunk = buildLayeredChunk();
+	chunk.buffers();
+	return chunk;
+})();
+
 /**
  * @param {import("tinybench").Bench} bench bench
  */
@@ -107,6 +150,34 @@ export default function register(bench) {
 				() => {},
 				() => {},
 			);
+		},
+	);
+
+	bench.add(
+		"realistic-source-map-pipeline: cold buffer() (Cached->Concat->Cached->Concat)",
+		() => {
+			buildLayeredChunk().buffer();
+		},
+	);
+
+	bench.add(
+		"realistic-source-map-pipeline: cold buffers() (Cached->Concat->Cached->Concat)",
+		() => {
+			buildLayeredChunk().buffers();
+		},
+	);
+
+	bench.add(
+		"realistic-source-map-pipeline: warm buffer() (Cached->Concat->Cached->Concat)",
+		() => {
+			for (let i = 0; i < 50; i++) warmLayeredChunk.buffer();
+		},
+	);
+
+	bench.add(
+		"realistic-source-map-pipeline: warm buffers() (Cached->Concat->Cached->Concat)",
+		() => {
+			for (let i = 0; i < 50; i++) warmLayeredChunk.buffers();
 		},
 	);
 }

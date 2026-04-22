@@ -74,6 +74,47 @@ export default function register(bench) {
 		for (let i = 0; i < 10; i++) cs.buffer();
 	});
 
+	bench.add("concat-source: buffers() (10 raw)", () => {
+		const parts = [];
+		for (let i = 0; i < 10; i++) parts.push(new sources.RawSource(fixtureCode));
+		const cs = new sources.ConcatSource(...parts);
+		for (let i = 0; i < 10; i++) cs.buffers();
+	});
+
+	bench.add("concat-source: buffer() (nested 4x10 raw)", () => {
+		const makeInner = () => {
+			const parts = [];
+			for (let i = 0; i < 10; i++) {
+				parts.push(new sources.RawSource(fixtureCode));
+			}
+			return new sources.ConcatSource(...parts);
+		};
+		const cs = new sources.ConcatSource(
+			makeInner(),
+			makeInner(),
+			makeInner(),
+			makeInner(),
+		);
+		for (let i = 0; i < 5; i++) cs.buffer();
+	});
+
+	bench.add("concat-source: buffers() (nested 4x10 raw)", () => {
+		const makeInner = () => {
+			const parts = [];
+			for (let i = 0; i < 10; i++) {
+				parts.push(new sources.RawSource(fixtureCode));
+			}
+			return new sources.ConcatSource(...parts);
+		};
+		const cs = new sources.ConcatSource(
+			makeInner(),
+			makeInner(),
+			makeInner(),
+			makeInner(),
+		);
+		for (let i = 0; i < 5; i++) cs.buffers();
+	});
+
 	bench.add("concat-source: size()", () => {
 		const cs = buildMixed();
 		for (let i = 0; i < 10; i++) cs.size();
