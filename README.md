@@ -28,6 +28,21 @@ Source.prototype.buffer() -> Buffer
 
 Returns the represented source code as Buffer. Strings are converted to utf-8.
 
+#### `buffers`
+
+<!-- eslint-skip -->
+```typescript
+Source.prototype.buffers() -> Buffer[]
+```
+
+Returns the represented source code as an array of Buffers. This avoids the
+intermediate `Buffer.concat` allocation performed by `buffer()` when the source
+is composed of multiple children (for example `ConcatSource`). Consumers that
+can accept an array of buffers (e.g. writing via `fs.createWriteStream` or
+`writev`) should prefer this method for better performance.
+
+The default implementation returns `[this.buffer()]`.
+
 #### `size`
 
 <!-- eslint-skip -->

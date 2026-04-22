@@ -51,6 +51,31 @@ describe("compatSource", () => {
 		expect(source.buffer()).toBe(buffer);
 	});
 
+	it("should use buffers from source-like when provided", () => {
+		const buffers = [Buffer.from("a"), Buffer.from("b")];
+		const source = CompatSource.from({
+			source() {
+				return "ab";
+			},
+			buffers() {
+				return buffers;
+			},
+		});
+		expect(source.buffers()).toBe(buffers);
+	});
+
+	it("should fall back to super buffers() when sourceLike doesn't provide it", () => {
+		const CONTENT = "Hello";
+		const source = CompatSource.from({
+			source() {
+				return CONTENT;
+			},
+		});
+		const buffers = source.buffers();
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toEqual(Buffer.from(CONTENT));
+	});
+
 	it("should use size from super when sourceLike doesn't define size", () => {
 		const CONTENT = "Hello";
 		const source = CompatSource.from({

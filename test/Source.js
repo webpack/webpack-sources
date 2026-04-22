@@ -73,4 +73,17 @@ describe("source", () => {
 		const source = new DummySource();
 		expect(source.size()).toBe(6);
 	});
+
+	it("should return a single-entry array for buffers() by default", () => {
+		class DummySource extends Source {
+			source() {
+				return "dummy";
+			}
+		}
+		const source = new DummySource();
+		const buffers = source.buffers();
+		expect(Array.isArray(buffers)).toBe(true);
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toEqual(Buffer.from("dummy", "utf8"));
+	});
 });

@@ -4,6 +4,7 @@ jest.mock("./__mocks__/createMappingsSerializer");
 
 const crypto = require("crypto");
 const { CachedSource } = require("../");
+const { ConcatSource } = require("../");
 const { OriginalSource } = require("../");
 const { RawSource } = require("../");
 const { Source } = require("../");
@@ -546,6 +547,32 @@ describe.each([
 			() => {},
 		);
 		expect(chunks.length).toBeGreaterThan(0);
+	});
+
+	it("should return Buffer[] from buffers() and delegate to the original source", () => {
+		const original = new ConcatSource(
+			new RawSource(Buffer.from("hello ")),
+			new RawSource(Buffer.from("world")),
+		);
+		const cachedSource = new CachedSource(original);
+
+		const buffers = cachedSource.buffers();
+		expect(Array.isArray(buffers)).toBe(true);
+		expect(buffers).toHaveLength(2);
+		expect(Buffer.concat(buffers).toString("utf8")).toBe("hello world");
+		// The second call should return the cached array
+		expect(cachedSource.buffers()).toBe(buffers);
+	});
+
+	it("should return a single-entry Buffer[] from buffers() when buffer is already cached", () => {
+		const buffer = Buffer.from("cached");
+		const original = new RawSource(buffer);
+		const cachedSource = new CachedSource(original);
+		// Populate the buffer cache
+		cachedSource.buffer();
+		const buffers = cachedSource.buffers();
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toBe(buffer);
 	});
 
 	it("should round-trip CachedSource with a Buffer-backed source", () => {
