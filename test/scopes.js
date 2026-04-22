@@ -3,72 +3,33 @@
 const ConcatSource = require("../lib/ConcatSource");
 const OriginalSource = require("../lib/OriginalSource");
 const SourceMapSource = require("../lib/SourceMapSource");
-const createGeneratedRangesSerializer = require("../lib/helpers/createGeneratedRangesSerializer");
-const createOriginalScopesSerializer = require("../lib/helpers/createOriginalScopesSerializer");
-const readAllOriginalScopes = require("../lib/helpers/readAllOriginalScopes");
-const readGeneratedRanges = require("../lib/helpers/readGeneratedRanges");
-const readOriginalScopes = require("../lib/helpers/readOriginalScopes");
 const {
-	END_SEGMENT,
-	NEXT_LINE,
-	readTokens,
-	valueAsToken,
-} = require("../lib/helpers/vlq");
+	createGeneratedRangesSerializer,
+	createOriginalScopesSerializer,
+	readAllOriginalScopes,
+	readGeneratedRanges,
+	readOriginalScopes,
+} = require("../lib/helpers/scopes");
 
+// These tests cover the experimental Source Map Scopes Proposal plumbing.
+// See lib/helpers/scopes.js for caveats about API stability.
 describe("Source Map Scopes Proposal", () => {
-	describe("vlq.valueAsToken/readTokens round-trip", () => {
-		const cases = [0, 1, -1, 15, -15, 16, -16, 1023, -1023, 1000000, -1000000];
-		for (const value of cases) {
-			it(`encodes and decodes ${value}`, () => {
-				const encoded = valueAsToken(value);
-				/** @type {number[]} */
-				const decoded = [];
-				readTokens(encoded, (control, data) => {
-					if (control === 0) decoded.push(data);
-				});
-				expect(decoded).toEqual([value]);
-			});
-		}
-
-		it("emits END_SEGMENT and NEXT_LINE controls", () => {
-			let input = "";
-			input += valueAsToken(5);
-			input += ",";
-			input += valueAsToken(-3);
-			input += ";";
-			input += valueAsToken(7);
-			/** @type {[number, number][]} */
-			const out = [];
-			readTokens(input, (control, data) => {
-				out.push([control, data]);
-			});
-			expect(out).toEqual([
-				[0, 5],
-				[END_SEGMENT, 0],
-				[0, -3],
-				[NEXT_LINE, 0],
-				[0, 7],
-			]);
-		});
-	});
-
 	describe("originalScopes serializer/reader round-trip", () => {
 		it("round-trips a nested scope with a named function", () => {
 			const ser = createOriginalScopesSerializer();
 			// Outer (module) scope — line 1, column 0, kind 0, flags 0
 			let encoded = "";
 			encoded += ser(1, 0, 0, 0, -1, undefined);
-			// Inner (function `foo`) scope — line 2, column 2, kind 1, flags 1 (HAS_NAME), name index 0, variables [1,2]
+			// Inner (function `foo`) scope — line 2, column 2, kind 1,
+			// flags 1 (HAS_NAME), name index 0, variables [1,2]
 			encoded += ser(2, 2, 1, 1, 0, [1, 2]);
-			// End of inner
-			encoded += ser(10, 1, -1, -1, -1, undefined);
-			// End of outer
-			encoded += ser(12, 0, -1, -1, -1, undefined);
+			encoded += ser(10, 1, -1, -1, -1, undefined); // end inner
+			encoded += ser(12, 0, -1, -1, -1, undefined); // end outer
 
 			/** @type {[number, number, number, number, number, number, number[]][]} */
 			const calls = [];
 			readOriginalScopes(0, encoded, (...args) => {
-				// Copy variables to snapshot its state at call-time
+				// Copy variables: the reader reuses the same array instance.
 				calls.push([
 					args[0],
 					args[1],
@@ -87,13 +48,48 @@ describe("Source Map Scopes Proposal", () => {
 				[0, 12, 0, -1, -1, -1, []],
 			]);
 		});
+
+		it("encoder single-sextet fast path round-trips through the reader", () => {
+			// All values here fit in a single VLQ sextet (|value| <= 15),
+			// exercising the fast path in valueAsToken.
+			const ser = createOriginalScopesSerializer();
+			let encoded = "";
+			for (const line of [1, 3, 7, 12]) {
+				encoded += ser(line, line - 1, 0, 0, -1, undefined);
+			}
+			/** @type {number[]} */
+			const lines = [];
+			readOriginalScopes(0, encoded, (_, line) => lines.push(line));
+			expect(lines).toEqual([1, 3, 7, 12]);
+		});
+
+		it("encoder multi-sextet fallback round-trips through the reader", () => {
+			// Values above the single-sextet range (|value| > 15), plus some
+			// much larger values, to exercise the continuation loop.
+			const ser = createOriginalScopesSerializer();
+			let encoded = "";
+			encoded += ser(1, 0, 0, 0, -1, undefined);
+			encoded += ser(100, 500, 0, 0, -1, undefined);
+			encoded += ser(1000000, 2000000, 0, 0, -1, undefined);
+			/** @type {[number, number][]} */
+			const linesCols = [];
+			readOriginalScopes(0, encoded, (_, line, column) =>
+				linesCols.push([line, column]),
+			);
+			expect(linesCols).toEqual([
+				[1, 0],
+				[100, 500],
+				[1000000, 2000000],
+			]);
+		});
 	});
 
 	describe("generatedRanges serializer/reader round-trip", () => {
 		it("round-trips ranges with a definition reference", () => {
 			const ser = createGeneratedRangesSerializer();
 			let encoded = "";
-			// Range start at line 1, column 0, flags=1 (HAS_DEFINITION), definition=[0,0]
+			// Range start at line 1, column 0, flags=1 (HAS_DEFINITION),
+			// definition=[0,0]
 			encoded += ser(1, 0, 1, [0, 0], undefined, undefined);
 			// Range end at line 3, column 5
 			encoded += ser(3, 5, -1, undefined, undefined, undefined);
@@ -117,6 +113,17 @@ describe("Source Map Scopes Proposal", () => {
 				[1, 0, 1, [0, 0], undefined, []],
 				[3, 5, -1, undefined, undefined, undefined],
 			]);
+		});
+
+		it("uses a single `;` on a one-line gap (no `.repeat` call)", () => {
+			const ser = createGeneratedRangesSerializer();
+			// Two ranges whose starts sit on consecutive lines.
+			const encoded =
+				ser(1, 0, 0, undefined, undefined, undefined) +
+				ser(2, 0, 0, undefined, undefined, undefined);
+			// The only `;` in the encoded string should be the single separator
+			// between the two lines.
+			expect(encoded.split(";")).toHaveLength(2);
 		});
 	});
 
@@ -146,7 +153,7 @@ describe("Source Map Scopes Proposal", () => {
 		});
 	});
 
-	describe("SourceMapSource.map preserves originalScopes/generatedRanges", () => {
+	describe("SourceMapSource preserves originalScopes/generatedRanges", () => {
 		// Encode a tiny scopes payload so we have deterministic VLQ strings.
 		const scopesSer = createOriginalScopesSerializer();
 		const originalScope =
@@ -236,7 +243,7 @@ describe("Source Map Scopes Proposal", () => {
 			expect(map.generatedRanges).toBeDefined();
 
 			// Decode the resulting generatedRanges and confirm the first range
-			// starts at line 1 of the final output (the SourceMapSource came first).
+			// starts at line 1 of the final output (SourceMapSource came first).
 			/** @type {[number, number][]} */
 			const starts = [];
 			readGeneratedRanges(map.generatedRanges, (line, column, flags) => {

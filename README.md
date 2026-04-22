@@ -257,3 +257,109 @@ CompatSource.from(sourceLike: any | Source)
 ```
 
 If `sourceLike` is a real Source it returns it unmodified. Otherwise it returns it wrapped in a CompatSource.
+
+## Source Map Scopes Proposal (experimental)
+
+> **⚠️ Experimental.** `webpack-sources` has initial support for the
+> [TC39 Source Map Scopes Proposal](https://github.com/tc39/source-map/blob/main/proposals/scopes.md)
+> (`originalScopes` / `generatedRanges`). The proposal is still evolving, so
+> the **wire format, flag bits, callback shape, and helper names may change**
+> in future minor releases. Do not depend on this as part of a stable API
+> surface yet.
+
+When a `SourceMapSource` is constructed with an input source map that carries
+`originalScopes` and/or `generatedRanges`, those fields are forwarded through
+the `streamChunks` pipeline and back out on the map produced by `.map()` /
+`.sourceAndMap()`:
+
+<!-- eslint-skip -->
+```typescript
+const map = {
+	version: 3,
+	sources: ["a.js"],
+	names: [],
+	mappings: "AAAA;AACA;",
+	// Experimental Scopes Proposal fields:
+	originalScopes: ["…"], // one VLQ string per source
+	generatedRanges: "…",  // one VLQ string for the generated file
+};
+const src = new SourceMapSource(generatedCode, "a.js", map);
+const out = src.map(); // out.originalScopes / out.generatedRanges preserved
+```
+
+The scope data is propagated through derived sources as follows:
+
+- **`SourceMapSource`** — reads scopes/ranges from the input source map and
+  emits them.
+- **`ConcatSource`** — forwards original scopes verbatim and shifts each
+  child's generated-range line/column by the cumulative offset.
+- **`PrefixSource`** — shifts generated-range columns by the prefix length
+  on non-line-start positions.
+- **`CachedSource`** — passes the callbacks through both the cache-miss and
+  cache-hit paths.
+- **`ReplaceSource`** — forwards original scopes (positions refer to
+  original sources and are stable across replacements). Generated ranges
+  are dropped because their generated columns would need remapping through
+  each replacement.
+- **`RawSource` / `OriginalSource`** — accept the callbacks as no-ops
+  (these sources have no scope data of their own).
+- **Combined source maps** (`SourceMapSource` with an inner map) — accept
+  the callbacks but drop the scope/range data. Remapping scopes/ranges
+  through the combined coordinate transform is not implemented yet.
+
+### `streamChunks` callbacks
+
+`Source.prototype.streamChunks` has two **optional** trailing parameters for
+Scopes Proposal data. Passing them is the only way to receive scope/range
+events; omitting them is fully backwards compatible.
+
+<!-- eslint-skip -->
+```typescript
+source.streamChunks(
+	options,
+	onChunk,
+	onSource,
+	onName,
+	// Experimental. `flags >= 0` is a scope start; `flags === -1` is a
+	// scope end.
+	onOriginalScope?: (
+		sourceIndex: number,
+		line: number,
+		column: number,
+		flags: number,
+		kind: number,
+		name: number,
+		variables: number[],
+	) => void,
+	// Experimental. `flags >= 0` is a range start; `flags === -1` is a
+	// range end. `definition` / `callsite` tuples are reused internally —
+	// copy them if you need to retain data across invocations.
+	onGeneratedRange?: (
+		generatedLine: number,
+		generatedColumn: number,
+		flags: number,
+		definition?: [sourceIndex: number, scopeIndex: number],
+		callsite?: [sourceIndex: number, line: number, column: number],
+		bindings?: number[][],
+	) => void,
+);
+```
+
+### Low-level helpers
+
+If you need to decode or encode scope payloads directly, `lib/helpers/scopes`
+exposes:
+
+- `readOriginalScopes(sourceIndex, str, onOriginalScope)`
+- `readAllOriginalScopes(arr, onOriginalScope)`
+- `readGeneratedRanges(str, onGeneratedRange)`
+- `createOriginalScopesSerializer()` → serializer for one source's
+  `originalScopes` string
+- `createGeneratedRangesSerializer()` → serializer for the
+  `generatedRanges` string
+- Flag constants: `HAS_NAME_FLAG`, `HAS_DEFINITION_FLAG`,
+  `HAS_CALLSITE_FLAG`
+
+These are considered **internal / experimental** — their import path
+(`webpack-sources/lib/helpers/scopes`) is not part of the stable package
+surface and may move.

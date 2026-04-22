@@ -362,12 +362,12 @@ declare interface RawSourceMap {
 	ignoreList?: number[];
 
 	/**
-	 * per-source original scopes (Source Map Scopes Proposal)
+	 * **Experimental.** Per-source original scopes from the [Source Map Scopes Proposal](https://github.com/tc39/source-map/blob/main/proposals/scopes.md). The proposal is still evolving — the wire format and field names may change.
 	 */
 	originalScopes?: string[];
 
 	/**
-	 * generated ranges (Source Map Scopes Proposal)
+	 * **Experimental.** Generated ranges from the [Source Map Scopes Proposal](https://github.com/tc39/source-map/blob/main/proposals/scopes.md). The proposal is still evolving — the wire format and field names may change.
 	 */
 	generatedRanges?: string;
 }
