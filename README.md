@@ -344,22 +344,3 @@ source.streamChunks(
 	) => void,
 );
 ```
-
-### Low-level helpers
-
-If you need to decode or encode scope payloads directly, `lib/helpers/scopes`
-exposes:
-
-- `readOriginalScopes(sourceIndex, str, onOriginalScope)`
-- `readAllOriginalScopes(arr, onOriginalScope)`
-- `readGeneratedRanges(str, onGeneratedRange)`
-- `createOriginalScopesSerializer()` → serializer for one source's
-  `originalScopes` string
-- `createGeneratedRangesSerializer()` → serializer for the
-  `generatedRanges` string
-- Flag constants: `HAS_NAME_FLAG`, `HAS_DEFINITION_FLAG`,
-  `HAS_CALLSITE_FLAG`
-
-These are considered **internal / experimental** — their import path
-(`webpack-sources/lib/helpers/scopes`) is not part of the stable package
-surface and may move.
