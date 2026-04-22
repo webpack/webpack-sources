@@ -30,7 +30,7 @@
     "fix:special": "node node_modules/tooling/inherit-types --write && node node_modules/tooling/format-file-header --write && node node_modules/tooling/generate-types --write",
     "pretest": "npm run lint",
     "test": "jest",
-    "cover": "jest --coverage",
+    "test:coverage": "jest --coverage",
     "benchmark": "node --max-old-space-size=4096 --hash-seed=1 --random-seed=1 --no-opt --predictable --predictable-gc-schedule --interpreted-frames-native-stack --allow-natives-syntax --expose-gc --no-concurrent-sweeping ./benchmark/run.mjs",
     "version": "changeset version",
     "release": "changeset publish"

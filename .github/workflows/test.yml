@@ -2,11 +2,12 @@ name: Test
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   lint:
@@ -37,7 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: [10.x, 12.x, 14.x, 16.x, 18.x, 20.x, 22.x, 24.x]
+        node-version: [10.x, 12.x, 14.x, 16.x, 18.x, 20.x, 22.x, 24.x, 25.x]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -62,15 +63,29 @@ jobs:
           architecture: ${{ steps.calculate_architecture.outputs.result }}
           cache: npm
 
-      - run: |
-          npm install --save-dev jest@27
-          npm install
+      - name: Install dependencies
+        shell: bash
+        run: |
+          rm -f package-lock.json
+
+          npm config set progress false
+
+          if [ "${{ matrix.node-version }}" = "10.x" ]; then
+            yarn add -D jest@27 --ignore-scripts --ignore-engines
+          elif [ "${{ matrix.node-version }}" = "12.x" ] || [ "${{ matrix.node-version }}" = "14.x" ]; then
+            npm install -g npm@7
+            npm install --save-dev jest@27
+          else
+            npm install --save-dev jest@27
+          fi
         if: matrix.node-version == '10.x' || matrix.node-version == '12.x' || matrix.node-version == '14.x' || matrix.node-version == '16.x'
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
         if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x' && matrix.node-version != '16.x'
 
-      - run: npm run cover
+      - name: Run tests with coverage
+        run: npm run test:coverage -- --ci
 
       - uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
         with:
