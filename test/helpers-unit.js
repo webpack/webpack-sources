@@ -151,6 +151,19 @@ describe("readMappings", () => {
 		});
 		expect(mappings).toHaveLength(2);
 	});
+
+	it("should preserve negative cumulative deltas (signed VLQ)", () => {
+		// Second segment "CAAD" emits deltas (+1, 0, 0, -1) which drives
+		// originalColumn negative. With an unsigned accumulator this would
+		// wrap to 4294967295.
+		const mappings = [];
+		readMappings("AAAA;CAAD", (...args) => {
+			mappings.push(args);
+		});
+		expect(mappings).toHaveLength(2);
+		expect(mappings[0]).toEqual([1, 0, 0, 1, 0, -1]);
+		expect(mappings[1]).toEqual([2, 1, 0, 1, -1, -1]);
+	});
 });
 
 describe("getFromStreamChunks", () => {
