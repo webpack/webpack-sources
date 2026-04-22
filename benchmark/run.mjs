@@ -39,11 +39,16 @@ const bench = withCodSpeed(
 		now: hrtimeNow,
 		throws: true,
 		warmup: true,
-		warmupIterations: 2,
+		// Extra warmup iterations let V8's hidden-class caches and the GC heap
+		// settle before measurement starts. This matters for CodSpeed
+		// instruction counting where each task is measured in a single call,
+		// so residual allocations from previous tasks can otherwise leak into
+		// the result of subsequent tasks.
+		warmupIterations: 10,
 		// Each task's body already loops over a batch of calls, so we keep the
 		// outer iteration count low to finish a full wall-clock run in a few
-		// seconds. CodSpeed's simulation mode ignores this and instruments a
-		// single iteration per task.
+		// seconds. CodSpeed's simulation mode uses this to warm up before
+		// instrumenting a single iteration per task.
 		iterations: 10,
 	}),
 );

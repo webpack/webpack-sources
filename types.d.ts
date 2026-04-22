@@ -318,6 +318,7 @@ declare class Source {
 	constructor();
 	source(): SourceValue;
 	buffer(): Buffer;
+	buffers(): Buffer[];
 	size(): number;
 	map(options?: MapOptions): null | RawSourceMap;
 	sourceAndMap(options?: MapOptions): SourceAndMap;
@@ -344,6 +345,11 @@ declare interface SourceLike {
 	 * buffer
 	 */
 	buffer?: () => Buffer;
+
+	/**
+	 * buffers
+	 */
+	buffers?: () => Buffer[];
 
 	/**
 	 * size

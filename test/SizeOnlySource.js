@@ -8,7 +8,7 @@ describe("sizeOnlySource", () => {
 		expect(source.size()).toBe(42);
 	});
 
-	for (const method of ["source", "map", "sourceAndMap", "buffer"]) {
+	for (const method of ["source", "map", "sourceAndMap", "buffer", "buffers"]) {
 		it(`should throw on ${method}()`, () => {
 			const source = new SizeOnlySource(42);
 			expect(() => {

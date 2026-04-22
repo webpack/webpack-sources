@@ -9,6 +9,10 @@
  * reuse across calls).
  *
  * This is the case that most directly reflects "compile one chunk" cost.
+ *
+ * Fixture lifetime policy: warm fixtures are built in beforeAll hooks
+ * scoped to the tasks that need them (not at module scope) so that adding
+ * a new task to this file does not perturb pre-existing measurements.
  */
 
 import sources from "../../../lib/index.js";
@@ -36,7 +40,10 @@ function buildFreshChunk() {
 	);
 }
 
-const warmChunk = (() => {
+/**
+ * @returns {CachedSource} warm CachedSource with source/map/buffer populated
+ */
+function buildWarmChunk() {
 	const cached = new sources.CachedSource(buildFreshChunk());
 	cached.source();
 	cached.map({});
@@ -44,7 +51,44 @@ const warmChunk = (() => {
 	cached.buffer();
 	cached.size();
 	return cached;
-})();
+}
+
+/*
+ * Reproduces the layering pattern called out in
+ * https://github.com/webpack/webpack-sources/issues/157:
+ *
+ *   CachedSource -> ConcatSource -> CachedSource -> ConcatSource
+ *
+ * At every ConcatSource boundary, the legacy `buffer()` path calls
+ * Buffer.concat on the children's buffers, which copies all of the bytes
+ * through each layer. `buffers()` returns Buffer[] without concatenating,
+ * so the wrapping CachedSource can pass the chunks through to the consumer
+ * (e.g. fs.createWriteStream / writev) without ever materializing a single
+ * contiguous Buffer.
+ *
+ * Each inner chunk is ~5 raw sources of fixtureCode, the outer chunk stitches
+ * 4 of them together, mirroring "chunk-of-modules" nesting depth.
+ */
+/**
+ * @returns {CachedSource} cached source
+ */
+function buildLayeredChunk() {
+	const inner = [];
+	for (let i = 0; i < 4; i++) {
+		const parts = [];
+		for (let j = 0; j < 5; j++) {
+			parts.push(new sources.RawSource(fixtureCode));
+		}
+		inner.push(new sources.CachedSource(new sources.ConcatSource(...parts)));
+	}
+	return new sources.CachedSource(
+		new sources.ConcatSource(
+			new sources.RawSource("/* outer header */\n"),
+			...inner,
+			new sources.RawSource("/* outer footer */\n"),
+		),
+	);
+}
 
 /**
  * @param {import("tinybench").Bench} bench bench
@@ -58,11 +102,24 @@ export default function register(bench) {
 		},
 	);
 
+	/** @type {CachedSource | undefined} */
+	let warmChunk;
+	const warmChunkHooks = {
+		beforeAll() {
+			warmChunk = buildWarmChunk();
+		},
+		afterAll() {
+			warmChunk = undefined;
+		},
+	};
+
 	bench.add(
 		"realistic-source-map-pipeline: warm sourceAndMap() (reuse CachedSource)",
 		() => {
-			for (let i = 0; i < 50; i++) warmChunk.sourceAndMap({});
+			const chunk = /** @type {CachedSource} */ (warmChunk);
+			for (let i = 0; i < 50; i++) chunk.sourceAndMap({});
 		},
+		warmChunkHooks,
 	);
 
 	bench.add("realistic-source-map-pipeline: cold map() only", () => {
@@ -108,5 +165,50 @@ export default function register(bench) {
 				() => {},
 			);
 		},
+	);
+
+	bench.add(
+		"realistic-source-map-pipeline: cold buffer() (Cached->Concat->Cached->Concat)",
+		() => {
+			buildLayeredChunk().buffer();
+		},
+	);
+
+	bench.add(
+		"realistic-source-map-pipeline: cold buffers() (Cached->Concat->Cached->Concat)",
+		() => {
+			buildLayeredChunk().buffers();
+		},
+	);
+
+	/** @type {CachedSource | undefined} */
+	let warmLayeredChunk;
+	const warmLayeredHooks = {
+		beforeAll() {
+			const chunk = buildLayeredChunk();
+			chunk.buffers();
+			warmLayeredChunk = chunk;
+		},
+		afterAll() {
+			warmLayeredChunk = undefined;
+		},
+	};
+
+	bench.add(
+		"realistic-source-map-pipeline: warm buffer() (Cached->Concat->Cached->Concat)",
+		() => {
+			const chunk = /** @type {CachedSource} */ (warmLayeredChunk);
+			for (let i = 0; i < 50; i++) chunk.buffer();
+		},
+		warmLayeredHooks,
+	);
+
+	bench.add(
+		"realistic-source-map-pipeline: warm buffers() (Cached->Concat->Cached->Concat)",
+		() => {
+			const chunk = /** @type {CachedSource} */ (warmLayeredChunk);
+			for (let i = 0; i < 50; i++) chunk.buffers();
+		},
+		warmLayeredHooks,
 	);
 }

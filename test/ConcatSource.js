@@ -229,6 +229,59 @@ describe("concatSource", () => {
 		);
 	});
 
+	it("should expose individual buffers via buffers() without concatenating", () => {
+		const a = new RawSource(Buffer.from("a"));
+		const b = new RawSource(Buffer.from("b"));
+		const c = new RawSource(Buffer.from("c"));
+		const source = new ConcatSource(a, b, c);
+		const buffers = source.buffers();
+		expect(Array.isArray(buffers)).toBe(true);
+		expect(buffers).toHaveLength(3);
+		expect(buffers[0]).toEqual(Buffer.from("a"));
+		expect(buffers[1]).toEqual(Buffer.from("b"));
+		expect(buffers[2]).toEqual(Buffer.from("c"));
+		expect(Buffer.concat(buffers)).toEqual(source.buffer());
+	});
+
+	it("should flatten nested ConcatSource buffers() into a flat Buffer[]", () => {
+		const inner = new ConcatSource(
+			new RawSource(Buffer.from("x")),
+			new RawSource(Buffer.from("y")),
+		);
+		const outer = new ConcatSource(new RawSource(Buffer.from("a")), inner);
+		const buffers = outer.buffers();
+		expect(buffers).toHaveLength(3);
+		expect(Buffer.concat(buffers).toString("utf8")).toBe("axy");
+	});
+
+	it("should fall back to buffer()/source() in buffers() for SourceLike children", () => {
+		const customBuffer = Buffer.from("custom");
+		const bufferOnly = {
+			source() {
+				return customBuffer;
+			},
+			buffer() {
+				return customBuffer;
+			},
+			size() {
+				return customBuffer.length;
+			},
+		};
+		const sourceOnly = {
+			source() {
+				return Buffer.from("more");
+			},
+			size() {
+				return 4;
+			},
+		};
+		const source = new ConcatSource(bufferOnly, sourceOnly);
+		const buffers = source.buffers();
+		expect(buffers).toHaveLength(2);
+		expect(buffers[0]).toBe(customBuffer);
+		expect(buffers[1]).toEqual(Buffer.from("more"));
+	});
+
 	it("should concat a SourceLike child where source() returns a string (no buffer())", () => {
 		const customSource = {
 			source() {

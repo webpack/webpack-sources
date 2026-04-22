@@ -67,12 +67,93 @@ export default function register(bench) {
 		for (let i = 0; i < 10; i++) cs.source();
 	});
 
-	bench.add("concat-source: buffer() (10 raw)", () => {
+	/**
+	 * @returns {ConcatSource} flat ConcatSource over 10 RawSource(fixtureCode)
+	 */
+	function buildFlat10() {
 		const parts = [];
-		for (let i = 0; i < 10; i++) parts.push(new sources.RawSource(fixtureCode));
-		const cs = new sources.ConcatSource(...parts);
-		for (let i = 0; i < 10; i++) cs.buffer();
-	});
+		for (let i = 0; i < 10; i++) {
+			parts.push(new sources.RawSource(fixtureCode));
+		}
+		return new sources.ConcatSource(...parts);
+	}
+
+	/**
+	 * @returns {ConcatSource} nested 4x10 ConcatSource
+	 */
+	function buildNested4x10() {
+		const makeInner = () => {
+			const parts = [];
+			for (let i = 0; i < 10; i++) {
+				parts.push(new sources.RawSource(fixtureCode));
+			}
+			return new sources.ConcatSource(...parts);
+		};
+		return new sources.ConcatSource(
+			makeInner(),
+			makeInner(),
+			makeInner(),
+			makeInner(),
+		);
+	}
+
+	/** @type {ConcatSource | undefined} */
+	let flat10;
+	const flat10Hooks = {
+		beforeAll() {
+			flat10 = buildFlat10();
+		},
+		afterAll() {
+			flat10 = undefined;
+		},
+	};
+
+	bench.add(
+		"concat-source: buffer() (10 raw)",
+		() => {
+			const cs = /** @type {ConcatSource} */ (flat10);
+			for (let i = 0; i < 10; i++) cs.buffer();
+		},
+		flat10Hooks,
+	);
+
+	bench.add(
+		"concat-source: buffers() (10 raw)",
+		() => {
+			const cs = /** @type {ConcatSource} */ (flat10);
+			for (let i = 0; i < 10; i++) cs.buffers();
+		},
+		flat10Hooks,
+	);
+
+	/** @type {ConcatSource | undefined} */
+	let nested4x10;
+	const nested4x10Hooks = {
+		beforeAll() {
+			nested4x10 = buildNested4x10();
+		},
+		afterAll() {
+			nested4x10 = undefined;
+		},
+	};
+
+	bench.add(
+		"concat-source: buffer() (nested 4x10 raw)",
+		() => {
+			const cs = /** @type {ConcatSource} */ (nested4x10);
+			for (let i = 0; i < 5; i++) cs.buffer();
+		},
+		nested4x10Hooks,
+	);
+
+	bench.add(
+		"concat-source: buffers() (nested 4x10 raw)",
+		() => {
+			const cs = /** @type {ConcatSource} */ (nested4x10);
+			for (let i = 0; i < 5; i++) cs.buffers();
+		},
+		nested4x10Hooks,
+	);
 
 	bench.add("concat-source: size()", () => {
 		const cs = buildMixed();
