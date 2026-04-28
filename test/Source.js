@@ -86,4 +86,17 @@ describe("source", () => {
 		expect(buffers).toHaveLength(1);
 		expect(buffers[0]).toEqual(Buffer.from("dummy", "utf8"));
 	});
+
+	it("should return the buffer directly from buffers() when source is a buffer", () => {
+		const buffer = Buffer.from([1, 2, 3]);
+		class DummySource extends Source {
+			source() {
+				return buffer;
+			}
+		}
+		const source = new DummySource();
+		const buffers = source.buffers();
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toBe(buffer);
+	});
 });

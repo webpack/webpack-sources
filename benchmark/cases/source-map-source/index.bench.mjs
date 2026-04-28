@@ -66,6 +66,26 @@ export default function register(bench) {
 		}
 	});
 
+	bench.add("source-map-source: buffers() (from string)", () => {
+		for (let i = 0; i < 50; i++) {
+			new sources.SourceMapSource(
+				fixtureCode,
+				"fixture.js",
+				fixtureMap,
+			).buffers();
+		}
+	});
+
+	bench.add("source-map-source: buffers() (from buffer)", () => {
+		for (let i = 0; i < 50; i++) {
+			new sources.SourceMapSource(
+				fixtureBuffer,
+				"fixture.js",
+				fixtureMap,
+			).buffers();
+		}
+	});
+
 	bench.add("source-map-source: size()", () => {
 		for (let i = 0; i < 50; i++) {
 			new sources.SourceMapSource(fixtureCode, "fixture.js", fixtureMap).size();

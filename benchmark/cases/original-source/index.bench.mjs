@@ -43,6 +43,18 @@ export default function register(bench) {
 		}
 	});
 
+	bench.add("original-source: buffers() (from string)", () => {
+		for (let i = 0; i < 50; i++) {
+			new sources.OriginalSource(fixtureCode, "fixture.js").buffers();
+		}
+	});
+
+	bench.add("original-source: buffers() (from buffer)", () => {
+		for (let i = 0; i < 50; i++) {
+			new sources.OriginalSource(fixtureBuffer, "fixture.js").buffers();
+		}
+	});
+
 	bench.add("original-source: size()", () => {
 		for (let i = 0; i < 50; i++) {
 			new sources.OriginalSource(fixtureCode, "fixture.js").size();
