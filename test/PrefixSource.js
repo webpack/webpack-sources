@@ -170,12 +170,44 @@ describe("prefixSource", () => {
 		expect(source.sourceAndMap().source).toBe("hello\nworld\n");
 	});
 
-	it("should expose buffers() returning the prefixed source as a single buffer", () => {
+	it("should expose buffers() that concatenates to the prefixed source", () => {
 		const source = new PrefixSource("> ", new RawSource("hello\nworld"));
 		const buffers = source.buffers();
 		expect(Array.isArray(buffers)).toBe(true);
-		expect(buffers).toHaveLength(1);
-		expect(buffers[0]).toEqual(Buffer.from("> hello\n> world"));
+		expect(Buffer.concat(buffers)).toEqual(Buffer.from("> hello\n> world"));
 		expect(Buffer.concat(buffers)).toEqual(source.buffer());
+		expect(source.buffer().toString("utf8")).toBe(source.source());
+	});
+
+	it("should not emit a trailing prefix buffer when source ends with a newline", () => {
+		const source = new PrefixSource("> ", new RawSource("a\n"));
+		expect(source.buffer().toString("utf8")).toBe("> a\n");
+		expect(source.buffer().toString("utf8")).toBe(source.source());
+	});
+
+	it("should emit prefix between consecutive newlines", () => {
+		const source = new PrefixSource("> ", new RawSource("a\n\nb"));
+		expect(source.buffer().toString("utf8")).toBe("> a\n> \n> b");
+		expect(source.buffer().toString("utf8")).toBe(source.source());
+	});
+
+	it("should pass through underlying buffers when prefix is empty", () => {
+		const inner = new RawSource(Buffer.from("hello"));
+		const source = new PrefixSource("", inner);
+		const buffers = source.buffers();
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toBe(inner.buffer());
+	});
+
+	it("should produce just the prefix when underlying source is empty", () => {
+		const source = new PrefixSource("> ", new RawSource(""));
+		expect(source.buffer().toString("utf8")).toBe("> ");
+		expect(source.buffer().toString("utf8")).toBe(source.source());
+	});
+
+	it("should handle multi-byte utf-8 across newlines", () => {
+		const source = new PrefixSource("> ", new RawSource("héllo\nwörld"));
+		expect(source.buffer().toString("utf8")).toBe("> héllo\n> wörld");
+		expect(source.buffer().toString("utf8")).toBe(source.source());
 	});
 });
