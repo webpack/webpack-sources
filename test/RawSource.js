@@ -166,4 +166,21 @@ describe("rawSource", () => {
 			expect(source.source().toString("utf8")).toEqual(CODE_STRING);
 		});
 	});
+
+	it("should expose buffers() returning a single-entry Buffer[]", () => {
+		const source = new RawSource(CODE_STRING);
+		const buffers = source.buffers();
+		expect(Array.isArray(buffers)).toBe(true);
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toEqual(Buffer.from(CODE_STRING));
+		expect(Buffer.concat(buffers)).toEqual(source.buffer());
+	});
+
+	it("should reuse the underlying buffer in buffers() when constructed from a Buffer", () => {
+		const buffer = Buffer.from(CODE_STRING);
+		const source = new RawSource(buffer);
+		const buffers = source.buffers();
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toBe(buffer);
+	});
 });

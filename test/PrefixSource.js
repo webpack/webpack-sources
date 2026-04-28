@@ -169,4 +169,13 @@ describe("prefixSource", () => {
 		expect(source.source()).toBe("hello\nworld\n");
 		expect(source.sourceAndMap().source).toBe("hello\nworld\n");
 	});
+
+	it("should expose buffers() returning the prefixed source as a single buffer", () => {
+		const source = new PrefixSource("> ", new RawSource("hello\nworld"));
+		const buffers = source.buffers();
+		expect(Array.isArray(buffers)).toBe(true);
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toEqual(Buffer.from("> hello\n> world"));
+		expect(Buffer.concat(buffers)).toEqual(source.buffer());
+	});
 });

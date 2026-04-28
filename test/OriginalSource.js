@@ -107,6 +107,23 @@ describe.each([
 		expect(source.getName()).toBe("file.js");
 	});
 
+	it("should expose buffers() returning a single-entry Buffer[]", () => {
+		const content = "Line1\nLine2\n";
+		const source = new OriginalSource(content, "file.js");
+		const buffers = source.buffers();
+		expect(Array.isArray(buffers)).toBe(true);
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toEqual(Buffer.from(content));
+	});
+
+	it("should reuse the underlying buffer in buffers() when constructed from a Buffer", () => {
+		const buffer = Buffer.from("Line1\nLine2\n");
+		const source = new OriginalSource(buffer, "file.js");
+		const buffers = source.buffers();
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toBe(buffer);
+	});
+
 	it("should compute map correctly from buffer-backed source", () => {
 		const content = "Line1\nLine2\n";
 		const source = new OriginalSource(Buffer.from(content), "file.js");

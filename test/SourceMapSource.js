@@ -578,6 +578,23 @@ describe.each([
 		expect(buffer2).toBe(buffer1);
 	});
 
+	it("should expose buffers() returning a single-entry Buffer[]", () => {
+		const sourceMapSource = new SourceMapSource("source", "name");
+		const buffers = sourceMapSource.buffers();
+		expect(Array.isArray(buffers)).toBe(true);
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toEqual(Buffer.from("source"));
+		expect(Buffer.concat(buffers)).toEqual(sourceMapSource.buffer());
+	});
+
+	it("should reuse the underlying buffer in buffers() when constructed from a Buffer", () => {
+		const buffer = Buffer.from("source", "utf8");
+		const sourceMapSource = new SourceMapSource(buffer, "name");
+		const buffers = sourceMapSource.buffers();
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toBe(buffer);
+	});
+
 	it("should accept source map as string", () => {
 		const mapObj = {
 			version: 3,
