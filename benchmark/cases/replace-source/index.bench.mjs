@@ -96,6 +96,12 @@ export default function register(bench) {
 		buildManyReplacements(1000).buffer();
 	});
 
+	bench.add("replace-source: buffer() (no replacements)", () => {
+		for (let i = 0; i < 100; i++) {
+			new sources.ReplaceSource(new sources.RawSource(fixtureCode)).buffer();
+		}
+	});
+
 	bench.add("replace-source: buffers() (no replacements)", () => {
 		for (let i = 0; i < 100; i++) {
 			new sources.ReplaceSource(new sources.RawSource(fixtureCode)).buffers();
