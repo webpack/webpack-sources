@@ -7,6 +7,7 @@ const { PrefixSource } = require("../");
 const { OriginalSource } = require("../");
 const { ConcatSource } = require("../");
 const { RawSource } = require("../");
+const { ReplaceSource } = require("../");
 const { withReadableMappings } = require("./helpers");
 
 describe("prefixSource", () => {
@@ -209,5 +210,23 @@ describe("prefixSource", () => {
 		const source = new PrefixSource("> ", new RawSource("héllo\nwörld"));
 		expect(source.buffer().toString("utf8")).toBe("> héllo\n> wörld");
 		expect(source.buffer().toString("utf8")).toBe(source.source());
+	});
+
+	it("should reflect mutations to the underlying source on subsequent calls", () => {
+		const inner = new ReplaceSource(new RawSource("hello world"));
+		const source = new PrefixSource("> ", inner);
+		expect(source.source()).toBe("> hello world");
+		expect(source.buffer().toString("utf8")).toBe("> hello world");
+		expect(Buffer.concat(source.buffers()).toString("utf8")).toBe(
+			"> hello world",
+		);
+
+		inner.replace(6, 10, "you");
+
+		expect(source.source()).toBe("> hello you");
+		expect(source.buffer().toString("utf8")).toBe("> hello you");
+		expect(Buffer.concat(source.buffers()).toString("utf8")).toBe(
+			"> hello you",
+		);
 	});
 });
