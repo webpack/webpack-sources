@@ -131,12 +131,18 @@ export default function register(bench) {
 	});
 
 	bench.add("replace-source: getReplacements()", () => {
-		buildManyReplacements(1000).getReplacements();
+		const src = buildManyReplacements(1000);
+		let sink = 0;
+		for (let i = 0; i < 50_000; i++) sink ^= src.getReplacements().length;
+		if (sink === -1) throw new Error("unreachable");
 	});
 
 	bench.add("replace-source: original()", () => {
 		const src = new sources.ReplaceSource(new sources.RawSource(fixtureCode));
-		for (let i = 0; i < 500; i++) src.original();
+		const inner = src.original();
+		let sink = 0;
+		for (let i = 0; i < 50_000; i++) sink ^= src.original() === inner ? 1 : 0;
+		if (sink === -1) throw new Error("unreachable");
 	});
 
 	bench.add("replace-source: updateHash()", () => {
