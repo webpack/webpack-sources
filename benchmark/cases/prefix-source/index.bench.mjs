@@ -68,6 +68,14 @@ export default function register(bench) {
 		for (let i = 0; i < 10; i++) ps.buffer();
 	});
 
+	bench.add("prefix-source: buffers()", () => {
+		const ps = new sources.PrefixSource(
+			"\t",
+			new sources.RawSource(fixtureCode),
+		);
+		for (let i = 0; i < 10; i++) ps.buffers();
+	});
+
 	bench.add("prefix-source: size()", () => {
 		const ps = new sources.PrefixSource(
 			"\t",

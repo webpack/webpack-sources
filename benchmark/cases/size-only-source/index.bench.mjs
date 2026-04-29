@@ -44,6 +44,17 @@ export default function register(bench) {
 		}
 	});
 
+	bench.add("size-only-source: buffers() (throws)", () => {
+		const src = new sources.SizeOnlySource(1024);
+		for (let i = 0; i < 100; i++) {
+			try {
+				src.buffers();
+			} catch {
+				// expected
+			}
+		}
+	});
+
 	bench.add("size-only-source: map() (throws)", () => {
 		const src = new sources.SizeOnlySource(1024);
 		for (let i = 0; i < 100; i++) {

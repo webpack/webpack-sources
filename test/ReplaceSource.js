@@ -451,4 +451,23 @@ export default function StaticPage(_ref) {
 		expect(source.source()).toBe("Hello You");
 		expect(source.sourceAndMap()).toHaveProperty("source", "Hello You");
 	});
+
+	it("should expose buffers() reflecting the replaced source", () => {
+		const source = new ReplaceSource(new RawSource("Hello World"));
+		source.replace(6, 10, "You");
+		const buffers = source.buffers();
+		expect(Array.isArray(buffers)).toBe(true);
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toEqual(Buffer.from("Hello You"));
+		expect(Buffer.concat(buffers)).toEqual(source.buffer());
+	});
+
+	it("should delegate buffers() to the underlying source when no replacements", () => {
+		const inner = new RawSource(Buffer.from("untouched"));
+		const source = new ReplaceSource(inner);
+		const buffers = source.buffers();
+		expect(buffers).toHaveLength(1);
+		expect(buffers[0]).toBe(inner.buffer());
+		expect(source.buffer()).toBe(inner.buffer());
+	});
 });

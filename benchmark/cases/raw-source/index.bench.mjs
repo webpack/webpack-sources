@@ -43,6 +43,19 @@ export default function register(bench) {
 		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureBuffer).buffer();
 	});
 
+	bench.add("raw-source: buffers() (from string)", () => {
+		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureCode).buffers();
+	});
+
+	bench.add("raw-source: buffers() (from buffer)", () => {
+		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureBuffer).buffers();
+	});
+
+	bench.add("raw-source: buffers() cached", () => {
+		const src = new sources.RawSource(fixtureBuffer);
+		for (let i = 0; i < 500; i++) src.buffers();
+	});
+
 	bench.add("raw-source: size()", () => {
 		for (let i = 0; i < 50; i++) new sources.RawSource(fixtureCode).size();
 	});
