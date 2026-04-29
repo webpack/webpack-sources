@@ -1,5 +1,11 @@
 # webpack-sources
 
+## 3.4.1
+
+### Patch Changes
+
+- Implements more effective `buffers` and `buffer` for `ReplaceSource` and improve performance in other places. (by [@alexander-akait](https://github.com/alexander-akait) in [#211](https://github.com/webpack/webpack-sources/pull/211))
+
 ## 3.4.0
 
 ### Minor Changes
