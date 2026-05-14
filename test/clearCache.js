@@ -366,6 +366,81 @@ describe("clearCache", () => {
 		expect(internal._cachedMaps.size).toBe(0);
 	});
 
+	it("`{ parsedMap: true }` drops the parsed object form of source maps", () => {
+		const sm = {
+			version: 3,
+			sources: ["a.js"],
+			names: [],
+			mappings: "AAAA",
+			file: "out.js",
+		};
+		const source = new SourceMapSource("hello\n", "out.js", sm);
+		// Materialise the buffer form so the parsed object is safely droppable.
+		source.getArgsAsBuffers();
+		const internal =
+			/** @type {{ _sourceMapAsObject?: { mappings: string }, _sourceMapAsBuffer?: Buffer }} */ (
+				/** @type {unknown} */ (source)
+			);
+		expect(internal._sourceMapAsObject).toBeDefined();
+		expect(internal._sourceMapAsBuffer).toBeDefined();
+		source.clearCache({ parsedMap: true });
+		expect(internal._sourceMapAsObject).toBeUndefined();
+		// map() rehydrates from the buffer — value preserved.
+		const map = /** @type {{ mappings: string }} */ (source.map());
+		expect(map.mappings).toBe("AAAA");
+	});
+
+	it("`parsedMap` is false by default — parsed object form is kept", () => {
+		const sm = {
+			version: 3,
+			sources: ["a.js"],
+			names: [],
+			mappings: "AAAA",
+			file: "out.js",
+		};
+		const source = new SourceMapSource("hello\n", "out.js", sm);
+		source.getArgsAsBuffers();
+		const internal =
+			/** @type {{ _sourceMapAsObject?: { mappings: string } }} */ (
+				/** @type {unknown} */ (source)
+			);
+		const before = internal._sourceMapAsObject;
+		expect(before).toBeDefined();
+		source.clearCache();
+		expect(internal._sourceMapAsObject).toBe(before);
+	});
+
+	it("getCachedData() after clearCache() returns an empty cached shape", () => {
+		const cached = new CachedSource(
+			new OriginalSource("Hello World", "file.js"),
+		);
+		cached.sourceAndMap();
+		cached.size();
+		cached.updateHash(crypto.createHash("md5"));
+
+		// Default clearCache: drops source + maps, keeps hash + size.
+		cached.clearCache();
+		const data = cached.getCachedData();
+
+		// Source + buffer were cleared, so getCachedData has no buffer
+		// snapshot to persist.
+		expect(data.buffer).toBeUndefined();
+		expect(data.source).toBeUndefined();
+		// Maps were cleared — the bufferedMaps Map is empty.
+		expect(data.maps.size).toBe(0);
+		// Hash + size survive a default clearCache.
+		expect(data.hash).toBeDefined();
+		expect(data.size).toBe(11);
+
+		// Round-trip: feeding the cleared data into a new CachedSource is
+		// still valid (it just re-warms from the underlying source).
+		const rehydrated = new CachedSource(
+			new OriginalSource("Hello World", "file.js"),
+			data,
+		);
+		expect(rehydrated.source()).toBe("Hello World");
+	});
+
 	it("composite over CachedSource clears nested cache via single call", () => {
 		const inner = new TrackedSource(new OriginalSource("Hello", "hello.js"));
 		const cached = new CachedSource(inner);

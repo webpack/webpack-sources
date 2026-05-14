@@ -118,6 +118,11 @@ declare interface ClearCacheOptions {
 	size?: boolean;
 
 	/**
+	 * drop the parsed object form of cached source maps on `SourceMapSource` instances (default `false` — re-parsing JSON is significantly more expensive than `toString`). Only takes effect when a serialized form (buffer or string) is also retained, so the data remains recoverable.
+	 */
+	parsedMap?: boolean;
+
+	/**
 	 * propagate to wrapped sources (default `true`)
 	 */
 	recursive?: boolean;
@@ -351,9 +356,11 @@ declare class Source {
 	updateHash(hash: HashLike): void;
 
 	/**
-	 * Release any cached data held by this source. Subclasses override
-	 * this method; the base implementation is a no-op so every Source
-	 * supports the call.
+	 * Release any cached data held by this source. clearCache is a
+	 * memory hint: it never affects correctness or output, only how
+	 * expensive the next read is. Subclasses override this method;
+	 * the base implementation is a no-op so every Source supports the
+	 * call.
 	 * Not safe to call concurrently with source/map/sourceAndMap/
 	 * streamChunks/updateHash on the same instance — caches mutate and
 	 * concurrent readers will see inconsistent state. Subsequent reader

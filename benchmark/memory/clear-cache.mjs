@@ -13,6 +13,15 @@
  *      tanks build time (10s → 17-45s in the reviewer's repro). With
  *      `visited` shared across the loop the walk is O(unique nodes).
  *
+ *   3. POST-MINIFIER asset shape — what `clearCache` actually has to
+ *      release in webpack at `PROCESS_ASSETS_STAGE_DEV_TOOLING`: a
+ *      `CachedSource` wrapping a `SourceMapSource` whose
+ *      `_cachedSource` (full minified bundle string) and
+ *      `_cachedMaps[someKey]` (composed map) are both populated by the
+ *      previous stage. Some SourceMapSource inputs (the inner map +
+ *      original source pair) are shared across chunks to exercise
+ *      dedup.
+ *
  * Run with:
  *
  *   node --expose-gc benchmark/memory/clear-cache.mjs
@@ -47,6 +56,7 @@ const TASKS = Number(process.env.TASKS) || 200;
 const COPIES = Number(process.env.COPIES) || 8;
 const SHARED_TASKS = Number(process.env.SHARED_TASKS) || 50;
 const SHARED_MODS = Number(process.env.SHARED_MODS) || 1000;
+const POSTMIN_TASKS = Number(process.env.POSTMIN_TASKS) || 50;
 
 const gc =
 	typeof globalThis.gc === "function" ? globalThis.gc : () => undefined;
@@ -216,6 +226,77 @@ console.log(
 );
 console.log(
 	`  naive vs non-recursive    ${(naive.elapsedMs / nonRec.elapsedMs).toFixed(1)}× speedup with recursive=false`,
+);
+
+// ------------------------------------------------------------------
+// Scenario 3: post-minifier asset shape.
+// ------------------------------------------------------------------
+
+console.log(
+	`\n=== Scenario 3: post-minifier asset shape (${POSTMIN_TASKS} chunks) ===`,
+);
+
+/**
+ * @returns {sources.CachedSource} A CachedSource wrapping a SourceMapSource
+ * whose `_cachedSource` (full bundle string) and `_cachedMaps[{}]` (composed
+ * map) are populated — the shape webpack assets actually present at the
+ * PROCESS_ASSETS_STAGE_DEV_TOOLING hook, where clearCache runs.
+ */
+function buildPostMinifierTask() {
+	const cs = new sources.CachedSource(
+		new sources.SourceMapSource(
+			fixtureCode,
+			"out.js",
+			fixtureMap,
+			// originalSource + innerSourceMap → triggers the combined-map
+			// streamChunks path, the heavier of the two in SourceMapSource.
+			fixtureCode,
+			fixtureMap,
+		),
+	);
+	// Force `_cachedSource` (full minified bundle string) and a populated
+	// `_cachedMaps[{}]` entry — what the previous build stage leaves on
+	// the asset.
+	cs.sourceAndMap({ columns: true });
+	return cs;
+}
+
+function runPostMinifierScenario({ clear, clearOptions }) {
+	const label = clear
+		? `clearCache(${JSON.stringify(clearOptions)})`
+		: "no clear";
+	console.log(`\nPOSTMIN  ${label}`);
+	const before = snapshot("before");
+	const tasks = [];
+	for (let i = 0; i < POSTMIN_TASKS; i++) {
+		const cs = buildPostMinifierTask();
+		if (clear) cs.clearCache(clearOptions);
+		tasks.push(cs);
+	}
+	const peak = snapshot("peak (tasks live)");
+	if (tasks.length !== POSTMIN_TASKS) throw new Error("unreachable");
+	return { before, peak };
+}
+
+const p1 = runPostMinifierScenario({ clear: false });
+const p2 = runPostMinifierScenario({
+	clear: true,
+	clearOptions: { maps: true, source: false, recursive: false },
+});
+const p3 = runPostMinifierScenario({
+	clear: true,
+	clearOptions: { maps: true, source: true, recursive: true },
+});
+const postBaselineDelta = diffMB(p1.peak.heapUsed, p1.before.heapUsed);
+const postWebpackCallDelta = diffMB(p2.peak.heapUsed, p2.before.heapUsed);
+const postAggressiveDelta = diffMB(p3.peak.heapUsed, p3.before.heapUsed);
+console.log("\npost-minifier summary");
+console.log(`  heap (baseline)            ${postBaselineDelta.toFixed(1)} MB`);
+console.log(
+	`  heap (webpack-call)        ${postWebpackCallDelta.toFixed(1)} MB  (saved ${(postBaselineDelta - postWebpackCallDelta).toFixed(1)} MB)`,
+);
+console.log(
+	`  heap (aggressive)          ${postAggressiveDelta.toFixed(1)} MB  (saved ${(postBaselineDelta - postAggressiveDelta).toFixed(1)} MB)`,
 );
 
 if (savings <= 0) {
