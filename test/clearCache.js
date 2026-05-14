@@ -206,16 +206,44 @@ describe("clearCache", () => {
 			mappings: "AAAA",
 			file: "out.js",
 		};
-		const source = new SourceMapSource("hello\n", "out.js", sm);
-		// Materialise both buffer and string forms via the public API.
-		source.buffer();
+		const innerMap = {
+			version: 3,
+			sources: ["a-original.ts"],
+			names: [],
+			mappings: "AAAA",
+			file: "a.js",
+		};
+		// Pass every optional parameter so all four dual-cached pairs are
+		// populated by getArgsAsBuffers(), exercising each branch of
+		// SourceMapSource.clearCache().
+		const source = new SourceMapSource(
+			"hello\n",
+			"out.js",
+			sm,
+			"original\n",
+			innerMap,
+		);
+		// Force buffer AND string materialisation for value, source map,
+		// original source, and inner source map via the public API.
+		source.getArgsAsBuffers();
 		source.source();
 		source.map();
 		source.clearCache();
-		// Values still readable after clear.
+		// All inputs still readable after clear.
 		expect(source.source()).toBe("hello\n");
 		const map = /** @type {{ mappings: string }} */ (source.map());
 		expect(map.mappings).toBe("AAAA");
+		// Round-trip the buffers once more to confirm internal state stays
+		// consistent after clearCache.
+		const [valueBuf, name, smBuf, origBuf, innerBuf] =
+			source.getArgsAsBuffers();
+		expect(valueBuf.toString("utf8")).toBe("hello\n");
+		expect(name).toBe("out.js");
+		expect(JSON.parse(smBuf.toString("utf8")).mappings).toBe("AAAA");
+		expect(/** @type {Buffer} */ (origBuf).toString("utf8")).toBe("original\n");
+		expect(JSON.parse(/** @type {Buffer} */ (innerBuf).toString("utf8")).file).toBe(
+			"a.js",
+		);
 	});
 
 	it("composite over CachedSource clears nested cache via single call", () => {
