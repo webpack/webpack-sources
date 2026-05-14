@@ -85,34 +85,50 @@ stable than per-call timing for sub-microsecond work.
 
 ### Per source class
 
-| Case                | What it measures                                                                 |
-| ------------------- | -------------------------------------------------------------------------------- |
-| `raw-source`        | `RawSource` constructor, string/buffer accessors, streamChunks, updateHash       |
-| `original-source`   | `OriginalSource` map/sourceAndMap/streamChunks across columns on/off combos      |
-| `replace-source`    | `ReplaceSource` source/map/streamChunks for no, few, and many replacements       |
-| `concat-source`     | `ConcatSource` _optimize, source/buffer/map, nested flattening, hash             |
-| `prefix-source`     | `PrefixSource` delegation + newline prefix rewriting                             |
-| `source-map-source` | `SourceMapSource` full + lines-only streamChunks, including combined inner maps  |
-| `cached-source`     | `CachedSource` cold vs warm, plus `getCachedData()` round-trip                   |
-| `compat-source`     | `CompatSource` delegation vs `Source.prototype` fallback paths                   |
-| `size-only-source`  | `SizeOnlySource` constructor, `size()`, and the throw paths for other accessors  |
+| Case                | What it measures                                                                |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `raw-source`        | `RawSource` constructor, string/buffer accessors, streamChunks, updateHash      |
+| `original-source`   | `OriginalSource` map/sourceAndMap/streamChunks across columns on/off combos     |
+| `replace-source`    | `ReplaceSource` source/map/streamChunks for no, few, and many replacements      |
+| `concat-source`     | `ConcatSource` \_optimize, source/buffer/map, nested flattening, hash           |
+| `prefix-source`     | `PrefixSource` delegation + newline prefix rewriting                            |
+| `source-map-source` | `SourceMapSource` full + lines-only streamChunks, including combined inner maps |
+| `cached-source`     | `CachedSource` cold vs warm, plus `getCachedData()` round-trip                  |
+| `compat-source`     | `CompatSource` delegation vs `Source.prototype` fallback paths                  |
+| `size-only-source`  | `SizeOnlySource` constructor, `size()`, and the throw paths for other accessors |
 
 ### Per helper module
 
-| Case                                  | What it measures                                                           |
-| ------------------------------------- | -------------------------------------------------------------------------- |
-| `helpers-split-into-lines`            | `splitIntoLines` scanner on fixture / big / long-line / empty inputs       |
-| `helpers-split-into-potential-tokens` | `splitIntoPotentialTokens` scanner used by column-aware OriginalSource     |
-| `helpers-get-generated-source-info`   | `getGeneratedSourceInfo` final-line/column probe on various input shapes   |
-| `helpers-read-mappings`               | VLQ decoder used by every source-map aware streamChunks path               |
-| `helpers-create-mappings-serializer`  | VLQ encoder (full + lines-only) fed a representative event stream          |
-| `helpers-string-buffer-utils`         | `internString` and enter/exitStringInterningRange                          |
+| Case                                  | What it measures                                                         |
+| ------------------------------------- | ------------------------------------------------------------------------ |
+| `helpers-split-into-lines`            | `splitIntoLines` scanner on fixture / big / long-line / empty inputs     |
+| `helpers-split-into-potential-tokens` | `splitIntoPotentialTokens` scanner used by column-aware OriginalSource   |
+| `helpers-get-generated-source-info`   | `getGeneratedSourceInfo` final-line/column probe on various input shapes |
+| `helpers-read-mappings`               | VLQ decoder used by every source-map aware streamChunks path             |
+| `helpers-create-mappings-serializer`  | VLQ encoder (full + lines-only) fed a representative event stream        |
+| `helpers-string-buffer-utils`         | `internString` and enter/exitStringInterningRange                        |
 
 ### End-to-end
 
-| Case                              | What it measures                                                              |
-| --------------------------------- | ----------------------------------------------------------------------------- |
-| `realistic-source-map-pipeline`   | OriginalSource -> ReplaceSource -> ConcatSource -> CachedSource (cold + warm); also `buffer()` vs `buffers()` over the `CachedSource -> ConcatSource -> CachedSource -> ConcatSource` layering from issue #157 |
+| Case                            | What it measures                                                                                                                                                                                               |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `realistic-source-map-pipeline` | OriginalSource -> ReplaceSource -> ConcatSource -> CachedSource (cold + warm); also `buffer()` vs `buffers()` over the `CachedSource -> ConcatSource -> CachedSource -> ConcatSource` layering from issue #157 |
+
+## Memory benchmarks
+
+`benchmark/memory/` holds standalone memory-focused scripts (run with
+`--expose-gc`). They are intentionally separate from the tinybench
+pipeline because peak-heap measurements use a different methodology
+(force GC, sample `process.memoryUsage()`).
+
+```sh
+node --expose-gc benchmark/memory/clear-cache.mjs
+TASKS=500 COPIES=8 node --expose-gc benchmark/memory/clear-cache.mjs
+```
+
+| Script            | What it measures                                                                                                              |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `clear-cache.mjs` | Heap growth for a `SourceMapDevToolPlugin`-style task workflow with and without per-task `CachedSource.clearCache()` (#20961). |
 
 ## Adding a new case
 

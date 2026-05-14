@@ -323,6 +323,15 @@ declare class Source {
 	map(options?: MapOptions): null | RawSourceMap;
 	sourceAndMap(options?: MapOptions): SourceAndMap;
 	updateHash(hash: HashLike): void;
+
+	/**
+	 * Release any cached data held by this source. Composite sources
+	 * propagate the call to their children. Leaf sources may drop
+	 * dual-cached representations (e.g. a buffer cached alongside the
+	 * original string) but always retain enough data to satisfy the
+	 * Source contract on subsequent calls.
+	 */
+	clearCache(): void;
 }
 declare interface SourceAndMap {
 	/**
@@ -370,6 +379,11 @@ declare interface SourceLike {
 	 * hash updater
 	 */
 	updateHash?: (hash: HashLike) => void;
+
+	/**
+	 * clear cache
+	 */
+	clearCache?: () => void;
 }
 declare class SourceMapSource extends Source {
 	constructor(
