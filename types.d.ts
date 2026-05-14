@@ -96,6 +96,32 @@ declare class CachedSource extends Source {
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
 }
+declare interface ClearCacheOptions {
+	/**
+	 * drop cached source maps (default `true`)
+	 */
+	maps?: boolean;
+
+	/**
+	 * drop cached source/buffer copies (default `true`)
+	 */
+	source?: boolean;
+
+	/**
+	 * drop the materialized `updateHash` payload (default `false` — cheap to hold, expensive to rebuild)
+	 */
+	hash?: boolean;
+
+	/**
+	 * drop the cached byte size (default `false` — single number, expensive to recompute)
+	 */
+	size?: boolean;
+
+	/**
+	 * propagate to wrapped sources (default `true`)
+	 */
+	recursive?: boolean;
+}
 declare class CompatSource extends Source {
 	constructor(sourceLike: SourceLike);
 	static from(sourceLike: SourceLike): Source;
@@ -325,13 +351,20 @@ declare class Source {
 	updateHash(hash: HashLike): void;
 
 	/**
-	 * Release any cached data held by this source. Composite sources
-	 * propagate the call to their children. Leaf sources may drop
-	 * dual-cached representations (e.g. a buffer cached alongside the
-	 * original string) but always retain enough data to satisfy the
-	 * Source contract on subsequent calls.
+	 * Release any cached data held by this source. Subclasses override
+	 * this method; the base implementation is a no-op so every Source
+	 * supports the call.
+	 * Not safe to call concurrently with source/map/sourceAndMap/
+	 * streamChunks/updateHash on the same instance — caches mutate and
+	 * concurrent readers will see inconsistent state. Subsequent reader
+	 * calls are allowed to repopulate caches; clearCache is a release,
+	 * not a one-way switch. Composite sources propagate to children.
+	 * When the same child is reachable via several parents (common with
+	 * webpack chunks that share modules), pass a shared `visited`
+	 * `WeakSet` so each subtree is walked at most once. Example:
+	 * `const visited = new WeakSet(); for (const a of assets) a.source.clearCache({ recursive: false }, visited);`
 	 */
-	clearCache(): void;
+	clearCache(options?: ClearCacheOptions, visited?: WeakSet<Source>): void;
 }
 declare interface SourceAndMap {
 	/**
@@ -383,7 +416,7 @@ declare interface SourceLike {
 	/**
 	 * clear cache
 	 */
-	clearCache?: () => void;
+	clearCache?: (options?: ClearCacheOptions, visited?: WeakSet<Source>) => void;
 }
 declare class SourceMapSource extends Source {
 	constructor(

@@ -1,5 +1,7 @@
 "use strict";
 
+const crypto = require("crypto");
+
 const {
 	CachedSource,
 	CompatSource,
@@ -241,9 +243,127 @@ describe("clearCache", () => {
 		expect(name).toBe("out.js");
 		expect(JSON.parse(smBuf.toString("utf8")).mappings).toBe("AAAA");
 		expect(/** @type {Buffer} */ (origBuf).toString("utf8")).toBe("original\n");
-		expect(JSON.parse(/** @type {Buffer} */ (innerBuf).toString("utf8")).file).toBe(
-			"a.js",
+		expect(
+			JSON.parse(/** @type {Buffer} */ (innerBuf).toString("utf8")).file,
+		).toBe("a.js");
+	});
+
+	it("a shared subtree is walked once when a `visited` WeakSet is passed", () => {
+		// Two top-level CachedSources both wrap the SAME inner module
+		// (this is the webpack "shared module across chunks" shape).
+		const sharedInner = new TrackedSource(
+			new OriginalSource("module body", "shared.js"),
 		);
+		const sharedCached = new CachedSource(sharedInner);
+		const top1 = new CachedSource(new ConcatSource(sharedCached));
+		const top2 = new CachedSource(new ConcatSource(sharedCached));
+
+		const visited = new WeakSet();
+		top1.clearCache(undefined, visited);
+		top2.clearCache(undefined, visited);
+
+		// The shared module's clearCache must run exactly once, not twice.
+		expect(sharedInner.calls.clearCache).toBe(1);
+	});
+
+	it("without a shared `visited` set, each top-level call re-walks the shared subtree", () => {
+		// Negative control for the test above: confirms the dedup is doing
+		// work, rather than the recursion being broken in some other way.
+		const sharedInner = new TrackedSource(
+			new OriginalSource("module body", "shared.js"),
+		);
+		const sharedCached = new CachedSource(sharedInner);
+		const top1 = new CachedSource(new ConcatSource(sharedCached));
+		const top2 = new CachedSource(new ConcatSource(sharedCached));
+
+		top1.clearCache();
+		top2.clearCache();
+
+		expect(sharedInner.calls.clearCache).toBe(2);
+	});
+
+	it("`recursive: false` does not propagate into wrapped sources", () => {
+		const inner = new TrackedSource(new OriginalSource("body", "f.js"));
+		const cached = new CachedSource(inner);
+
+		// Warm caches so we can observe the local clear.
+		cached.source();
+		cached.map();
+		cached.clearCache({ recursive: false });
+
+		expect(inner.calls.clearCache).toBe(0);
+		// Local caches still got dropped — re-querying goes back to inner.
+		expect(cached.source()).toBe("body");
+		expect(inner.calls.source).toBeGreaterThan(0);
+	});
+
+	it("`{ maps: true, source: false }` keeps the cached source string", () => {
+		const inner = new TrackedSource(new OriginalSource("body", "f.js"));
+		const cached = new CachedSource(inner);
+
+		cached.source();
+		cached.map();
+		const sourceCallsBefore = inner.calls.source;
+
+		cached.clearCache({ maps: true, source: false });
+
+		// source() served from cache (no new call to inner).
+		expect(cached.source()).toBe("body");
+		expect(inner.calls.source).toBe(sourceCallsBefore);
+		// map() re-walks inner because the map cache was dropped.
+		const mapCallsBefore = inner.calls.map;
+		cached.map();
+		expect(inner.calls.map).toBe(mapCallsBefore + 1);
+	});
+
+	it("`{ hash: true }` drops the cached hash payload", () => {
+		const inner = new OriginalSource("body", "f.js");
+		const cached = new CachedSource(inner);
+		cached.updateHash(crypto.createHash("md5"));
+		const internal = /** @type {{ _cachedHashUpdate?: unknown[] }} */ (
+			/** @type {unknown} */ (cached)
+		);
+		expect(internal._cachedHashUpdate).toBeDefined();
+		cached.clearCache({ hash: true });
+		expect(internal._cachedHashUpdate).toBeUndefined();
+	});
+
+	it("`{ hash: false }` (default) preserves the cached hash payload", () => {
+		const inner = new OriginalSource("body", "f.js");
+		const cached = new CachedSource(inner);
+		cached.updateHash(crypto.createHash("md5"));
+		const internal = /** @type {{ _cachedHashUpdate?: unknown[] }} */ (
+			/** @type {unknown} */ (cached)
+		);
+		const before = internal._cachedHashUpdate;
+		expect(before).toBeDefined();
+		cached.clearCache();
+		expect(internal._cachedHashUpdate).toBe(before);
+	});
+
+	it("`{ size: false }` (default) keeps the cached size", () => {
+		const cached = new CachedSource(new OriginalSource("hello", "f.js"));
+		cached.size();
+		const internal = /** @type {{ _cachedSize?: number }} */ (
+			/** @type {unknown} */ (cached)
+		);
+		expect(internal._cachedSize).toBe(5);
+		cached.clearCache(); // default: size stays
+		expect(internal._cachedSize).toBe(5);
+		cached.clearCache({ size: true });
+		expect(internal._cachedSize).toBeUndefined();
+	});
+
+	it("cachedSource reuses the `_cachedMaps` Map instead of reallocating", () => {
+		const cached = new CachedSource(new OriginalSource("body", "f.js"));
+		cached.map();
+		const internal = /** @type {{ _cachedMaps: Map<string, unknown> }} */ (
+			/** @type {unknown} */ (cached)
+		);
+		const before = internal._cachedMaps;
+		cached.clearCache();
+		expect(internal._cachedMaps).toBe(before);
+		expect(internal._cachedMaps.size).toBe(0);
 	});
 
 	it("composite over CachedSource clears nested cache via single call", () => {
