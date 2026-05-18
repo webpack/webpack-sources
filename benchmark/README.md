@@ -116,19 +116,40 @@ stable than per-call timing for sub-microsecond work.
 
 ## Memory benchmarks
 
-`benchmark/memory/` holds standalone memory-focused scripts (run with
-`--expose-gc`). They are intentionally separate from the tinybench
-pipeline because peak-heap measurements use a different methodology
-(force GC, sample `process.memoryUsage()`).
+`benchmark/memory/<case>/` holds memory-focused benchmarks. There are
+two complementary entry points per case:
 
-```sh
-node --expose-gc benchmark/memory/clear-cache.mjs
-TASKS=500 COPIES=8 node --expose-gc benchmark/memory/clear-cache.mjs
-```
+- `index.bench.mjs` — tinybench tasks shaped for CodSpeed's memory
+  instrument (`@codspeed/core` v5.2.0+, runner mode `"memory"`).
+  Discovered by `benchmark/run-memory.mjs`. Run via:
 
-| Script            | What it measures                                                                                                              |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `clear-cache.mjs` | Heap growth for a `SourceMapDevToolPlugin`-style task workflow with and without per-task `CachedSource.clearCache()` (#20961). |
+  ```sh
+  npm run benchmark:memory
+  ```
+
+  In CI, `.github/workflows/benchmarks.yml` runs the same script
+  under the CodSpeed action with `mode: "memory"`; results (peak
+  heap, total allocations, allocation timeline) are uploaded to
+  codspeed.io alongside the CPU benchmarks. Locally, without CodSpeed,
+  the runner falls back to plain wall-clock tinybench output — useful
+  only as a smoke test that the bench compiles and runs.
+
+- `snapshot.mjs` — standalone developer script using
+  `process.memoryUsage()` snapshots. Run manually with `--expose-gc`:
+
+  ```sh
+  node --expose-gc benchmark/memory/clear-cache/snapshot.mjs
+  TASKS=500 COPIES=8 node --expose-gc benchmark/memory/clear-cache/snapshot.mjs
+  ```
+
+  Produces a human-readable RSS / heapUsed breakdown across multiple
+  scenarios (unique tasks, shared modules, post-minifier shape). Best
+  for ad-hoc investigations where you want to see absolute MB numbers
+  on your own machine.
+
+| Case          | What it measures                                                                                          |
+| ------------- | --------------------------------------------------------------------------------------------------------- |
+| `clear-cache` | Heap growth and allocation count for `CachedSource.clearCache()` across the post-minifier asset shape, the shared-modules-across-chunks shape, and the dedup `visited` walk (#20961). |
 
 ## Adding a new case
 

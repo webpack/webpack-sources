@@ -40,10 +40,10 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import sources from "../../lib/index.js";
+import sources from "../../../lib/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const fixtureDir = path.join(__dirname, "..", "..", "test", "fixtures");
+const fixtureDir = path.join(__dirname, "..", "..", "..", "test", "fixtures");
 const fixtureCode = fs.readFileSync(
 	path.join(fixtureDir, "es6-promise.js"),
 	"utf8",
