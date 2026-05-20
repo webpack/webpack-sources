@@ -272,7 +272,8 @@ function runPostMinifierScenario({ clear, clearOptions }) {
 const p1 = runPostMinifierScenario({ clear: false });
 const p2 = runPostMinifierScenario({
 	clear: true,
-	clearOptions: { mapsOnly: true },
+	// Matches webpack/webpack#20963's SourceMapDevToolPlugin call shape.
+	clearOptions: { maps: true, source: false, parsedMap: true },
 });
 const p3 = runPostMinifierScenario({
 	clear: true,

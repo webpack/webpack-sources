@@ -98,9 +98,19 @@ declare class CachedSource extends Source {
 }
 declare interface ClearCacheOptions {
 	/**
-	 * drop only cached source-map data; keep cached source/buffer copies (default `false` — drop everything)
+	 * drop cached source maps (default `true`)
 	 */
-	mapsOnly?: boolean;
+	maps?: boolean;
+
+	/**
+	 * drop cached source/buffer copies (default `true`)
+	 */
+	source?: boolean;
+
+	/**
+	 * drop the parsed object form of cached source maps on `SourceMapSource` instances (default `false` — re-parsing JSON is significantly more expensive than `toString`). Only takes effect when a serialized form (buffer or string) is also retained, so the data remains recoverable.
+	 */
+	parsedMap?: boolean;
 }
 declare class CompatSource extends Source {
 	constructor(sourceLike: SourceLike);

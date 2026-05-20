@@ -91,15 +91,15 @@ export default function register(bench) {
 		},
 	);
 
-	// --- Scenario C: webpack-side call shape. Drop maps only, keep
-	//     source (downstream plugins still read it). ---
+	// --- Scenario C: webpack-side call shape (webpack/webpack#20963).
+	//     Drop maps + parsed map, keep source for downstream plugins. ---
 	let mapsOnlyAssets;
 	bench.add(
-		"clear-cache memory: unique tasks (clearCache mapsOnly)",
+		"clear-cache memory: unique tasks (clearCache maps + parsedMap, keep source)",
 		() => {
 			for (let i = 0; i < UNIQUE_TASKS; i++) {
 				const cs = buildPostMinifierTask();
-				cs.clearCache({ mapsOnly: true });
+				cs.clearCache({ maps: true, source: false, parsedMap: true });
 				mapsOnlyAssets[i] = cs;
 			}
 		},

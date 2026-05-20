@@ -282,7 +282,7 @@ describe("clearCache", () => {
 		expect(sharedInner.calls.clearCache).toBe(2);
 	});
 
-	it("`{ mapsOnly: true }` keeps the cached source string", () => {
+	it("`{ maps: true, source: false }` keeps the cached source string", () => {
 		const inner = new TrackedSource(new OriginalSource("body", "f.js"));
 		const cached = new CachedSource(inner);
 
@@ -290,7 +290,7 @@ describe("clearCache", () => {
 		cached.map();
 		const sourceCallsBefore = inner.calls.source;
 
-		cached.clearCache({ mapsOnly: true });
+		cached.clearCache({ maps: true, source: false });
 
 		// source() served from cache (no new call to inner).
 		expect(cached.source()).toBe("body");
@@ -337,7 +337,7 @@ describe("clearCache", () => {
 		expect(internal._cachedMaps.size).toBe(0);
 	});
 
-	it("sourceMapSource drops the parsed object form when a buffer survives", () => {
+	it("`{ parsedMap: true }` drops the parsed object form when a buffer survives", () => {
 		const sm = {
 			version: 3,
 			sources: ["a.js"],
@@ -354,14 +354,34 @@ describe("clearCache", () => {
 			);
 		expect(internal._sourceMapAsObject).toBeDefined();
 		expect(internal._sourceMapAsBuffer).toBeDefined();
-		source.clearCache();
+		source.clearCache({ parsedMap: true });
 		expect(internal._sourceMapAsObject).toBeUndefined();
 		// map() rehydrates from the buffer — value preserved.
 		const map = /** @type {{ mappings: string }} */ (source.map());
 		expect(map.mappings).toBe("AAAA");
 	});
 
-	it("sourceMapSource keeps the parsed object form when nothing else holds the data", () => {
+	it("`parsedMap` defaults to false — parsed object form is kept on default clearCache", () => {
+		const sm = {
+			version: 3,
+			sources: ["a.js"],
+			names: [],
+			mappings: "AAAA",
+			file: "out.js",
+		};
+		const source = new SourceMapSource("hello\n", "out.js", sm);
+		source.getArgsAsBuffers();
+		const internal =
+			/** @type {{ _sourceMapAsObject?: { mappings: string } }} */ (
+				/** @type {unknown} */ (source)
+			);
+		const before = internal._sourceMapAsObject;
+		expect(before).toBeDefined();
+		source.clearCache();
+		expect(internal._sourceMapAsObject).toBe(before);
+	});
+
+	it("`{ parsedMap: true }` is a no-op when no serialized form survives", () => {
 		const sm = {
 			version: 3,
 			sources: ["a.js"],
@@ -378,7 +398,7 @@ describe("clearCache", () => {
 			);
 		const before = internal._sourceMapAsObject;
 		expect(before).toBeDefined();
-		source.clearCache();
+		source.clearCache({ parsedMap: true });
 		expect(internal._sourceMapAsObject).toBe(before);
 	});
 
