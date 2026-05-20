@@ -18,20 +18,8 @@
  *     perturb the existing measurements.
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import sources from "../../../lib/index.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const fixtureDir = path.join(__dirname, "..", "..", "..", "test", "fixtures");
-const fixtureCode = fs.readFileSync(
-	path.join(fixtureDir, "es6-promise.js"),
-	"utf8",
-);
-const fixtureMap = JSON.parse(
-	fs.readFileSync(path.join(fixtureDir, "es6-promise.map"), "utf8"),
-);
+import { fixtureCode, fixtureMap } from "../../fixtures.mjs";
 
 const UNIQUE_TASKS = 50;
 const SHARED_TASKS = 50;

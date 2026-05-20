@@ -147,9 +147,18 @@ two complementary entry points per case:
   for ad-hoc investigations where you want to see absolute MB numbers
   on your own machine.
 
-| Case          | What it measures                                                                                          |
-| ------------- | --------------------------------------------------------------------------------------------------------- |
-| `clear-cache` | Heap growth and allocation count for `CachedSource.clearCache()` across the post-minifier asset shape, the shared-modules-across-chunks shape, and the dedup `visited` walk (#20961). |
+| Case                 | What it measures                                                                                                                                                                                |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clear-cache`        | Heap growth and allocation count for `CachedSource.clearCache()` across the post-minifier asset shape, the shared-modules-across-chunks shape, and the dedup `visited` walk (#20961).           |
+| `raw-source`         | Constructor allocations for string- and Buffer-backed inputs, lazy `buffer()` materialisation, and the `_cachedHashUpdate` payload populated by `updateHash`.                                   |
+| `original-source`    | `map()` mapping segment allocations for `columns: true` vs `columns: false`, plus full `sourceAndMap`.                                                                                          |
+| `source-map-source`  | Constructor dual-cached pair population, `map()` normalisation, and the combined-inner-map `sourceAndMap` path (the heaviest single allocation pattern in the suite).                           |
+| `replace-source`     | Per-replacement growth and `source()`/`map()` allocations across 100 spread insertions over a `SourceMapSource` body.                                                                           |
+| `concat-source`      | Child-array growth, `source()` string concatenation, `buffers()` Buffer-array build, and `map()` composition across two `SourceMapSource` children.                                             |
+| `prefix-source`      | `buildPrefixed` regex-driven string rewrite (`source()`) and the `buffer()` Buffer.from path.                                                                                                   |
+| `cached-source`      | Cold vs warm `sourceAndMap` (cold populates `_cachedSource`/`_cachedBuffer`/`_cachedMaps`; warm returns references), `getCachedData()` BufferedMap allocation, and constructor-from-cached path. |
+| `compat-source`      | Wrapper construction over Source instances, delegated `source()`/`map()`, and the `CompatSource.from()` short-circuit when the input is already a Source.                                       |
+| `size-only-source`   | Minimal constructor allocation — included so accidental growth on the smallest Source surfaces in the dashboard.                                                                                |
 
 ## Adding a new case
 
