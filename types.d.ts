@@ -98,34 +98,9 @@ declare class CachedSource extends Source {
 }
 declare interface ClearCacheOptions {
 	/**
-	 * drop cached source maps (default `true`)
+	 * drop only cached source-map data; keep cached source/buffer copies (default `false` — drop everything)
 	 */
-	maps?: boolean;
-
-	/**
-	 * drop cached source/buffer copies (default `true`)
-	 */
-	source?: boolean;
-
-	/**
-	 * drop the materialized `updateHash` payload (default `false` — cheap to hold, expensive to rebuild)
-	 */
-	hash?: boolean;
-
-	/**
-	 * drop the cached byte size (default `false` — single number, expensive to recompute)
-	 */
-	size?: boolean;
-
-	/**
-	 * drop the parsed object form of cached source maps on `SourceMapSource` instances (default `false` — re-parsing JSON is significantly more expensive than `toString`). Only takes effect when a serialized form (buffer or string) is also retained, so the data remains recoverable.
-	 */
-	parsedMap?: boolean;
-
-	/**
-	 * propagate to wrapped sources (default `true`)
-	 */
-	recursive?: boolean;
+	mapsOnly?: boolean;
 }
 declare class CompatSource extends Source {
 	constructor(sourceLike: SourceLike);
@@ -356,20 +331,15 @@ declare class Source {
 	updateHash(hash: HashLike): void;
 
 	/**
-	 * Release any cached data held by this source. clearCache is a
-	 * memory hint: it never affects correctness or output, only how
-	 * expensive the next read is. Subclasses override this method;
-	 * the base implementation is a no-op so every Source supports the
-	 * call.
+	 * Release cached data held by this source. clearCache is a memory
+	 * hint: it never affects correctness or output, only how expensive
+	 * the next read is. Subclasses override; the base is a no-op so
+	 * every Source supports the call. Composite sources always recurse
+	 * into wrapped sources. When the same child is reachable via several
+	 * parents (e.g. modules shared across webpack chunks), pass a shared
+	 * `visited` WeakSet so each subtree is walked at most once.
 	 * Not safe to call concurrently with source/map/sourceAndMap/
-	 * streamChunks/updateHash on the same instance — caches mutate and
-	 * concurrent readers will see inconsistent state. Subsequent reader
-	 * calls are allowed to repopulate caches; clearCache is a release,
-	 * not a one-way switch. Composite sources propagate to children.
-	 * When the same child is reachable via several parents (common with
-	 * webpack chunks that share modules), pass a shared `visited`
-	 * `WeakSet` so each subtree is walked at most once. Example:
-	 * `const visited = new WeakSet(); for (const a of assets) a.source.clearCache({ recursive: false }, visited);`
+	 * streamChunks/updateHash on the same instance.
 	 */
 	clearCache(options?: ClearCacheOptions, visited?: WeakSet<Source>): void;
 }

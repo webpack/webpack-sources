@@ -107,11 +107,11 @@ export default function register(bench) {
 	//     source (downstream plugins still read it). ---
 	let mapsOnlyAssets;
 	bench.add(
-		"clear-cache memory: unique tasks (clearCache maps only)",
+		"clear-cache memory: unique tasks (clearCache mapsOnly)",
 		() => {
 			for (let i = 0; i < UNIQUE_TASKS; i++) {
 				const cs = buildPostMinifierTask();
-				cs.clearCache({ maps: true, source: false, recursive: false });
+				cs.clearCache({ mapsOnly: true });
 				mapsOnlyAssets[i] = cs;
 			}
 		},

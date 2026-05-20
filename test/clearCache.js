@@ -74,7 +74,7 @@ describe("clearCache", () => {
 		}).not.toThrow();
 	});
 
-	it("cachedSource drops cached maps, source and hash entries", () => {
+	it("cachedSource drops cached maps and source entries", () => {
 		const inner = new TrackedSource(
 			new OriginalSource("TestTestTest", "file.js"),
 		);
@@ -282,22 +282,7 @@ describe("clearCache", () => {
 		expect(sharedInner.calls.clearCache).toBe(2);
 	});
 
-	it("`recursive: false` does not propagate into wrapped sources", () => {
-		const inner = new TrackedSource(new OriginalSource("body", "f.js"));
-		const cached = new CachedSource(inner);
-
-		// Warm caches so we can observe the local clear.
-		cached.source();
-		cached.map();
-		cached.clearCache({ recursive: false });
-
-		expect(inner.calls.clearCache).toBe(0);
-		// Local caches still got dropped — re-querying goes back to inner.
-		expect(cached.source()).toBe("body");
-		expect(inner.calls.source).toBeGreaterThan(0);
-	});
-
-	it("`{ maps: true, source: false }` keeps the cached source string", () => {
+	it("`{ mapsOnly: true }` keeps the cached source string", () => {
 		const inner = new TrackedSource(new OriginalSource("body", "f.js"));
 		const cached = new CachedSource(inner);
 
@@ -305,7 +290,7 @@ describe("clearCache", () => {
 		cached.map();
 		const sourceCallsBefore = inner.calls.source;
 
-		cached.clearCache({ maps: true, source: false });
+		cached.clearCache({ mapsOnly: true });
 
 		// source() served from cache (no new call to inner).
 		expect(cached.source()).toBe("body");
@@ -316,19 +301,7 @@ describe("clearCache", () => {
 		expect(inner.calls.map).toBe(mapCallsBefore + 1);
 	});
 
-	it("`{ hash: true }` drops the cached hash payload", () => {
-		const inner = new OriginalSource("body", "f.js");
-		const cached = new CachedSource(inner);
-		cached.updateHash(crypto.createHash("md5"));
-		const internal = /** @type {{ _cachedHashUpdate?: unknown[] }} */ (
-			/** @type {unknown} */ (cached)
-		);
-		expect(internal._cachedHashUpdate).toBeDefined();
-		cached.clearCache({ hash: true });
-		expect(internal._cachedHashUpdate).toBeUndefined();
-	});
-
-	it("`{ hash: false }` (default) preserves the cached hash payload", () => {
+	it("default clearCache preserves the cached hash payload", () => {
 		const inner = new OriginalSource("body", "f.js");
 		const cached = new CachedSource(inner);
 		cached.updateHash(crypto.createHash("md5"));
@@ -341,17 +314,15 @@ describe("clearCache", () => {
 		expect(internal._cachedHashUpdate).toBe(before);
 	});
 
-	it("`{ size: false }` (default) keeps the cached size", () => {
+	it("default clearCache keeps the cached byte size", () => {
 		const cached = new CachedSource(new OriginalSource("hello", "f.js"));
 		cached.size();
 		const internal = /** @type {{ _cachedSize?: number }} */ (
 			/** @type {unknown} */ (cached)
 		);
 		expect(internal._cachedSize).toBe(5);
-		cached.clearCache(); // default: size stays
+		cached.clearCache();
 		expect(internal._cachedSize).toBe(5);
-		cached.clearCache({ size: true });
-		expect(internal._cachedSize).toBeUndefined();
 	});
 
 	it("cachedSource reuses the `_cachedMaps` Map instead of reallocating", () => {
@@ -366,7 +337,7 @@ describe("clearCache", () => {
 		expect(internal._cachedMaps.size).toBe(0);
 	});
 
-	it("`{ parsedMap: true }` drops the parsed object form of source maps", () => {
+	it("sourceMapSource drops the parsed object form when a buffer survives", () => {
 		const sm = {
 			version: 3,
 			sources: ["a.js"],
@@ -383,14 +354,14 @@ describe("clearCache", () => {
 			);
 		expect(internal._sourceMapAsObject).toBeDefined();
 		expect(internal._sourceMapAsBuffer).toBeDefined();
-		source.clearCache({ parsedMap: true });
+		source.clearCache();
 		expect(internal._sourceMapAsObject).toBeUndefined();
 		// map() rehydrates from the buffer — value preserved.
 		const map = /** @type {{ mappings: string }} */ (source.map());
 		expect(map.mappings).toBe("AAAA");
 	});
 
-	it("`parsedMap` is false by default — parsed object form is kept", () => {
+	it("sourceMapSource keeps the parsed object form when nothing else holds the data", () => {
 		const sm = {
 			version: 3,
 			sources: ["a.js"],
@@ -399,7 +370,8 @@ describe("clearCache", () => {
 			file: "out.js",
 		};
 		const source = new SourceMapSource("hello\n", "out.js", sm);
-		source.getArgsAsBuffers();
+		// Do not call getArgsAsBuffers — no buffer/string form is held, so
+		// the parsed object is the only representation and must be kept.
 		const internal =
 			/** @type {{ _sourceMapAsObject?: { mappings: string } }} */ (
 				/** @type {unknown} */ (source)
@@ -418,7 +390,7 @@ describe("clearCache", () => {
 		cached.size();
 		cached.updateHash(crypto.createHash("md5"));
 
-		// Default clearCache: drops source + maps, keeps hash + size.
+		// Default clearCache drops source + maps; hash + size survive.
 		cached.clearCache();
 		const data = cached.getCachedData();
 

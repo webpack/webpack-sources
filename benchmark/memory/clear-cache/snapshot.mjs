@@ -180,12 +180,7 @@ function runSharedScenario(mode, prebuiltTops) {
 		label = "clearCache(opts, visited)";
 		elapsedMs = timeMs(() => {
 			const visited = new WeakSet();
-			for (const t of tops) t.clearCache({ recursive: true }, visited);
-		});
-	} else if (mode === "non-recursive") {
-		label = "clearCache({ recursive: false })";
-		elapsedMs = timeMs(() => {
-			for (const t of tops) t.clearCache({ recursive: false });
+			for (const t of tops) t.clearCache(undefined, visited);
 		});
 	}
 
@@ -218,14 +213,10 @@ const sharedTops = buildSharedScenario();
 runSharedScenario("no-clear", sharedTops);
 const naive = runSharedScenario("naive", sharedTops);
 const dedup = runSharedScenario("dedup", sharedTops);
-const nonRec = runSharedScenario("non-recursive", sharedTops);
 
 console.log("\nshared-modules summary");
 console.log(
 	`  naive vs dedup            ${(naive.elapsedMs / dedup.elapsedMs).toFixed(1)}× speedup with visited set`,
-);
-console.log(
-	`  naive vs non-recursive    ${(naive.elapsedMs / nonRec.elapsedMs).toFixed(1)}× speedup with recursive=false`,
 );
 
 // ------------------------------------------------------------------
@@ -281,11 +272,11 @@ function runPostMinifierScenario({ clear, clearOptions }) {
 const p1 = runPostMinifierScenario({ clear: false });
 const p2 = runPostMinifierScenario({
 	clear: true,
-	clearOptions: { maps: true, source: false, recursive: false },
+	clearOptions: { mapsOnly: true },
 });
 const p3 = runPostMinifierScenario({
 	clear: true,
-	clearOptions: { maps: true, source: true, recursive: true },
+	clearOptions: undefined,
 });
 const postBaselineDelta = diffMB(p1.peak.heapUsed, p1.before.heapUsed);
 const postWebpackCallDelta = diffMB(p2.peak.heapUsed, p2.before.heapUsed);
