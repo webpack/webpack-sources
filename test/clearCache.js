@@ -55,9 +55,9 @@ class TrackedSource extends Source {
 		this._inner.updateHash(hash);
 	}
 
-	clearCache() {
+	clearCache(options, visited) {
 		this.calls.clearCache++;
-		this._inner.clearCache();
+		this._inner.clearCache(options, visited);
 	}
 }
 

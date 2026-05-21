@@ -92,13 +92,13 @@ export default function register(bench) {
 		},
 	);
 
+	let seed;
 	bench.add(
 		"cached-source memory: construct from cachedData (no warm-up)",
 		() => {
-			// Pre-built cachedData reused across iterations; we measure only
-			// the constructor side. Webpack hits this path when restoring
-			// from persistent cache.
-			const seed = warmCaches[0].getCachedData();
+			// `seed` is built once in beforeAll so the measurement
+			// isolates the constructor-from-cachedData path; webpack hits
+			// this when restoring assets from persistent cache.
 			for (let i = 0; i < BATCH; i++) {
 				sink[i] = new sources.CachedSource(
 					new sources.SourceMapSource(fixtureCode, "out.js", fixtureMap),
@@ -109,19 +109,15 @@ export default function register(bench) {
 		{
 			beforeAll() {
 				sink = Array.from({ length: BATCH });
-				warmCaches = [
-					(() => {
-						const cs = new sources.CachedSource(
-							new sources.SourceMapSource(fixtureCode, "out.js", fixtureMap),
-						);
-						cs.sourceAndMap({ columns: true });
-						return cs;
-					})(),
-				];
+				const warm = new sources.CachedSource(
+					new sources.SourceMapSource(fixtureCode, "out.js", fixtureMap),
+				);
+				warm.sourceAndMap({ columns: true });
+				seed = warm.getCachedData();
 			},
 			afterAll() {
 				sink = undefined;
-				warmCaches = undefined;
+				seed = undefined;
 			},
 		},
 	);
