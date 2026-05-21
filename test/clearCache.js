@@ -402,7 +402,7 @@ describe("clearCache", () => {
 		expect(internal._sourceMapAsObject).toBe(before);
 	});
 
-	it("getCachedData() after clearCache() returns an empty cached shape", () => {
+	it("getCachedData() after clearCache() rehydrates buffer and preserves CachedData contract", () => {
 		const cached = new CachedSource(
 			new OriginalSource("Hello World", "file.js"),
 		);
@@ -414,18 +414,20 @@ describe("clearCache", () => {
 		cached.clearCache();
 		const data = cached.getCachedData();
 
-		// Source + buffer were cleared, so getCachedData has no buffer
-		// snapshot to persist.
-		expect(data.buffer).toBeUndefined();
-		expect(data.source).toBeUndefined();
+		// `CachedData.buffer` is required by the type contract — even
+		// after clearCache(), getCachedData() must return a Buffer so
+		// downstream persistent-cache writers don't crash. The buffer
+		// is rehydrated via the wrapped source.
+		expect(Buffer.isBuffer(data.buffer)).toBe(true);
+		expect(data.buffer.toString("utf8")).toBe("Hello World");
 		// Maps were cleared — the bufferedMaps Map is empty.
 		expect(data.maps.size).toBe(0);
 		// Hash + size survive a default clearCache.
 		expect(data.hash).toBeDefined();
 		expect(data.size).toBe(11);
 
-		// Round-trip: feeding the cleared data into a new CachedSource is
-		// still valid (it just re-warms from the underlying source).
+		// Round-trip: feeding the cleared data into a new CachedSource
+		// reads back the same source content.
 		const rehydrated = new CachedSource(
 			new OriginalSource("Hello World", "file.js"),
 			data,

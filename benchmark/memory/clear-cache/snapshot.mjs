@@ -24,7 +24,7 @@
  *
  * Run with:
  *
- *   node --expose-gc benchmark/memory/clear-cache.mjs
+ *   node --expose-gc benchmark/memory/clear-cache/snapshot.mjs
  *
  * Use --expose-gc so `globalThis.gc()` is callable; without it the
  * numbers still trend correctly but allocation noise drowns out the
