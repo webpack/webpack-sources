@@ -92,6 +92,7 @@ declare class CachedSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -136,6 +137,7 @@ declare class ConcatSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -182,6 +184,16 @@ declare interface MapOptions {
 declare class OriginalSource extends Source {
 	constructor(value: string | Buffer, name: string);
 	getName(): string;
+
+	/**
+	 * Returns the source content split on `\n`, with the trailing newline
+	 * kept on each non-final line (same shape as `splitIntoLines`). The
+	 * result is memoized so callers (notably `ReplaceSource`) can avoid
+	 * re-splitting the same source across multiple `streamChunks` /
+	 * `map()` / `sourceAndMap()` invocations. The returned array MUST NOT
+	 * be mutated by callers — it is shared.
+	 */
+	originalLines(): string[];
 	streamChunks(
 		options: StreamChunksOptions,
 		onChunk: (
@@ -197,6 +209,7 @@ declare class OriginalSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			info?: SourceInfo,
 		) => void,
 		_onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -220,6 +233,7 @@ declare class PrefixSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -242,6 +256,7 @@ declare class RawSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -314,6 +329,7 @@ declare class ReplaceSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -363,6 +379,9 @@ declare interface SourceAndMap {
 	 * map
 	 */
 	map: null | RawSourceMap;
+}
+declare interface SourceInfo {
+	ignored?: boolean;
 }
 declare interface SourceLike {
 	/**
@@ -437,6 +456,7 @@ declare class SourceMapSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -472,6 +492,7 @@ declare namespace exports {
 		sourceIndex: number,
 		source: null | string,
 		sourceContent?: string,
+		info?: SourceInfo,
 	) => void;
 	export {
 		Source,

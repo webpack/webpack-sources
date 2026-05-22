@@ -687,6 +687,71 @@ describe.each([
 		expect(digestA).not.toBe(digestB);
 	});
 
+	it("preserves ignoreList through ConcatSource and ReplaceSource", () => {
+		// Build two SourceMapSources, each marking source 0 as ignored.
+		const mapA = {
+			version: 3,
+			sources: ["framework.js"],
+			sourcesContent: ["fwk\n"],
+			mappings: "AAAA",
+			names: [],
+			file: "",
+			ignoreList: [0],
+		};
+		const mapB = {
+			version: 3,
+			sources: ["user.js"],
+			sourcesContent: ["user\n"],
+			mappings: "AAAA",
+			names: [],
+			file: "",
+		};
+		const a = new SourceMapSource("fwk\n", "a.js", mapA);
+		const b = new SourceMapSource("user\n", "b.js", mapB);
+		const concat = new ConcatSource(a, b);
+		const merged = /** @type {RawSourceMap} */ (concat.map({}));
+		expect(merged.sources).toEqual(["framework.js", "user.js"]);
+		expect(merged.ignoreList).toEqual([0]);
+
+		const wrapped = new ReplaceSource(concat);
+		wrapped.insert(0, "// header\n");
+		const replacedMap = /** @type {RawSourceMap} */ (wrapped.map({}));
+		expect(replacedMap.ignoreList).toEqual([0]);
+	});
+
+	it("preserves debugId and sourceRoot through SourceMapSource with inner map", () => {
+		// SourceMapSource with both an inner source map (so it goes through
+		// the getMap pipeline) and outer-only fields (debugId, sourceRoot).
+		const outerMap = {
+			version: 3,
+			file: "out.js",
+			sources: ["src.js"],
+			sourcesContent: ["original\n"],
+			mappings: "AAAA",
+			names: [],
+			sourceRoot: "/proj",
+			debugId: "abcdef-1234",
+		};
+		const innerMap = {
+			version: 3,
+			file: "src.js",
+			sources: ["pre.js"],
+			sourcesContent: ["pre\n"],
+			mappings: "AAAA",
+			names: [],
+		};
+		const sms = new SourceMapSource(
+			"out\n",
+			"src.js",
+			outerMap,
+			"original\n",
+			innerMap,
+		);
+		const result = /** @type {RawSourceMap} */ (sms.map({}));
+		expect(result.debugId).toBe("abcdef-1234");
+		expect(result.sourceRoot).toBe("/proj");
+	});
+
 	for (const hash of [
 		["md5", [crypto.createHash("md5"), crypto.createHash("md5")]],
 		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],
