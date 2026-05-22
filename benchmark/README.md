@@ -85,34 +85,81 @@ stable than per-call timing for sub-microsecond work.
 
 ### Per source class
 
-| Case                | What it measures                                                                 |
-| ------------------- | -------------------------------------------------------------------------------- |
-| `raw-source`        | `RawSource` constructor, string/buffer accessors, streamChunks, updateHash       |
-| `original-source`   | `OriginalSource` map/sourceAndMap/streamChunks across columns on/off combos      |
-| `replace-source`    | `ReplaceSource` source/map/streamChunks for no, few, and many replacements       |
-| `concat-source`     | `ConcatSource` _optimize, source/buffer/map, nested flattening, hash             |
-| `prefix-source`     | `PrefixSource` delegation + newline prefix rewriting                             |
-| `source-map-source` | `SourceMapSource` full + lines-only streamChunks, including combined inner maps  |
-| `cached-source`     | `CachedSource` cold vs warm, plus `getCachedData()` round-trip                   |
-| `compat-source`     | `CompatSource` delegation vs `Source.prototype` fallback paths                   |
-| `size-only-source`  | `SizeOnlySource` constructor, `size()`, and the throw paths for other accessors  |
+| Case                | What it measures                                                                |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `raw-source`        | `RawSource` constructor, string/buffer accessors, streamChunks, updateHash      |
+| `original-source`   | `OriginalSource` map/sourceAndMap/streamChunks across columns on/off combos     |
+| `replace-source`    | `ReplaceSource` source/map/streamChunks for no, few, and many replacements      |
+| `concat-source`     | `ConcatSource` \_optimize, source/buffer/map, nested flattening, hash           |
+| `prefix-source`     | `PrefixSource` delegation + newline prefix rewriting                            |
+| `source-map-source` | `SourceMapSource` full + lines-only streamChunks, including combined inner maps |
+| `cached-source`     | `CachedSource` cold vs warm, plus `getCachedData()` round-trip                  |
+| `compat-source`     | `CompatSource` delegation vs `Source.prototype` fallback paths                  |
+| `size-only-source`  | `SizeOnlySource` constructor, `size()`, and the throw paths for other accessors |
 
 ### Per helper module
 
-| Case                                  | What it measures                                                           |
-| ------------------------------------- | -------------------------------------------------------------------------- |
-| `helpers-split-into-lines`            | `splitIntoLines` scanner on fixture / big / long-line / empty inputs       |
-| `helpers-split-into-potential-tokens` | `splitIntoPotentialTokens` scanner used by column-aware OriginalSource     |
-| `helpers-get-generated-source-info`   | `getGeneratedSourceInfo` final-line/column probe on various input shapes   |
-| `helpers-read-mappings`               | VLQ decoder used by every source-map aware streamChunks path               |
-| `helpers-create-mappings-serializer`  | VLQ encoder (full + lines-only) fed a representative event stream          |
-| `helpers-string-buffer-utils`         | `internString` and enter/exitStringInterningRange                          |
+| Case                                  | What it measures                                                         |
+| ------------------------------------- | ------------------------------------------------------------------------ |
+| `helpers-split-into-lines`            | `splitIntoLines` scanner on fixture / big / long-line / empty inputs     |
+| `helpers-split-into-potential-tokens` | `splitIntoPotentialTokens` scanner used by column-aware OriginalSource   |
+| `helpers-get-generated-source-info`   | `getGeneratedSourceInfo` final-line/column probe on various input shapes |
+| `helpers-read-mappings`               | VLQ decoder used by every source-map aware streamChunks path             |
+| `helpers-create-mappings-serializer`  | VLQ encoder (full + lines-only) fed a representative event stream        |
+| `helpers-string-buffer-utils`         | `internString` and enter/exitStringInterningRange                        |
 
 ### End-to-end
 
-| Case                              | What it measures                                                              |
-| --------------------------------- | ----------------------------------------------------------------------------- |
-| `realistic-source-map-pipeline`   | OriginalSource -> ReplaceSource -> ConcatSource -> CachedSource (cold + warm); also `buffer()` vs `buffers()` over the `CachedSource -> ConcatSource -> CachedSource -> ConcatSource` layering from issue #157 |
+| Case                            | What it measures                                                                                                                                                                                               |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `realistic-source-map-pipeline` | OriginalSource -> ReplaceSource -> ConcatSource -> CachedSource (cold + warm); also `buffer()` vs `buffers()` over the `CachedSource -> ConcatSource -> CachedSource -> ConcatSource` layering from issue #157 |
+
+## Memory benchmarks
+
+`benchmark/memory/<case>/` holds memory-focused benchmarks. There are
+two complementary entry points per case:
+
+- `index.bench.mjs` — tinybench tasks shaped for CodSpeed's memory
+  instrument (`@codspeed/core` v5.2.0+, runner mode `"memory"`).
+  Discovered by `benchmark/run-memory.mjs`. Run via:
+
+  ```sh
+  npm run benchmark:memory
+  ```
+
+  In CI, `.github/workflows/benchmarks.yml` runs the same script
+  under the CodSpeed action with `mode: "memory"`; results (peak
+  heap, total allocations, allocation timeline) are uploaded to
+  codspeed.io alongside the CPU benchmarks. Locally, without CodSpeed,
+  the runner falls back to plain wall-clock tinybench output — useful
+  only as a smoke test that the bench compiles and runs.
+
+- `snapshot.mjs` — standalone developer script using
+  `process.memoryUsage()` snapshots. Run manually with `--expose-gc`:
+
+  ```sh
+  node --expose-gc benchmark/memory/clear-cache/snapshot.mjs
+  TASKS=500 COPIES=8 node --expose-gc benchmark/memory/clear-cache/snapshot.mjs
+  ```
+
+  Produces a human-readable RSS / heapUsed breakdown across multiple
+  scenarios (unique tasks, shared modules, post-minifier shape). Best
+  for ad-hoc investigations where you want to see absolute MB numbers
+  on your own machine.
+
+| Case                 | What it measures                                                                                                                                                                                |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clear-cache`        | Heap growth and allocation count for `CachedSource.clearCache()` across the post-minifier asset shape, the shared-modules-across-chunks shape, and the dedup `visited` walk (#20961).           |
+| `webpack-20961`      | The exact `SourceMapDevToolPlugin` asset shape from webpack/webpack#20961 (50 chunks × 100 shared modules, warmed `sourceAndMap`). Three tasks: baseline (no clear), the `{ maps: true, source: false, parsedMap: true }` call shape PR webpack/webpack#20963 uses (-27% peak heap on the reported run), and the aggressive default-clear lower bound. |
+| `raw-source`         | Constructor allocations for string- and Buffer-backed inputs, lazy `buffer()` materialisation, and the `_cachedHashUpdate` payload populated by `updateHash`.                                   |
+| `original-source`    | `map()` mapping segment allocations for `columns: true` vs `columns: false`, plus full `sourceAndMap`.                                                                                          |
+| `source-map-source`  | Constructor dual-cached pair population, `map()` normalisation, and the combined-inner-map `sourceAndMap` path (the heaviest single allocation pattern in the suite).                           |
+| `replace-source`     | Per-replacement growth and `source()`/`map()` allocations across 100 spread insertions over a `SourceMapSource` body.                                                                           |
+| `concat-source`      | Child-array growth, `source()` string concatenation, `buffers()` Buffer-array build, and `map()` composition across two `SourceMapSource` children.                                             |
+| `prefix-source`      | `buildPrefixed` regex-driven string rewrite (`source()`) and the `buffer()` Buffer.from path.                                                                                                   |
+| `cached-source`      | Cold vs warm `sourceAndMap` (cold populates `_cachedSource`/`_cachedBuffer`/`_cachedMaps`; warm returns references), `getCachedData()` BufferedMap allocation, and constructor-from-cached path. |
+| `compat-source`      | Wrapper construction over Source instances, delegated `source()`/`map()`, and the `CompatSource.from()` short-circuit when the input is already a Source.                                       |
+| `size-only-source`   | Minimal constructor allocation — included so accidental growth on the smallest Source surfaces in the dashboard.                                                                                |
 
 ## Adding a new case
 

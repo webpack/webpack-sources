@@ -32,6 +32,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "benchmark": "node --max-old-space-size=4096 --hash-seed=1 --random-seed=1 --no-opt --predictable --predictable-gc-schedule --interpreted-frames-native-stack --allow-natives-syntax --expose-gc --no-concurrent-sweeping ./benchmark/run.mjs",
+    "benchmark:memory": "node --expose-gc --max-old-space-size=4096 ./benchmark/run-memory.mjs",
     "version": "changeset version",
     "release": "changeset publish"
   },
