@@ -92,7 +92,6 @@ declare class CachedSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
-			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -137,7 +136,6 @@ declare class ConcatSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
-			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -209,7 +207,6 @@ declare class OriginalSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
-			info?: SourceInfo,
 		) => void,
 		_onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -233,7 +230,6 @@ declare class PrefixSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
-			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -256,7 +252,6 @@ declare class RawSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
-			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -329,7 +324,6 @@ declare class ReplaceSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
-			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -456,7 +450,6 @@ declare class SourceMapSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
-			info?: SourceInfo,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -466,6 +459,7 @@ declare interface StreamChunksOptions {
 	source?: boolean;
 	finalSource?: boolean;
 	columns?: boolean;
+	onSourceInfo?: (sourceIndex: number, info: SourceInfo) => void;
 }
 declare namespace exports {
 	export namespace util {
@@ -492,7 +486,6 @@ declare namespace exports {
 		sourceIndex: number,
 		source: null | string,
 		sourceContent?: string,
-		info?: SourceInfo,
 	) => void;
 	export {
 		Source,
