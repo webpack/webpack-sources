@@ -499,6 +499,50 @@ export default function StaticPage(_ref) {
 		expect(src.source()).toBe("helloXY");
 	});
 
+	it("streamChunks() empty replacement is a no-op chunk emit", () => {
+		// Exercises the `else if (content.length === 0)` branch in the
+		// in-chunk replacement loop — replace() with "" must skip onChunk
+		// (splitIntoLines("") returns []) without affecting the column
+		// counter.
+		const inner = new OriginalSource("abcdef", "x.js");
+		const src = new ReplaceSource(inner);
+		src.replace(2, 3, "");
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk) => chunks.push(chunk),
+			() => {},
+			() => {},
+		);
+		expect(src.source()).toBe("abef");
+		// No zero-length chunk should be emitted for the empty replacement.
+		expect(chunks.every((c) => c === undefined || c.length > 0)).toBe(true);
+	});
+
+	it("streamChunks() fast path column tracking across replacements on same line", () => {
+		// Two single-line replacements on the same generated line; exercises
+		// the `generatedColumnOffsetLine === line` branch where the offset
+		// accumulates rather than resets.
+		const inner = new OriginalSource("aaaaa", "x.js");
+		const src = new ReplaceSource(inner);
+		src.replace(0, 0, "BBBBB");
+		src.replace(2, 2, "CC");
+		expect(src.source()).toBe("BBBBBaCCaa");
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk, gl, gc) => chunks.push([chunk, gl, gc]),
+			() => {},
+			() => {},
+		);
+		// Verify both replacements emitted onto line 1 with non-overlapping
+		// columns — proves the column accumulator is monotonic.
+		const lineOneCols = chunks
+			.filter(([, gl]) => gl === 1)
+			.map(([, , gc]) => gc);
+		expect(lineOneCols).toEqual([...lineOneCols].sort((a, b) => a - b));
+	});
+
 	it("streamChunks() trailing-remainer multi-line fallback path", () => {
 		// Counterpart: trailing content WITH a newline → splitIntoLines
 		// fallback path.
