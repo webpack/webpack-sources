@@ -374,9 +374,6 @@ declare interface SourceAndMap {
 	 */
 	map: null | RawSourceMap;
 }
-declare interface SourceInfo {
-	ignored?: boolean;
-}
 declare interface SourceLike {
 	/**
 	 * source
@@ -459,7 +456,6 @@ declare interface StreamChunksOptions {
 	source?: boolean;
 	finalSource?: boolean;
 	columns?: boolean;
-	onSourceInfo?: (sourceIndex: number, info: SourceInfo) => void;
 }
 declare namespace exports {
 	export namespace util {
