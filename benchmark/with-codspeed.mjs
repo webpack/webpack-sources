@@ -153,6 +153,12 @@ export function withCodSpeed(bench) {
 
 			// Instrumented run.
 			if (hooks.beforeEach) await hooks.beforeEach.call(task);
+			// Two gc() passes: the first reclaims young-generation objects
+			// from the warmup loop, the second sweeps any old-generation
+			// references those young objects pinned. A single call leaves
+			// transient warmup allocations alive in old-gen and pollutes
+			// the per-task memory measurement that CodSpeed records.
+			global.gc?.();
 			global.gc?.();
 			InstrumentHooks.startBenchmark();
 			await wrapFrame(m.fn, true)();
@@ -186,6 +192,8 @@ export function withCodSpeed(bench) {
 			}
 
 			if (hooks.beforeEach) hooks.beforeEach.call(task);
+			// See the async path above for why we collect twice.
+			global.gc?.();
 			global.gc?.();
 			InstrumentHooks.startBenchmark();
 			wrapFrame(m.fn, false)();
