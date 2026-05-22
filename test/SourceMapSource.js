@@ -747,6 +747,86 @@ describe.each([
 		expect(/** @type {RawSourceMap} */ (map).ignoreList).toEqual([0]);
 	});
 
+	it("remaps outer ignoreList that flags a non-inner source slot", () => {
+		// Outer map has two sources: one is the innerSourceName slot, the
+		// other is an unrelated source the outer mapping references. The
+		// outer ignoreList flags the NON-inner index. Exercises the
+		// `outerIdx !== outerSourceIndex` branch in the outer onSourceInfo
+		// wrapper: child→global remap via sourceIndexMapping.
+		const innerMap = {
+			version: 3,
+			file: "pre.js",
+			sources: ["pre.js"],
+			sourcesContent: ["pre\n"],
+			names: [],
+			mappings: "",
+		};
+		// outer.sources[0] = "other.js" (ignored), [1] = "pre.js" (the inner-
+		// source-name slot). innerSourceName positionally lives at index 1.
+		const outerMap = {
+			version: 3,
+			file: "out.js",
+			sources: ["other.js", "pre.js"],
+			sourcesContent: ["other\n", "original\n"],
+			names: [],
+			mappings: "AAAA",
+			ignoreList: [0],
+		};
+		const sms = new SourceMapSource(
+			"out\n",
+			"pre.js",
+			outerMap,
+			"original\n",
+			innerMap,
+		);
+		const result = /** @type {RawSourceMap} */ (sms.map({}));
+		// The non-inner outer source (other.js) was ignored — it should
+		// survive as an ignored entry in the merged result.
+		expect(result.sources).toContain("other.js");
+		const otherIdx = result.sources.indexOf("other.js");
+		expect(result.ignoreList).toContain(otherIdx);
+	});
+
+	it("preserves outer ignoreList that flags the inner-source-name slot", () => {
+		// Outer map's ignoreList points at the source slot that corresponds
+		// to innerSourceName. The combined streaming code attributes the
+		// outer info to inner sources via innerSourceNameInfo. Triggers the
+		// outer onSourceInfo wrapper (with outerIdx === outerSourceIndex)
+		// AND the "no inner mapping" fallback path that re-emits with
+		// innerSourceNameInfo.
+		const innerMap = {
+			version: 3,
+			file: "pre.js",
+			sources: ["pre.js"],
+			sourcesContent: ["pre\n"],
+			names: [],
+			mappings: "",
+		};
+		const outerMap = {
+			version: 3,
+			file: "out.js",
+			sources: ["pre.js"],
+			sourcesContent: ["original\n"],
+			names: [],
+			mappings: "AAAA",
+			ignoreList: [0],
+		};
+		const sms = new SourceMapSource(
+			"out\n",
+			"pre.js",
+			outerMap,
+			"original\n",
+			innerMap,
+		);
+		const result = /** @type {RawSourceMap} */ (sms.map({}));
+		// The outer ignoreList flagged the inner-source-name slot. After
+		// composition, the resulting source(s) should be flagged as ignored
+		// since the inner mapping is empty (so we fall back to the outer
+		// attribution).
+		expect(result.ignoreList).toBeDefined();
+		expect(result.ignoreList && result.ignoreList.length).toBeGreaterThan(0);
+	});
+
 	it("preserves ignoreList from an inner source map through combined streaming", () => {
 		// Exercises streamChunksOfCombinedSourceMap's inner onSourceInfo
 		// handling: the inner source map flags a source as ignored, and the
