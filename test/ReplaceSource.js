@@ -470,4 +470,52 @@ export default function StaticPage(_ref) {
 		expect(buffers[0]).toBe(inner.buffer());
 		expect(source.buffer()).toBe(inner.buffer());
 	});
+
+	it("streamChunks() trailing-remainer fast path (no newline in trailing inserts)", () => {
+		// Exercises the `remainer.length > 0 && !remainer.includes('\n')`
+		// branch in streamChunks(): replacements at-or-past EOF whose
+		// concatenated content is single-line. Important to verify the fast
+		// path produces a column-correct trailing chunk identical to what
+		// splitIntoLines() would have emitted.
+		const inner = new OriginalSource("hello", "x.js");
+		const src = new ReplaceSource(inner);
+		// Both inserts are past the inner source's end → coalesce into the
+		// trailing `remainer` string with no newline.
+		src.insert(5, "X");
+		src.insert(5, "Y");
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk, gl, gc) => chunks.push([chunk, gl, gc]),
+			() => {},
+			() => {},
+		);
+		// The inner "hello" arrives first, then our remainer "XY" follows on
+		// the same generated line at column 5.
+		const trailing = chunks[chunks.length - 1];
+		expect(trailing[0]).toBe("XY");
+		expect(trailing[1]).toBe(1); // line 1
+		expect(trailing[2]).toBe(5); // column at end of "hello"
+		expect(src.source()).toBe("helloXY");
+	});
+
+	it("streamChunks() trailing-remainer multi-line fallback path", () => {
+		// Counterpart: trailing content WITH a newline → splitIntoLines
+		// fallback path.
+		const inner = new OriginalSource("a", "x.js");
+		const src = new ReplaceSource(inner);
+		src.insert(1, "B\nC");
+		const lines = [];
+		src.streamChunks(
+			{},
+			(chunk) => lines.push(chunk),
+			() => {},
+			() => {},
+		);
+		expect(src.source()).toBe("aB\nC");
+		// `splitIntoLines("B\nC")` returns ["B\n", "C"] — both should appear
+		// as separate onChunk emissions, not coalesced.
+		expect(lines).toContain("B\n");
+		expect(lines).toContain("C");
+	});
 });

@@ -719,6 +719,92 @@ describe.each([
 		expect(replacedMap.ignoreList).toEqual([0]);
 	});
 
+	it("preserves ignoreList through sourceAndMap on ConcatSource", () => {
+		// Covers the getSourceAndMap path (separate from getMap above).
+		const mapA = {
+			version: 3,
+			sources: ["a.js"],
+			sourcesContent: ["a\n"],
+			mappings: "AAAA",
+			names: [],
+			file: "",
+			ignoreList: [0],
+		};
+		const mapB = {
+			version: 3,
+			sources: ["b.js"],
+			sourcesContent: ["b\n"],
+			mappings: "AAAA",
+			names: [],
+			file: "",
+		};
+		const concat = new ConcatSource(
+			new SourceMapSource("a\n", "a.js", mapA),
+			new SourceMapSource("b\n", "b.js", mapB),
+		);
+		const { source, map } = concat.sourceAndMap({});
+		expect(source).toBe("a\nb\n");
+		expect(/** @type {RawSourceMap} */ (map).ignoreList).toEqual([0]);
+	});
+
+	it("preserves ignoreList from an inner source map through combined streaming", () => {
+		// Exercises streamChunksOfCombinedSourceMap's inner onSourceInfo
+		// handling: the inner source map flags a source as ignored, and the
+		// flag must survive the inner→global index remapping.
+		const innerMap = {
+			version: 3,
+			file: "pre.js",
+			sources: ["pre.js"],
+			sourcesContent: ["pre\n"],
+			names: [],
+			mappings: "AAAA",
+			ignoreList: [0],
+		};
+		const outerMap = {
+			version: 3,
+			file: "out.js",
+			sources: ["pre.js"],
+			sourcesContent: ["original\n"],
+			names: [],
+			mappings: "AAAA",
+		};
+		const sms = new SourceMapSource(
+			"out\n",
+			"pre.js",
+			outerMap,
+			"original\n",
+			innerMap,
+		);
+		const result = /** @type {RawSourceMap} */ (sms.map({}));
+		expect(result.ignoreList).toEqual([0]);
+	});
+
+	it("propagates ignoreList through CachedSource cold + warm reads", () => {
+		// streamAndGetSourceAndMap captures ignoreList into the cached map so
+		// the second (warm) read replays it via streamChunksOfSourceMap.
+		const mapA = {
+			version: 3,
+			sources: ["x.js"],
+			sourcesContent: ["x\n"],
+			mappings: "AAAA",
+			names: [],
+			file: "",
+			ignoreList: [0],
+		};
+		const inner = new SourceMapSource("x\n", "x.js", mapA);
+		const cached = new CachedSource(inner);
+		// Trigger a streamChunks() (cold) before map() to ensure the cached
+		// path goes through streamAndGetSourceAndMap, not getMap directly.
+		cached.streamChunks(
+			{},
+			() => {},
+			() => {},
+			() => {},
+		);
+		const warm = /** @type {RawSourceMap} */ (cached.map({}));
+		expect(warm.ignoreList).toEqual([0]);
+	});
+
 	it("preserves debugId and sourceRoot through SourceMapSource with inner map", () => {
 		// SourceMapSource with both an inner source map (so it goes through
 		// the getMap pipeline) and outer-only fields (debugId, sourceRoot).
