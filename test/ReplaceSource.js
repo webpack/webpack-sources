@@ -525,6 +525,29 @@ export default function StaticPage(_ref) {
 		expect(chunks.every((c) => c === undefined || c.length > 0)).toBe(true);
 	});
 
+	it("streamChunks() pads sourceContents for multi-source inner (sourceIndex > 0)", () => {
+		// Wrap a SourceMapSource that has multiple sources. The
+		// streamChunks `onSource` callback gets called with sourceIndex
+		// values > 0, exercising the `while (sourceContents.length < i)`
+		// padding loop on line ~515.
+		const innerMap = {
+			version: 3,
+			file: "out.js",
+			sources: ["a.js", "b.js", "c.js"],
+			sourcesContent: ["a\n", "b\n", "c\n"],
+			mappings: "AAAA;ACAA;ACAA",
+			names: [],
+		};
+		const inner = new SourceMapSource("a\nb\nc\n", "out.js", innerMap);
+		const src = new ReplaceSource(inner);
+		src.replace(0, 0, "A"); // force at least one replacement
+		const result = src.sourceAndMap({});
+		expect(result.source).toBe("A\nb\nc\n");
+		// All three inner sources must survive into the result map.
+		const map = /** @type {RawSourceMap} */ (result.map);
+		expect(map.sources).toEqual(["a.js", "b.js", "c.js"]);
+	});
+
 	it("streamChunks() tracks generated columns across multiple replacements on one line", () => {
 		const inner = new OriginalSource("aaaaa", "x.js");
 		const src = new ReplaceSource(inner);
