@@ -182,16 +182,6 @@ declare interface MapOptions {
 declare class OriginalSource extends Source {
 	constructor(value: string | Buffer, name: string);
 	getName(): string;
-
-	/**
-	 * Returns the source content split on `\n`, with the trailing newline
-	 * kept on each non-final line (same shape as `splitIntoLines`). The
-	 * result is memoized so callers (notably `ReplaceSource`) can avoid
-	 * re-splitting the same source across multiple `streamChunks` /
-	 * `map()` / `sourceAndMap()` invocations. The returned array MUST NOT
-	 * be mutated by callers — it is shared.
-	 */
-	originalLines(): string[];
 	streamChunks(
 		options: StreamChunksOptions,
 		onChunk: (
