@@ -544,8 +544,12 @@ export default function StaticPage(_ref) {
 		const result = src.sourceAndMap({});
 		expect(result.source).toBe("A\nb\nc\n");
 		// All three inner sources must survive into the result map.
-		const map = /** @type {RawSourceMap} */ (result.map);
-		expect(map.sources).toEqual(["a.js", "b.js", "c.js"]);
+		const { map } = result;
+		expect(/** @type {RawSourceMap} */ (map).sources).toEqual([
+			"a.js",
+			"b.js",
+			"c.js",
+		]);
 	});
 
 	it("streamChunks() tracks generated columns across multiple replacements on one line", () => {
