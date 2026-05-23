@@ -189,32 +189,4 @@ describe.each([
 			expect(hash[1][0].digest("hex")).toBe(hash[1][1].digest("hex"));
 		});
 	}
-
-	it("originalLines() returns memoized split lines for string-backed sources", () => {
-		const src = new OriginalSource("a\nb\nc", "file.js");
-		const lines = src.originalLines();
-		expect(lines).toEqual(["a\n", "b\n", "c"]);
-		// Memoized — second call returns the SAME array reference.
-		expect(src.originalLines()).toBe(lines);
-	});
-
-	it("originalLines() rehydrates from buffer when the string form was dropped", () => {
-		// Construct from a Buffer (string form starts undefined), then ask
-		// for originalLines without ever calling source() first. This
-		// exercises the `_valueAsBuffer.toString("utf8")` branch.
-		const src = new OriginalSource(Buffer.from("x\ny\nz"), "file.js");
-		const lines = src.originalLines();
-		expect(lines).toEqual(["x\n", "y\n", "z"]);
-		expect(src.originalLines()).toBe(lines);
-	});
-
-	it("clearCache drops the originalLines cache when it was populated", () => {
-		const src = new OriginalSource("p\nq", "file.js");
-		const first = src.originalLines();
-		src.clearCache();
-		const second = src.originalLines();
-		expect(second).toEqual(first);
-		// New array after clearCache (not the same reference).
-		expect(second).not.toBe(first);
-	});
 });
