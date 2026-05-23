@@ -471,6 +471,28 @@ export default function StaticPage(_ref) {
 		expect(source.buffer()).toBe(inner.buffer());
 	});
 
+	it("streamChunks() trailing-remainer reuses column offset from prior in-chunk replacement", () => {
+		// In-chunk replacement updates generatedColumnOffsetLine to the
+		// trailing-remainer's line, so the trailing-remainer fast path
+		// takes the `generatedColumnOffsetLine === line` branch (the
+		// accumulate path, not the reset path). Drive streamChunks
+		// directly — source() doesn't go through it.
+		const inner = new OriginalSource("abc", "x.js");
+		const src = new ReplaceSource(inner);
+		src.replace(0, 0, "X"); // in-chunk: sets generatedColumnOffsetLine to 1
+		src.insert(10, "Y"); // trailing: hits the fast path on same line
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk, gl, gc) => chunks.push([chunk, gl, gc]),
+			() => {},
+			() => {},
+		);
+		const trailing = chunks[chunks.length - 1];
+		expect(trailing[0]).toBe("Y");
+		expect(trailing[1]).toBe(1);
+	});
+
 	it("streamChunks() emits trailing inserts past end-of-source", () => {
 		// Two `insert` calls past the inner source's end coalesce into a
 		// single trailing-remainer emission on the final generated line.
@@ -490,6 +512,27 @@ export default function StaticPage(_ref) {
 		expect(trailing[0]).toBe("XY");
 		expect(trailing[1]).toBe(1);
 		expect(trailing[2]).toBe(5);
+	});
+
+	it("streamChunks() handles in-chunk multi-line replacement ending without newline", () => {
+		// Replace a single-character span with multi-line content whose
+		// last line doesn't end with '\n'. Exercises the in-chunk
+		// `m === matches.length - 1 && !contentLine.endsWith("\n")` branch
+		// in streamChunks (the multi-line counterpart to the single-line
+		// fast path).
+		const inner = new OriginalSource("ab", "x.js");
+		const src = new ReplaceSource(inner);
+		src.replace(0, 0, "A\nB");
+		expect(src.source()).toBe("A\nBb");
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk) => chunks.push(chunk),
+			() => {},
+			() => {},
+		);
+		expect(chunks).toContain("A\n");
+		expect(chunks).toContain("B");
 	});
 
 	it("streamChunks() emits multi-line trailing inserts via splitIntoLines", () => {
