@@ -65,8 +65,8 @@ describe("replaceSource", () => {
 		expect(resultText).toBe("Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line");
 		expect(result.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		const listMap = /** @jiti/Client-types.a5e1c6bf.cjs {RawSourceMap} */ (resultListMap.map);
+		const resultMap = /** @jiti/Client-types.a5e1c6bf.cjs {RawSourceMap} */ (result.map);
 		expect(listMap.file).toEqual(resultMap.file);
 		expect(listMap.version).toEqual(resultMap.version);
 		expect(listMap.sources).toEqual(resultMap.sources);
@@ -106,8 +106,8 @@ describe("replaceSource", () => {
 		expect(resultText).toBe("Message: Hey Ad!");
 		expect(result.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		const listMap = /** @jiti/Client-types.a5e1c6bf.cjs {RawSourceMap} */ (resultListMap.map);
+		const resultMap = /** @jiti/Client-types.a5e1c6bf.cjs {RawSourceMap} */ (result.map);
 		expect(listMap.file).toEqual(resultMap.file);
 		expect(listMap.version).toEqual(resultMap.version);
 		expect(listMap.sources).toEqual(resultMap.sources);
@@ -131,8 +131,8 @@ describe("replaceSource", () => {
 		expect(resultText).toBe("Line -1\nLine 0\nLine 1");
 		expect(result.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		const listMap = /** @jiti/Client-types.a5e1c6bf.cjs {RawSourceMap} */ (resultListMap.map);
+		const resultMap = /** @jiti/Client-types.a5e1c6bf.cjs {RawSourceMap} */ (result.map);
 		expect(listMap.file).toEqual(resultMap.file);
 		expect(listMap.version).toEqual(resultMap.version);
 		expect(listMap.sources).toEqual(resultMap.sources);
@@ -158,8 +158,8 @@ describe("replaceSource", () => {
 		expect(resultText).toBe("Line 0\nHello\nLine 2");
 		expect(result.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		const listMap = /** @jiti/Client-types.a5e1c6bf.cjs {RawSourceMap} */ (resultListMap.map);
+		const resultMap = /** @jiti/Client-types.a5e1c6bf.cjs {RawSourceMap} */ (result.map);
 		expect(listMap.file).toEqual(resultMap.file);
 		expect(listMap.version).toEqual(resultMap.version);
 		expect(listMap.sources).toEqual(resultMap.sources);
@@ -185,8 +185,8 @@ describe("replaceSource", () => {
 		expect(resultText).toBe("Line 1\nLine 2\n");
 		expect(result.source).toEqual(resultText);
 		expect(resultListMap.source).toEqual(resultText);
-		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
-		const resultMap = /** @type {RawSourceMap} */ (result.map);
+		const listMap = /** @jiti/Client-types.a5e1c6bf.cjs {RawSourceMap} */ (resultListMap.map);
+		const resultMap = /** @jiti/Client-types.a5e1c6bf.cjs {RawSourceMap} */ (result.map);
 		expect(listMap.file).toEqual(resultMap.file);
 		expect(listMap.version).toEqual(resultMap.version);
 		expect(listMap.sources).toEqual(resultMap.sources);
@@ -278,10 +278,7 @@ export default function StaticPage(_ref) {
 		    "abc",
 		  ],
 		  "sourcesContent": Array [
-		    "export default function StaticPage({ data }) {
-		  return <div>{data.foo}</div>
-		}
-		",
+		    "export default function StaticPage({ data }) {\n  return <div>{data.foo}</div>\n}\n",
 		  ],
 		  "version": 3,
 		}
@@ -304,8 +301,7 @@ export default function StaticPage(_ref) {
 		Object {
 		  "_mappings": "1:0 -> [document.js] 1:0, :4 -> [document.js] 1:4, :9 -> [document.js] 1:9, :12 -> [document.js] 3:0
 		if (false) {}
-		^___^____^__^
-		",
+		^___^____^__^\n",
 		  "file": "x",
 		  "mappings": "AAAA,IAAI,KAAK,GAET",
 		  "names": Array [],
@@ -313,9 +309,7 @@ export default function StaticPage(_ref) {
 		    "document.js",
 		  ],
 		  "sourcesContent": Array [
-		    "if (a;b;c) {
-		  a; b; c;
-		}",
+		    "if (a;b;c) {\n  a; b; c;\n}",
 		  ],
 		  "version": 3,
 		}
@@ -469,5 +463,12 @@ export default function StaticPage(_ref) {
 		expect(buffers).toHaveLength(1);
 		expect(buffers[0]).toBe(inner.buffer());
 		expect(source.buffer()).toBe(inner.buffer());
+	});
+
+	it("should handle multiple insertions at the same position", () => {
+		const source = new ReplaceSource(new OriginalSource("123", "file.txt"));
+		source.insert(1, "A");
+		source.insert(1, "B");
+		expect(source.source()).toBe("1AB23");
 	});
 });
