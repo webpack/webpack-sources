@@ -12,12 +12,7 @@
 import sources from "../../../lib/index.js";
 import { fixtureCode, fixtureMap } from "../../fixtures.mjs";
 
-// Bumped from 50 -> 500 so each measured iteration allocates >= ~30 KB.
-// `new CompatSource(sourceLike)` is a few-field assignment (~20 B/call),
-// so smaller batches left CodSpeed measuring at sub-KB scale where
-// allocation-count differencing between runner glibc/V8 versions
-// amplified into double-digit phantom regressions.
-const BATCH = 500;
+const BATCH = 50;
 
 /**
  * @param {import("tinybench").Bench} bench bench

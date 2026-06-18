@@ -14,12 +14,7 @@ import { createHash } from "crypto";
 import sources from "../../../lib/index.js";
 import { fixtureBuffer, fixtureCode } from "../../fixtures.mjs";
 
-// BATCH chosen so each measured iteration allocates >= ~30 KB. RawSource's
-// `new RawSource(string)` touches a couple of fields per call (~16 B per
-// object), so a small BATCH left per-iter measurement at sub-KB scale
-// where CodSpeed's allocation-count differencing between glibc/V8
-// versions amplified into double-digit phantom regressions.
-const BATCH = 2000;
+const BATCH = 50;
 
 /**
  * @param {import("tinybench").Bench} bench bench
