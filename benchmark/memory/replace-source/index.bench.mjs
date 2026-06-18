@@ -10,7 +10,10 @@
 import sources from "../../../lib/index.js";
 import { fixtureCode, fixtureMap } from "../../fixtures.mjs";
 
-const BATCH = 20;
+// Bumped from 20 -> 100. ReplaceSource constructor itself is small; we
+// keep REPLACEMENTS at 100 so each iteration still does enough work
+// inside the streamChunks loop to dominate over per-iteration overhead.
+const BATCH = 100;
 const REPLACEMENTS = 100;
 
 /**

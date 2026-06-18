@@ -11,7 +11,10 @@
 import sources from "../../../lib/index.js";
 import { fixtureCode, fixtureMap } from "../../fixtures.mjs";
 
-const BATCH = 20;
+// Bumped from 20 -> 100. ConcatSource constructor allocation scales with
+// children but each `new ConcatSource()` itself is small (~80 B), so the
+// previous BATCH=20 sat in the noise-amplification band. CHILDREN unchanged.
+const BATCH = 100;
 const CHILDREN = 20;
 
 /**

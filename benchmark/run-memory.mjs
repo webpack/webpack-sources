@@ -21,6 +21,7 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { Bench, hrtimeNow } from "tinybench";
+import { warmupSources } from "./warmup.mjs";
 import { withCodSpeed } from "./with-codspeed.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -78,6 +79,14 @@ for (const caseName of caseDirs) {
 	});
 	console.log(`Registered: ${caseName}`);
 }
+
+// One-time-cost warmup (lazy regex compile, monomorphic IC, fixtureMap
+// JSON parse, dual-string-buffer Buffer.from()). Without this, those
+// costs are attributed to whichever micro-bench runs first — which is
+// the main source of phantom "memory regressions" on the smallest
+// constructor benches.
+console.log("Warming up shared source-class state...");
+warmupSources();
 
 console.log(`\nRunning ${bench.tasks.length} tasks...\n`);
 await bench.run();

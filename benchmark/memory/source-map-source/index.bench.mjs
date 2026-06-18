@@ -10,7 +10,12 @@
 import sources from "../../../lib/index.js";
 import { fixtureCode, fixtureMap } from "../../fixtures.mjs";
 
-const BATCH = 20;
+// Bumped from 20 -> 100. `new SourceMapSource(simple)` was the BATCH=20
+// case CodSpeed flagged at -24.62% on identical-vs-main code; the per-
+// iter allocation was small enough that runner-glibc differences in
+// the buffer-from path produced a 256 B systematic offset. Per-iter at
+// BATCH=100 lifts the signal above that floor.
+const BATCH = 100;
 
 /**
  * @param {import("tinybench").Bench} bench bench

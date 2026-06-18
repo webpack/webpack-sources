@@ -21,6 +21,7 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { Bench, hrtimeNow } from "tinybench";
+import { warmupSources } from "./warmup.mjs";
 import { withCodSpeed } from "./with-codspeed.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -89,6 +90,15 @@ for (const caseName of caseDirs) {
 	});
 	console.log(`Registered: ${caseName}`);
 }
+
+// Touch every Source API at least twice before any measurement starts.
+// This moves lazy regex compilation, monomorphic-IC stabilisation, the
+// fixtureMap JSON parse, and dual-string-buffer Buffer.from() out of
+// whichever bench would otherwise inherit the cost — which is the main
+// source of phantom "regressions" on whichever micro-bench happens to
+// run first.
+console.log("Warming up shared source-class state...");
+warmupSources();
 
 console.log(`\nRunning ${bench.tasks.length} tasks...\n`);
 await bench.run();
