@@ -19,7 +19,7 @@ jobs:
       id-token: write # Required for OIDC authentication with CodSpeed
       pull-requests: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
 
@@ -32,7 +32,7 @@ jobs:
       - run: npm ci
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@c145068895e045cc725ee76fcd2307624b65c3af # v4.17.5
+        uses: CodSpeedHQ/action@7e596f25803767a0cab7ff397c65f2aad6f2ddb9 # v4.18.0
         with:
           run: npm run benchmark
           mode: "simulation"
@@ -44,7 +44,7 @@ jobs:
       id-token: write # Required for OIDC authentication with CodSpeed
       pull-requests: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
 
@@ -57,7 +57,7 @@ jobs:
       - run: npm ci
 
       - name: Run memory benchmarks
-        uses: CodSpeedHQ/action@c145068895e045cc725ee76fcd2307624b65c3af # v4.17.5
+        uses: CodSpeedHQ/action@7e596f25803767a0cab7ff397c65f2aad6f2ddb9 # v4.18.0
         with:
           run: npm run benchmark:memory
           mode: "memory"
