@@ -49,7 +49,7 @@
     "source-map": "^0.7.3",
     "sourcemap-validator": "^2.1.0",
     "tinybench": "^6.0.0",
-    "tooling": "webpack/tooling#v1.26.3",
+    "tooling": "webpack/tooling#v1.26.4",
     "typescript": "^6.0.2",
     "webpack": "^5.107.2"
   },
