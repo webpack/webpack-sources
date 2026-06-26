@@ -94,6 +94,23 @@ declare class CachedSource extends Source {
 			sourceContent?: string,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
+		onOriginalScope?: (
+			sourceIndex: number,
+			line: number,
+			column: number,
+			flags: number,
+			kind: number,
+			name: number,
+			variables: number[],
+		) => void,
+		onGeneratedRange?: (
+			generatedLine: number,
+			generatedColumn: number,
+			flags: number,
+			definition?: [number, number],
+			callsite?: [number, number, number],
+			bindings?: number[][],
+		) => void,
 	): GeneratedSourceInfo;
 }
 declare interface ClearCacheOptions {
@@ -138,6 +155,23 @@ declare class ConcatSource extends Source {
 			sourceContent?: string,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
+		onOriginalScope?: (
+			sourceIndex: number,
+			line: number,
+			column: number,
+			flags: number,
+			kind: number,
+			name: number,
+			variables: number[],
+		) => void,
+		onGeneratedRange?: (
+			generatedLine: number,
+			generatedColumn: number,
+			flags: number,
+			definition?: [number, number],
+			callsite?: [number, number, number],
+			bindings?: number[][],
+		) => void,
 	): GeneratedSourceInfo;
 }
 type ConcatSourceChild = string | Source | SourceLike;
@@ -199,6 +233,23 @@ declare class OriginalSource extends Source {
 			sourceContent?: string,
 		) => void,
 		_onName: (nameIndex: number, name: string) => void,
+		_onOriginalScope?: (
+			sourceIndex: number,
+			line: number,
+			column: number,
+			flags: number,
+			kind: number,
+			name: number,
+			variables: number[],
+		) => void,
+		_onGeneratedRange?: (
+			generatedLine: number,
+			generatedColumn: number,
+			flags: number,
+			definition?: [number, number],
+			callsite?: [number, number, number],
+			bindings?: number[][],
+		) => void,
 	): GeneratedSourceInfo;
 }
 declare class PrefixSource extends Source {
@@ -222,6 +273,23 @@ declare class PrefixSource extends Source {
 			sourceContent?: string,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
+		onOriginalScope?: (
+			sourceIndex: number,
+			line: number,
+			column: number,
+			flags: number,
+			kind: number,
+			name: number,
+			variables: number[],
+		) => void,
+		onGeneratedRange?: (
+			generatedLine: number,
+			generatedColumn: number,
+			flags: number,
+			definition?: [number, number],
+			callsite?: [number, number, number],
+			bindings?: number[][],
+		) => void,
 	): GeneratedSourceInfo;
 }
 declare class RawSource extends Source {
@@ -244,6 +312,23 @@ declare class RawSource extends Source {
 			sourceContent?: string,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
+		_onOriginalScope?: (
+			sourceIndex: number,
+			line: number,
+			column: number,
+			flags: number,
+			kind: number,
+			name: number,
+			variables: number[],
+		) => void,
+		_onGeneratedRange?: (
+			generatedLine: number,
+			generatedColumn: number,
+			flags: number,
+			definition?: [number, number],
+			callsite?: [number, number, number],
+			bindings?: number[][],
+		) => void,
 	): GeneratedSourceInfo;
 }
 declare interface RawSourceMap {
@@ -291,6 +376,16 @@ declare interface RawSourceMap {
 	 * ignore list
 	 */
 	ignoreList?: number[];
+
+	/**
+	 * **Experimental.** Per-source original scopes from the [Source Map Scopes Proposal](https://github.com/tc39/source-map/blob/main/proposals/scopes.md). The proposal is still evolving — the wire format and field names may change.
+	 */
+	originalScopes?: string[];
+
+	/**
+	 * **Experimental.** Generated ranges from the [Source Map Scopes Proposal](https://github.com/tc39/source-map/blob/main/proposals/scopes.md). The proposal is still evolving — the wire format and field names may change.
+	 */
+	generatedRanges?: string;
 }
 declare class ReplaceSource extends Source {
 	constructor(source: Source, name?: string);
@@ -316,6 +411,23 @@ declare class ReplaceSource extends Source {
 			sourceContent?: string,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
+		onOriginalScope?: (
+			sourceIndex: number,
+			line: number,
+			column: number,
+			flags: number,
+			kind: number,
+			name: number,
+			variables: number[],
+		) => void,
+		_onGeneratedRange?: (
+			generatedLine: number,
+			generatedColumn: number,
+			flags: number,
+			definition?: [number, number],
+			callsite?: [number, number, number],
+			bindings?: number[][],
+		) => void,
 	): GeneratedSourceInfo;
 	static Replacement: typeof Replacement;
 }
@@ -439,6 +551,23 @@ declare class SourceMapSource extends Source {
 			sourceContent?: string,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
+		onOriginalScope?: (
+			sourceIndex: number,
+			line: number,
+			column: number,
+			flags: number,
+			kind: number,
+			name: number,
+			variables: number[],
+		) => void,
+		onGeneratedRange?: (
+			generatedLine: number,
+			generatedColumn: number,
+			flags: number,
+			definition?: [number, number],
+			callsite?: [number, number, number],
+			bindings?: number[][],
+		) => void,
 	): GeneratedSourceInfo;
 }
 type SourceValue = string | Buffer;
