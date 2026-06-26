@@ -11,9 +11,19 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# CodSpeed compares a PR's HEAD against the stored BASE measurement from
+# main. `ubuntu-latest` silently migrates between underlying images (e.g.
+# 22.04 -> 24.04), so the base and the PR can run on different OS images
+# with different system libraries — CodSpeed flags this as "Different
+# runtime environments detected" and every benchmark shifts at once, even
+# in code the PR never touched. Pin the OS image so the runtime environment
+# is identical for base and head. The Node version is intentionally left as
+# `lts/*` (not pinned): main and PRs resolve it to the same release on a
+# given day, and pinning a specific Node would instead *introduce* a
+# base/head mismatch until main is re-benchmarked under that pin.
 jobs:
   benchmark:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write # Required for OIDC authentication with CodSpeed
@@ -38,7 +48,7 @@ jobs:
           mode: "simulation"
 
   memory-benchmark:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write # Required for OIDC authentication with CodSpeed
