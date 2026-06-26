@@ -470,4 +470,147 @@ export default function StaticPage(_ref) {
 		expect(buffers[0]).toBe(inner.buffer());
 		expect(source.buffer()).toBe(inner.buffer());
 	});
+
+	it("streamChunks() trailing-remainer reuses column offset from prior in-chunk replacement", () => {
+		// In-chunk replacement updates generatedColumnOffsetLine to the
+		// trailing-remainer's line, so the trailing-remainer fast path
+		// takes the `generatedColumnOffsetLine === line` branch (the
+		// accumulate path, not the reset path). Drive streamChunks
+		// directly — source() doesn't go through it.
+		const inner = new OriginalSource("abc", "x.js");
+		const src = new ReplaceSource(inner);
+		src.replace(0, 0, "X"); // in-chunk: sets generatedColumnOffsetLine to 1
+		src.insert(10, "Y"); // trailing: hits the fast path on same line
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk, gl, gc) => chunks.push([chunk, gl, gc]),
+			() => {},
+			() => {},
+		);
+		const trailing = chunks[chunks.length - 1];
+		expect(trailing[0]).toBe("Y");
+		expect(trailing[1]).toBe(1);
+	});
+
+	it("streamChunks() emits trailing inserts past end-of-source", () => {
+		// Two `insert` calls past the inner source's end coalesce into a
+		// single trailing-remainer emission on the final generated line.
+		const inner = new OriginalSource("hello", "x.js");
+		const src = new ReplaceSource(inner);
+		src.insert(5, "X");
+		src.insert(5, "Y");
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk, gl, gc) => chunks.push([chunk, gl, gc]),
+			() => {},
+			() => {},
+		);
+		expect(src.source()).toBe("helloXY");
+		const trailing = chunks[chunks.length - 1];
+		expect(trailing[0]).toBe("XY");
+		expect(trailing[1]).toBe(1);
+		expect(trailing[2]).toBe(5);
+	});
+
+	it("streamChunks() handles in-chunk multi-line replacement ending without newline", () => {
+		// Replace a single-character span with multi-line content whose
+		// last line doesn't end with '\n'. Exercises the in-chunk
+		// `m === matches.length - 1 && !contentLine.endsWith("\n")` branch
+		// in streamChunks (the multi-line counterpart to the single-line
+		// fast path).
+		const inner = new OriginalSource("ab", "x.js");
+		const src = new ReplaceSource(inner);
+		src.replace(0, 0, "A\nB");
+		expect(src.source()).toBe("A\nBb");
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk) => chunks.push(chunk),
+			() => {},
+			() => {},
+		);
+		expect(chunks).toContain("A\n");
+		expect(chunks).toContain("B");
+	});
+
+	it("streamChunks() emits multi-line trailing inserts via splitIntoLines", () => {
+		const inner = new OriginalSource("a", "x.js");
+		const src = new ReplaceSource(inner);
+		src.insert(1, "B\nC");
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk) => chunks.push(chunk),
+			() => {},
+			() => {},
+		);
+		expect(src.source()).toBe("aB\nC");
+		// splitIntoLines("B\nC") returns ["B\n", "C"] — both should be
+		// emitted as separate chunks rather than coalesced.
+		expect(chunks).toContain("B\n");
+		expect(chunks).toContain("C");
+	});
+
+	it("streamChunks() handles empty replacement without emitting a zero-length chunk", () => {
+		const inner = new OriginalSource("abcdef", "x.js");
+		const src = new ReplaceSource(inner);
+		src.replace(2, 3, "");
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk) => chunks.push(chunk),
+			() => {},
+			() => {},
+		);
+		expect(src.source()).toBe("abef");
+		expect(chunks.every((c) => c === undefined || c.length > 0)).toBe(true);
+	});
+
+	it("streamChunks() pads sourceContents for multi-source inner (sourceIndex > 0)", () => {
+		// Wrap a SourceMapSource that has multiple sources. The
+		// streamChunks `onSource` callback gets called with sourceIndex
+		// values > 0, exercising the `while (sourceContents.length < i)`
+		// padding loop on line ~515.
+		const innerMap = {
+			version: 3,
+			file: "out.js",
+			sources: ["a.js", "b.js", "c.js"],
+			sourcesContent: ["a\n", "b\n", "c\n"],
+			mappings: "AAAA;ACAA;ACAA",
+			names: [],
+		};
+		const inner = new SourceMapSource("a\nb\nc\n", "out.js", innerMap);
+		const src = new ReplaceSource(inner);
+		src.replace(0, 0, "A"); // force at least one replacement
+		const result = src.sourceAndMap({});
+		expect(result.source).toBe("A\nb\nc\n");
+		// All three inner sources must survive into the result map.
+		const { map } = result;
+		expect(/** @type {RawSourceMap} */ (map).sources).toEqual([
+			"a.js",
+			"b.js",
+			"c.js",
+		]);
+	});
+
+	it("streamChunks() tracks generated columns across multiple replacements on one line", () => {
+		const inner = new OriginalSource("aaaaa", "x.js");
+		const src = new ReplaceSource(inner);
+		src.replace(0, 0, "BBBBB");
+		src.replace(2, 2, "CC");
+		expect(src.source()).toBe("BBBBBaCCaa");
+		const chunks = [];
+		src.streamChunks(
+			{},
+			(chunk, gl, gc) => chunks.push([chunk, gl, gc]),
+			() => {},
+			() => {},
+		);
+		const lineOneCols = chunks
+			.filter(([, gl]) => gl === 1)
+			.map(([, , gc]) => gc);
+		expect(lineOneCols).toEqual([...lineOneCols].sort((a, b) => a - b));
+	});
 });
