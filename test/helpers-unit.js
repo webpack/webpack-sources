@@ -105,6 +105,30 @@ describe("splitIntoPotentialTokens", () => {
 	it("should return null for empty string", () => {
 		expect(splitIntoPotentialTokens("")).toBeNull();
 	});
+
+	// The tokens must always concatenate back to the original input,
+	// regardless of which scan phase the string ends in.
+	it.each([
+		"a b c", // phase 1 runs to end of string (no stop char)
+		"a;", // phase 2 delimiter run ends the string
+		"a\nb", // phase 3 consumes a trailing newline, then a final token
+		"\n", // a lone newline token
+		"a;b{c}\nd e\n", // mixed stops, whitespace and a trailing newline
+		"function foo() {\n\treturn 1;\n}\n", // realistic snippet (\t, spaces, ;{}\n)
+	])("round-trips %j back to the original string", (input) => {
+		const tokens = splitIntoPotentialTokens(input);
+		expect(tokens).not.toBeNull();
+		expect(/** @type {string[]} */ (tokens).join("")).toBe(input);
+	});
+
+	it("keeps a trailing newline attached to its token", () => {
+		// "a\n" ends in phase 3; "b" is emitted by the bottom push.
+		expect(splitIntoPotentialTokens("a\nb")).toEqual(["a\n", "b"]);
+	});
+
+	it("emits a delimiter-run token when the string ends in phase 2", () => {
+		expect(splitIntoPotentialTokens("a;")).toEqual(["a;"]);
+	});
 });
 
 describe("readMappings", () => {
