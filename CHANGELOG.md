@@ -1,5 +1,13 @@
 # webpack-sources
 
+## 3.5.1
+
+### Patch Changes
+
+- perf: use lookup table in splitIntoPotentialTokens for faster character classification (by [@xiaoxiaojx](https://github.com/xiaoxiaojx) in [#240](https://github.com/webpack/webpack-sources/pull/240))
+
+  Replace multi-comparison chains (4 comparisons in phase 1, 6 in phase 2) with a single Uint8Array bitmask lookup per character. This reduces per-character branching overhead, yielding ~7% improvement on typical source and ~21% on large sources.
+
 ## 3.5.0
 
 ### Minor Changes
