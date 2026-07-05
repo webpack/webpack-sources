@@ -1,5 +1,9 @@
 "use strict";
 
+const createMappingsSerializer = require("../lib/helpers/createMappingsSerializer");
+const {
+	createMappingsWriter,
+} = require("../lib/helpers/createMappingsSerializer");
 const {
 	getMap,
 	getSourceAndMap,
@@ -344,5 +348,138 @@ describe("stringBufferUtils", () => {
 		// Now disabled; cache should be cleared, fresh string returned as-is
 		const freshStr = "c".repeat(200);
 		expect(internString(freshStr)).toBe(freshStr);
+	});
+});
+
+describe("createMappingsSerializer / createMappingsWriter", () => {
+	/**
+	 * A mapping event stream covering every serializer branch: initial
+	 * mapping, same-line comma separation, repeated original mapping
+	 * (skipped), generated-only mapping while active / while inactive,
+	 * name indices, source switches, single- and multi-line gaps,
+	 * backwards original lines (sign bit) and huge deltas (VLQ
+	 * continuation across several sextets).
+	 * @type {[number, number, number, number, number, number][]}
+	 */
+	const branchEvents = [
+		[1, 0, 0, 1, 0, -1],
+		// exact repeat of the active original mapping -> skipped
+		[1, 4, 0, 1, 0, -1],
+		// generated-only mapping while a mapping is active -> written
+		[1, 8, -1, -1, -1, -1],
+		// generated-only mapping while inactive -> skipped
+		[1, 10, -1, -1, -1, -1],
+		[2, 0, 0, 2, 0, 0],
+		// same line, source switch plus name -> comma separation
+		[2, 5, 1, 3, 2, 1],
+		// multi-line gap plus huge original line delta (VLQ continuation)
+		[5, 0, 0, 900001, 0, -1],
+		// same line, backwards original line (negative delta, sign bit)
+		[5, 3, 0, 1, 0, -1],
+		// same original column fast path ("A")
+		[6, 0, 2, 5, 0, 2],
+		[7, 2, 2, 6, 0, -1],
+	];
+
+	/**
+	 * Long alternating stream: enough bytes to force the writer's buffer
+	 * to grow past its initial capacity, with per-line repeats and gaps so
+	 * the lines-only variants hit all of their branches too.
+	 * @type {[number, number, number, number, number, number][]}
+	 */
+	const longEvents = [];
+	for (let i = 0; i < 3000; i++) {
+		const line = Math.floor(i / 2) + 1;
+		longEvents.push([
+			line,
+			(i % 2) * 7,
+			i % 4 === 3 ? -1 : i % 3,
+			(i * 37) % 5000 || 1,
+			(i % 9) * 2,
+			i % 7 === 0 ? i % 5 : -1,
+		]);
+	}
+	// a trailing multi-line jump
+	longEvents.push([2000, 0, 0, 1, 0, -1]);
+
+	/**
+	 * @param {{ columns?: boolean } | undefined} options options
+	 * @param {[number, number, number, number, number, number][]} events events
+	 * @returns {{ fromSerializer: string, fromWriter: string }} both encodings
+	 */
+	const encodeBoth = (options, events) => {
+		const serialize = createMappingsSerializer(options);
+		const writer = createMappingsWriter(options);
+		let fromSerializer = "";
+		for (const event of events) {
+			fromSerializer += serialize(...event);
+			writer.add(...event);
+		}
+		return { fromSerializer, fromWriter: writer.finish() };
+	};
+
+	/** @type {[string, { columns?: boolean } | undefined][]} */
+	const modes = [
+		["full (columns: true)", undefined],
+		["lines-only (columns: false)", { columns: false }],
+	];
+	for (const [label, options] of modes) {
+		it(`${label}: writer output equals serializer output (branch stream)`, () => {
+			const { fromSerializer, fromWriter } = encodeBoth(options, branchEvents);
+			expect(fromWriter).toBe(fromSerializer);
+			expect(fromWriter.length).toBeGreaterThan(0);
+		});
+
+		it(`${label}: writer output equals serializer output (long stream, buffer growth)`, () => {
+			const { fromSerializer, fromWriter } = encodeBoth(options, longEvents);
+			expect(fromWriter).toBe(fromSerializer);
+			// must exceed the writer's initial 1024-byte buffer
+			expect(fromWriter.length).toBeGreaterThan(2048);
+		});
+	}
+
+	it("full: encodes the branch stream to the expected mappings", () => {
+		const { fromSerializer } = encodeBoth(undefined, branchEvents);
+		expect(fromSerializer).toBe(
+			"AAAA,Q;AACAA,KCCEC;;;AD8592BF,GAh692BA;AEIAC;EACA",
+		);
+	});
+
+	it("lines-only: uses the constant segment for consecutive lines", () => {
+		/** @type {[number, number, number, number, number, number][]} */
+		const events = [
+			[1, 0, 0, 1, 0, -1],
+			// consecutive generated+original line, same source -> ";AACA"
+			[2, 0, 0, 2, 0, -1],
+			// repeated generated line -> skipped
+			[2, 5, 0, 3, 0, -1],
+			// consecutive line, same source, non-consecutive original line
+			[3, 0, 0, 7, 0, -1],
+			// consecutive line, source switch
+			[4, 0, 1, 1, 0, -1],
+			// multi-line gap, same source, consecutive original line
+			[7, 0, 1, 2, 0, -1],
+			// multi-line gap, same source, non-consecutive original line
+			[9, 0, 1, 9, 0, -1],
+			// multi-line gap plus source switch
+			[11, 0, 0, 4, 0, -1],
+			// generated-only mapping -> skipped
+			[12, 0, -1, -1, -1, -1],
+		];
+		const { fromSerializer, fromWriter } = encodeBoth(
+			{ columns: false },
+			events,
+		);
+		expect(fromWriter).toBe(fromSerializer);
+		expect(fromSerializer).toBe("AAAA;AACA;AAKA;ACNA;;;AACA;;AAOA;;ADLA");
+	});
+
+	it("writer finish() returns an empty string when nothing was written", () => {
+		for (const options of [undefined, { columns: false }]) {
+			const writer = createMappingsWriter(options);
+			// only skippable events
+			writer.add(1, 0, -1, -1, -1, -1);
+			expect(writer.finish()).toBe("");
+		}
 	});
 });
