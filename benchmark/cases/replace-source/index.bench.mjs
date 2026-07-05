@@ -30,6 +30,32 @@ function buildManyReplacements(count) {
 }
 
 /**
+ * Same replacements as `buildManyReplacements` but appended in reverse
+ * order, so `_sortReplacements()` cannot take the presorted fast path and
+ * must run the real sort. Tracked alongside the in-order tasks so both
+ * branches of the sortedness pre-scan stay measured.
+ * @param {number} count count
+ * @returns {ReplaceSource} source
+ */
+function buildOutOfOrderReplacements(count) {
+	const src = new sources.ReplaceSource(
+		new sources.OriginalSource(bigSource, "big.js"),
+	);
+	const positions = [];
+	let idx = bigSource.indexOf("value");
+	let i = 0;
+	while (idx !== -1 && i < count) {
+		positions.push(idx);
+		idx = bigSource.indexOf("value", idx + 5);
+		i++;
+	}
+	for (let j = positions.length - 1; j >= 0; j--) {
+		src.replace(positions[j], positions[j] + 4, "v", "value");
+	}
+	return src;
+}
+
+/**
  * @returns {ReplaceSource} source
  */
 function buildFewLargeReplacements() {
@@ -82,6 +108,10 @@ export default function register(bench) {
 
 	bench.add("replace-source: source() (1000 small replacements)", () => {
 		buildManyReplacements(1000).source();
+	});
+
+	bench.add("replace-source: source() (1000 out-of-order replacements)", () => {
+		buildOutOfOrderReplacements(1000).source();
 	});
 
 	bench.add("replace-source: source() (few large replacements)", () => {
