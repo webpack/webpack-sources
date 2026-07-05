@@ -347,6 +347,64 @@ export default function StaticPage(_ref) {
 		expect(replacements[1].content).toBe("Claude");
 	});
 
+	it("should skip sorting when replacements were added in order", () => {
+		const source = new ReplaceSource(
+			new OriginalSource("Hello World", "file.txt"),
+		);
+		source.replace(0, 4, "Howdy");
+		source.replace(6, 10, "Claude");
+		const sortSpy = jest.spyOn(Array.prototype, "sort");
+		try {
+			expect(source.source()).toBe("Howdy Claude");
+			expect(sortSpy).not.toHaveBeenCalled();
+		} finally {
+			sortSpy.mockRestore();
+		}
+	});
+
+	it("should sort when replacements were added out of order", () => {
+		const source = new ReplaceSource(
+			new OriginalSource("Hello World", "file.txt"),
+		);
+		source.replace(6, 10, "Claude");
+		source.replace(0, 4, "Howdy");
+		const sortSpy = jest.spyOn(Array.prototype, "sort");
+		try {
+			expect(source.source()).toBe("Howdy Claude");
+			expect(sortSpy).toHaveBeenCalledTimes(1);
+		} finally {
+			sortSpy.mockRestore();
+		}
+	});
+
+	it("should re-sort when a replacement is added out of order after a read", () => {
+		const source = new ReplaceSource(
+			new OriginalSource("Hello World", "file.txt"),
+		);
+		source.replace(6, 10, "Claude");
+		expect(source.source()).toBe("Hello Claude");
+		source.replace(0, 4, "Howdy");
+		expect(source.source()).toBe("Howdy Claude");
+	});
+
+	it("should keep insertion order for replacements at the same position", () => {
+		const inOrder = new ReplaceSource(
+			new OriginalSource("Hello World", "file.txt"),
+		);
+		inOrder.insert(5, " first");
+		inOrder.insert(5, " second");
+		expect(inOrder.source()).toBe("Hello first second World");
+
+		// same ties, but with an out-of-order append forcing a real sort
+		const sorted = new ReplaceSource(
+			new OriginalSource("Hello World", "file.txt"),
+		);
+		sorted.insert(5, " first");
+		sorted.insert(5, " second");
+		sorted.replace(0, 4, "Howdy");
+		expect(sorted.source()).toBe("Howdy first second World");
+	});
+
 	it("should throw when replace() gets non-string newValue", () => {
 		const source = new ReplaceSource(
 			new OriginalSource("Hello World", "file.txt"),
