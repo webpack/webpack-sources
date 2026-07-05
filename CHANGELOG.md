@@ -1,5 +1,21 @@
 # webpack-sources
 
+## 3.5.1
+
+### Patch Changes
+
+- perf: stream potential tokens in OriginalSource instead of materialising an array (by [@alexander-akait](https://github.com/alexander-akait) in [#246](https://github.com/webpack/webpack-sources/pull/246))
+
+  `OriginalSource.streamChunks` (and therefore `map()` / `sourceAndMap()`) previously built the full `splitIntoPotentialTokens` array of substrings and then iterated it — even though `map()` and `sourceAndMap()` run with `finalSource: true` and discard every chunk substring. The scan is now streamed by offset, so chunk substrings are only allocated when actually emitted. This removes the intermediate array and, on the dominant final-source paths, all per-token slices: `map()` / `sourceAndMap()` allocate ~38–46% less memory and run ~15–40% faster.
+
+- Reduce allocations and CPU in `map()` / `sourceAndMap()`: mappings are serialized into a reused byte buffer instead of per-mapping strings, `ReplaceSource` verifies original content through a line-offset index instead of splitting sources into line arrays, and `ReplaceSource.streamChunks` emits position-only chunks and returns the final source directly when `finalSource` is requested. (by [@alexander-akait](https://github.com/alexander-akait) in [#251](https://github.com/webpack/webpack-sources/pull/251))
+
+- Skip sorting ReplaceSource replacements when they were added in order. (by [@alexander-akait](https://github.com/alexander-akait) in [#249](https://github.com/webpack/webpack-sources/pull/249))
+
+- perf: use lookup table in splitIntoPotentialTokens for faster character classification (by [@xiaoxiaojx](https://github.com/xiaoxiaojx) in [#240](https://github.com/webpack/webpack-sources/pull/240))
+
+  Replace multi-comparison chains (4 comparisons in phase 1, 6 in phase 2) with a single Uint8Array bitmask lookup per character. This reduces per-character branching overhead, yielding ~7% improvement on typical source and ~21% on large sources.
+
 ## 3.5.0
 
 ### Minor Changes
