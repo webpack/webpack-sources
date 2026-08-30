@@ -63,8 +63,13 @@ jobs:
           architecture: ${{ steps.calculate_architecture.outputs.result }}
           # Legacy Node (10-16) reinstalls deps after dropping/bypassing
           # package-lock.json, so there's no lockfile for setup-node's npm
-          # cache to key on.
-          cache: ${{ (matrix.node-version == '10.x' || matrix.node-version == '12.x' || matrix.node-version == '14.x' || matrix.node-version == '16.x') && '' || 'npm' }}
+          # cache to key on. Node 10 installs with yarn, so ~/.npm is never
+          # created and the cache-save post step fails the job.
+          # NOTE: 'npm' must be the truthy branch - `<legacy> && '' || 'npm'`
+          # always evaluates to 'npm', because '' is falsy in GitHub
+          # expressions.
+          cache: ${{ (matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x' && matrix.node-version != '16.x') && 'npm' || '' }}
+          package-manager-cache: ${{ matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x' && matrix.node-version != '16.x' }}
 
       - name: Install dependencies
         shell: bash
