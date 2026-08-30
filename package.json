@@ -2,10 +2,7 @@
   "name": "webpack-sources",
   "version": "3.5.1",
   "description": "Source code handling classes for webpack",
-  "keywords": [
-    "webpack",
-    "source-map"
-  ],
+  "keywords": ["webpack", "source-map"],
   "homepage": "https://github.com/webpack/webpack-sources#readme",
   "bugs": {
     "url": "https://github.com/webpack/webpack-sources/issues"
@@ -18,10 +15,7 @@
   "author": "Tobias Koppers @sokra",
   "main": "lib/index.js",
   "types": "types.d.ts",
-  "files": [
-    "lib/",
-    "types.d.ts"
-  ],
+  "files": ["lib/", "types.d.ts"],
   "scripts": {
     "lint": "npm run lint:code && npm run lint:types && npm run lint:types-test && npm run lint:special",
     "lint:code": "eslint --cache .",
@@ -39,7 +33,7 @@
     "test:coverage": "jest --coverage",
     "benchmark": "node --max-old-space-size=4096 --hash-seed=1 --random-seed=1 --no-opt --predictable --predictable-gc-schedule --interpreted-frames-native-stack --allow-natives-syntax --expose-gc --no-concurrent-sweeping ./benchmark/run.mjs cases",
     "benchmark:memory": "node --expose-gc --max-old-space-size=4096 ./benchmark/run.mjs memory",
-    "version": "changeset version",
+    "version": "changeset version && npm run fmt",
     "release": "changeset publish"
   },
   "devDependencies": {
