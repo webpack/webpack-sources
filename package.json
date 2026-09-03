@@ -37,7 +37,7 @@
     "release": "changeset publish"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.30.0",
+    "@changesets/cli": "^3.0.1",
     "@changesets/get-github-info": "^0.8.0",
     "@codspeed/core": "^5.5.0",
     "@types/jest": "^30.0.0",
