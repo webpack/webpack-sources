@@ -3,6 +3,7 @@ declare namespace _exports {
 		Source,
 		GeneratedSourceInfo,
 		OnChunk,
+		ScopeBindings,
 		OnSource,
 		OnName,
 		Options,
@@ -30,16 +31,19 @@ type OnChunk = (
 	originalColumn: number,
 	nameIndex: number,
 ) => void;
+type ScopeBindings = Map<string, string>;
 type OnSource = (
 	sourceIndex: number,
 	source: string | null,
 	sourceContent: string | undefined,
+	scopeBindings?: ScopeBindings,
 ) => void;
 type OnName = (nameIndex: number, name: string) => void;
 type Options = {
 	source?: boolean;
 	finalSource?: boolean;
 	columns?: boolean;
+	scopes?: boolean;
 };
 type StreamChunksFunction = (
 	options: Options,

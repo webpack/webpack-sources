@@ -28,6 +28,7 @@ declare namespace _exports {
 	const SizeOnlySource: typeof import("./SizeOnlySource");
 	const CompatSource: typeof import("./CompatSource");
 	namespace util {
+		const scopes: typeof import("./helpers/scopes");
 		const stringBufferUtils: typeof import("./helpers/stringBufferUtils");
 	}
 }
