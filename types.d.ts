@@ -92,6 +92,7 @@ declare class CachedSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			scopeBindings?: Map<string, string>,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -136,6 +137,7 @@ declare class ConcatSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			scopeBindings?: Map<string, string>,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -178,9 +180,18 @@ declare interface MapOptions {
 	 * is module
 	 */
 	module?: boolean;
+
+	/**
+	 * emit the `scopes` field from the bindings the sources declare
+	 */
+	scopes?: boolean;
 }
 declare class OriginalSource extends Source {
-	constructor(value: string | Buffer, name: string);
+	constructor(
+		value: string | Buffer,
+		name: string,
+		scopeBindings?: Map<string, string>,
+	);
 	getName(): string;
 	streamChunks(
 		options: StreamChunksOptions,
@@ -197,6 +208,7 @@ declare class OriginalSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			scopeBindings?: Map<string, string>,
 		) => void,
 		_onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -220,6 +232,7 @@ declare class PrefixSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			scopeBindings?: Map<string, string>,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -242,6 +255,7 @@ declare class RawSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			scopeBindings?: Map<string, string>,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -291,6 +305,11 @@ declare interface RawSourceMap {
 	 * ignore list
 	 */
 	ignoreList?: number[];
+
+	/**
+	 * encoded `scopes` field of the "Scopes" proposal
+	 */
+	scopes?: string;
 }
 declare class ReplaceSource extends Source {
 	constructor(source: Source, name?: string);
@@ -314,6 +333,7 @@ declare class ReplaceSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			scopeBindings?: Map<string, string>,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
@@ -326,6 +346,17 @@ declare class Replacement {
 	content: string;
 	name?: string;
 	index?: number;
+}
+declare interface ScopePosition {
+	/**
+	 * line
+	 */
+	line: number;
+
+	/**
+	 * column
+	 */
+	column: number;
 }
 declare class SizeOnlySource extends Source {
 	constructor(size: number);
@@ -437,18 +468,88 @@ declare class SourceMapSource extends Source {
 			sourceIndex: number,
 			source: null | string,
 			sourceContent?: string,
+			scopeBindings?: Map<string, string>,
 		) => void,
 		onName: (nameIndex: number, name: string) => void,
 	): GeneratedSourceInfo;
+}
+declare interface SourceScope {
+	/**
+	 * index into the map's `sources`
+	 */
+	sourceIndex: number;
+
+	/**
+	 * the names the source declares
+	 */
+	variables: string[];
+
+	/**
+	 * the generated expression each name evaluates to
+	 */
+	values: string[];
+
+	/**
+	 * end of the original scope, exclusive
+	 */
+	originalEnd: ScopePosition;
+
+	/**
+	 * start of each generated range, inclusive
+	 */
+	rangeStarts: ScopePosition[];
+
+	/**
+	 * end of each generated range, exclusive
+	 */
+	rangeEnds: ScopePosition[];
 }
 type SourceValue = string | Buffer;
 declare interface StreamChunksOptions {
 	source?: boolean;
 	finalSource?: boolean;
 	columns?: boolean;
+	scopes?: boolean;
 }
 declare namespace exports {
 	export namespace util {
+		export namespace scopes {
+			export let addScopesToSourceMap: (
+				sourceMap: RawSourceMap,
+				getBindings: (sourceIndex: number) => undefined | Map<string, string>,
+			) => void;
+			export let collectSourceScopes: (
+				mappings: string,
+				sourceCount: number,
+			) => SourceScope[];
+			export let createScopeCollector: (sourceCount?: number) => {
+				add: (
+					generatedLine: number,
+					generatedColumn: number,
+					sourceIndex: number,
+					originalLine: number,
+				) => void;
+				finish: (lastLine: number) => SourceScope[];
+			};
+			export let createScopesWriter: () => {
+				add: (
+					generatedLine: number,
+					generatedColumn: number,
+					sourceIndex: number,
+					originalLine: number,
+				) => void;
+				addSource: (
+					sourceIndex: number,
+					scopeBindings?: Map<string, string>,
+				) => void;
+				finish: (map: RawSourceMap, generatedLine: number) => void;
+			};
+			export let encodeScopes: (
+				scopes: SourceScope[],
+				sourceCount: number,
+				names: string[],
+			) => string;
+		}
 		export namespace stringBufferUtils {
 			export let disableDualStringBufferCaching: () => void;
 			export let enableDualStringBufferCaching: () => void;
@@ -472,6 +573,7 @@ declare namespace exports {
 		sourceIndex: number,
 		source: null | string,
 		sourceContent?: string,
+		scopeBindings?: Map<string, string>,
 	) => void;
 	export {
 		Source,
