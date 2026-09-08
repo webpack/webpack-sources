@@ -96,6 +96,14 @@ describe("scopes", () => {
 		).toBe(mapOf(source, options).scopes);
 	});
 
+	it("exposes the helpers on the public util export", () => {
+		const { util } = require("../");
+
+		expect(util.scopes.addScopesToSourceMap).toBe(addScopesToSourceMap);
+		expect(util.scopes.collectSourceScopes).toBe(collectSourceScopes);
+		expect(util.scopes.encodeScopes).toBe(encodeScopes);
+	});
+
 	describe("cachedSource", () => {
 		/**
 		 * @returns {CachedSource} a cached source over one module with bindings
