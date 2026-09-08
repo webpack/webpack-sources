@@ -6,7 +6,11 @@ const {
 	OriginalSource,
 	ReplaceSource,
 } = require("../");
-const { collectSourceScopes, encodeScopes } = require("../lib/helpers/scopes");
+const {
+	addScopesToSourceMap,
+	collectSourceScopes,
+	encodeScopes,
+} = require("../lib/helpers/scopes");
 
 /** @typedef {import("../lib/Source").MapOptions} MapOptions */
 /** @typedef {import("../lib/Source").RawSourceMap} RawSourceMap */
@@ -155,6 +159,91 @@ describe("scopes", () => {
 			expect(encodeScopes(scopes, map.sources.length, names)).toBe(
 				streamed.scopes,
 			);
+		});
+	});
+
+	describe("addScopesToSourceMap", () => {
+		/**
+		 * @param {string} mappings mappings field
+		 * @param {string[]=} sources sources field
+		 * @returns {RawSourceMap} a map shaped like one another tool produced
+		 */
+		const mapOf_ = (mappings, sources = ["lib.js"]) => ({
+			version: 3,
+			file: "x",
+			sources,
+			names: [],
+			mappings,
+		});
+
+		it("does nothing when the map has no mappings", () => {
+			const map = mapOf_("");
+			addScopesToSourceMap(map, () => BINDINGS);
+			expect(map.scopes).toBeUndefined();
+		});
+
+		it("does nothing when no source is asked for bindings", () => {
+			const map = mapOf_("AAAA");
+			addScopesToSourceMap(map, () => undefined);
+			expect(map.scopes).toBeUndefined();
+		});
+
+		it("does nothing when a source reports an empty set", () => {
+			const map = mapOf_("AAAA");
+			addScopesToSourceMap(map, () => new Map());
+			expect(map.scopes).toBeUndefined();
+		});
+
+		it("names the bindings a finished map's source declares", () => {
+			const map = mapOf_("AAAA,IAAI");
+			addScopesToSourceMap(map, () => BINDINGS);
+			expect(typeof map.scopes).toBe("string");
+			expect(map.names).toContain("mutable");
+			expect(map.names).toContain("ns.mutable");
+		});
+
+		it("skips a segment that names no source", () => {
+			// the second segment carries only a column delta, so it maps nowhere
+			const map = mapOf_("AAAA,C");
+			addScopesToSourceMap(map, () => BINDINGS);
+			expect(typeof map.scopes).toBe("string");
+		});
+
+		it("skips a segment whose source index the map does not have", () => {
+			// the second segment steps sourceIndex to 1, past the single source
+			const map = mapOf_("AAAA,ACAA");
+			addScopesToSourceMap(map, () => BINDINGS);
+			expect(typeof map.scopes).toBe("string");
+		});
+
+		it("reaches the furthest original line a source explains", () => {
+			// one source, interrupted and resumed, so its end has to be extended
+			const map = mapOf_("AAAA;ACAA;ADEA", ["lib.js", "other.js"]);
+			addScopesToSourceMap(map, (i) => (i === 0 ? BINDINGS : undefined));
+			const scopes = collectSourceScopes(map.mappings, 2);
+			expect(scopes[0].originalEnd.line).toBeGreaterThan(1);
+		});
+
+		it("reuses a name the map already carries", () => {
+			const map = mapOf_("AAAA");
+			map.names = ["mutable", "mutable"];
+			addScopesToSourceMap(map, () => new Map([["mutable", "ns.mutable"]]));
+			expect(map.names.filter((n) => n === "mutable")).toHaveLength(2);
+			expect(map.names).toContain("ns.mutable");
+		});
+
+		it("encodes a value too large for one digit", () => {
+			// forty lines puts the scope's end past what one base64 digit holds
+			const map = mapOf_(Array.from({ length: 40 }, () => "AACA").join(";"));
+			addScopesToSourceMap(map, () => BINDINGS);
+			expect(typeof map.scopes).toBe("string");
+			expect(/** @type {string} */ (map.scopes).length).toBeGreaterThan(10);
+		});
+
+		it("orders the generated ranges it emits", () => {
+			const map = mapOf_("AAAA,IAAI;AAAA,IAAI;AAAA,IAAI");
+			addScopesToSourceMap(map, () => BINDINGS);
+			expect(typeof map.scopes).toBe("string");
 		});
 	});
 });
