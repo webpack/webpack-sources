@@ -50,7 +50,7 @@
     "sourcemap-validator": "^2.1.0",
     "tinybench": "^6.0.0",
     "tooling": "webpack/tooling#v1.28.1",
-    "typescript": "^6.0.2",
+    "typescript": "^7.0.2",
     "webpack": "^5.107.2"
   },
   "engines": {
