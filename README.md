@@ -64,6 +64,7 @@ Returns the SourceMap of the represented source code as JSON. May return `null` 
 The `options` object can contain the following keys:
 
 - `columns: Boolean` (default `true`): If set to false the implementation may omit mappings for columns.
+- `scopes: Boolean` (default `false`): If set to true the map carries the `scopes` field of the [Scopes proposal](https://github.com/tc39/ecma426/blob/main/proposals/scopes.md), naming for each source the bindings it declares and the expression each one reads in the generated code. Sources declare those bindings themselves — see `OriginalSource` — and a map whose sources declare none omits the field.
 
 #### `sourceAndMap`
 
@@ -105,12 +106,14 @@ Represents source code, which is a copy of the original file.
 ```typescript
 new OriginalSource(
 	sourceCode: String | Buffer,
-	name: String
+	name: String,
+	scopeBindings?: Map<String, String>
 )
 ```
 
 - `sourceCode`: The source code.
 - `name`: The filename of the original source code.
+- `scopeBindings`: What each name this source declares reads in the generated code, keyed by the name the source uses. Only consulted when a map is asked for with `scopes: true`, and carried through wrapping sources such as `ReplaceSource` and `ConcatSource`.
 
 OriginalSource tries to create column mappings if requested, by splitting the source code at typical statement borders (`;`, `{`, `}`).
 
