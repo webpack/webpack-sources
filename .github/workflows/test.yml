@@ -44,6 +44,12 @@ jobs:
           restore-keys: lint-eslint-
 
       - run: npm run lint
+
+      - name: Build types
+        run: npm run build:types
+
+      - name: Check types are up to date
+        run: if [ -n "$(git status types --porcelain)" ]; then echo "Types are out of date. Update them by running 'npm run build:types'"; git status types --porcelain; exit 1; else echo "Types are up to date"; fi
   test:
     strategy:
       fail-fast: false

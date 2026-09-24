@@ -7,5 +7,5 @@
     "strictNullChecks": true,
     "types": ["node", "jest"]
   },
-  "include": ["test/*.js"]
+  "include": ["test/*.js", "types.d.ts"]
 }
