@@ -637,4 +637,30 @@ describe.each([
 		expect(clone.buffer()).toEqual(source.buffer());
 		expect(clone.size()).toEqual(source.size());
 	});
+
+	it("should hand out a recorded hash update without a big string", () => {
+		const big = "a".repeat(200000);
+		const source = new CachedSource(new OriginalSource(big, "big.js"));
+		source.updateHash(crypto.createHash("md5"));
+
+		const cachedData = source.getCachedData();
+		expect(cachedData.hash).toBeDefined();
+		for (const item of /** @type {(string | Buffer)[]} */ (cachedData.hash)) {
+			expect(typeof item).not.toBe("string");
+		}
+
+		// the recording itself keeps the source's own string, uncopied
+		const internal = /** @type {{ _cachedHashUpdate: unknown[] }} */ (
+			/** @type {unknown} */ (source)
+		);
+		expect(internal._cachedHashUpdate).toContain(big);
+
+		// @ts-expect-error for tests
+		const clone = new CachedSource(null, cachedData);
+		const cloneHash = crypto.createHash("md5");
+		clone.updateHash(cloneHash);
+		const sourceHash = crypto.createHash("md5");
+		source.updateHash(sourceHash);
+		expect(cloneHash.digest("hex")).toBe(sourceHash.digest("hex"));
+	});
 });
