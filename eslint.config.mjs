@@ -9,6 +9,14 @@ export default defineConfig([
 		},
 	},
 	{
+		// `@changesets/*` packages are ESM-only and expose just an `exports`
+		// map, which the `import` plugin's resolver can't follow.
+		files: [".changeset/**/*.mjs"],
+		rules: {
+			"import/no-unresolved": ["error", { ignore: ["^@changesets/"] }],
+		},
+	},
+	{
 		// Benchmarks run only on a modern LTS Node (see .github/workflows/codspeed.yml)
 		// so we disable the engine-version-aware rules and other style checks
 		// that don't make sense for benchmark entry points.

@@ -1,6 +1,20 @@
-import { getInfo, getInfoFromPullRequest } from "@changesets/get-github-info";
+import { getCommitInfo, getPullRequestInfo } from "@changesets/get-github-info";
 
 /** @typedef {import("@changesets/types").ChangelogFunctions} ChangelogFunctions */
+/** @typedef {import("@changesets/get-github-info").CommitInfo} CommitInfo */
+/** @typedef {import("@changesets/get-github-info").PullRequestInfo} PullRequestInfo */
+
+/**
+ * @param {CommitInfo | PullRequestInfo | undefined} info GitHub info, `undefined` when not found
+ * @returns {{ commit: string | null, pull: string | null, user: string | null }} markdown links
+ */
+function toLinks(info) {
+	return {
+		commit: (info && info.commit && info.commit.markdownLink) || null,
+		pull: (info && info.pull && info.pull.markdownLink) || null,
+		user: (info && info.author && info.author.markdownLink) || null,
+	};
+}
 
 /**
  * @returns {{ GITHUB_SERVER_URL: string }} value
@@ -29,11 +43,13 @@ const changelogFunctions = {
 			await Promise.all(
 				changesets.map(async (cs) => {
 					if (cs.commit) {
-						const { links } = await getInfo({
-							repo: options.repo,
-							commit: cs.commit,
-						});
-						return links.commit;
+						const { commit } = toLinks(
+							await getCommitInfo({
+								repo: options.repo,
+								commit: cs.commit,
+							}),
+						);
+						return commit;
 					}
 				}),
 			)
@@ -84,10 +100,12 @@ const changelogFunctions = {
 
 		const links = await (async () => {
 			if (prFromSummary !== undefined) {
-				let { links } = await getInfoFromPullRequest({
-					repo: options.repo,
-					pull: prFromSummary,
-				});
+				let links = toLinks(
+					await getPullRequestInfo({
+						repo: options.repo,
+						pull: prFromSummary,
+					}),
+				);
 				if (commitFromSummary) {
 					const shortCommitId = commitFromSummary.slice(0, 7);
 					links = {
@@ -99,11 +117,12 @@ const changelogFunctions = {
 			}
 			const commitToFetchFrom = commitFromSummary || changeset.commit;
 			if (commitToFetchFrom) {
-				const { links } = await getInfo({
-					repo: options.repo,
-					commit: commitToFetchFrom,
-				});
-				return links;
+				return toLinks(
+					await getCommitInfo({
+						repo: options.repo,
+						commit: commitToFetchFrom,
+					}),
+				);
 			}
 			return {
 				commit: null,
