@@ -1,5 +1,11 @@
 # webpack-sources
 
+## 3.5.3
+
+### Patch Changes
+
+- Hand out a recorded hash update as buffers, so cached data carries no big string. (by [@alexander-akait](https://github.com/alexander-akait) in [#289](https://github.com/webpack/webpack-sources/pull/289))
+
 ## 3.5.2
 
 ### Patch Changes
