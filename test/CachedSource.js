@@ -530,6 +530,50 @@ describe.each([
 		expect(digestA).toBe(digestB);
 	});
 
+	it("should flush a pending string when a Buffer follows it", () => {
+		class StringThenBufferHashSource extends Source {
+			source() {
+				return "text";
+			}
+
+			buffer() {
+				return Buffer.from("text");
+			}
+
+			size() {
+				return 4;
+			}
+
+			map() {
+				return null;
+			}
+
+			updateHash(hash) {
+				// A short string accumulates in the tracker; the Buffer that
+				// follows must flush it before pushing itself.
+				hash.update("short-string");
+				hash.update(Buffer.from("trailing-buffer"));
+			}
+		}
+
+		const cachedSource = new CachedSource(new StringThenBufferHashSource());
+		const hashA = crypto.createHash("md5");
+		cachedSource.updateHash(hashA);
+		const digestA = hashA.digest("hex");
+
+		const expected = crypto
+			.createHash("md5")
+			.update("short-string")
+			.update(Buffer.from("trailing-buffer"))
+			.digest("hex");
+		expect(digestA).toBe(expected);
+
+		// the cached update replays to the same digest
+		const hashB = crypto.createHash("md5");
+		cachedSource.updateHash(hashB);
+		expect(hashB.digest("hex")).toBe(expected);
+	});
+
 	it("should allow streamChunks when cached map exists but source is not cached", () => {
 		const original = new OriginalSource("Hello World", "file.js");
 		const cachedSource = new CachedSource(original);
