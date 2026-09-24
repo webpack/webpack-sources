@@ -641,7 +641,14 @@ describe.each([
 	it("should hand out a recorded hash update without a big string", () => {
 		const big = "a".repeat(200000);
 		const source = new CachedSource(new OriginalSource(big, "big.js"));
+		const internal = /** @type {{ _cachedHashUpdate: unknown[] }} */ (
+			/** @type {unknown} */ (source)
+		);
+
 		source.updateHash(crypto.createHash("md5"));
+
+		// a source nobody asks cached data of keeps its own string, uncopied
+		expect(internal._cachedHashUpdate).toContain(big);
 
 		const cachedData = source.getCachedData();
 		expect(cachedData.hash).toBeDefined();
@@ -649,11 +656,8 @@ describe.each([
 			expect(typeof item).not.toBe("string");
 		}
 
-		// the recording itself keeps the source's own string, uncopied
-		const internal = /** @type {{ _cachedHashUpdate: unknown[] }} */ (
-			/** @type {unknown} */ (source)
-		);
-		expect(internal._cachedHashUpdate).toContain(big);
+		// asking again encodes nothing: the recording already holds buffers
+		expect(source.getCachedData().hash).toBe(cachedData.hash);
 
 		// @ts-expect-error for tests
 		const clone = new CachedSource(null, cachedData);
