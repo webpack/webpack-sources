@@ -168,6 +168,37 @@ describe.each([
 		).toBe(expected2);
 	});
 
+	it("does not cache a buffer when hashing a string-backed source", () => {
+		const source = new OriginalSource("Text", "file.js");
+		const internal = /** @type {{ _valueAsBuffer?: Buffer }} */ (
+			/** @type {unknown} */ (source)
+		);
+
+		source.updateHash(crypto.createHash("md5"));
+
+		expect(internal._valueAsBuffer).toBeUndefined();
+	});
+
+	for (const text of ["Text", "\u00FC\u00EF \u2603 \uD83D\uDE80"]) {
+		it(`hashes a string without materializing its buffer (${JSON.stringify(
+			text,
+		)})`, () => {
+			const source = new OriginalSource(text, "file.js");
+			const expected = crypto
+				.createHash("md5")
+				.update("OriginalSource")
+				.update(Buffer.from(text, "utf8"))
+				.update("file.js")
+				.digest("hex");
+
+			const hash = crypto.createHash("md5");
+			source.updateHash(hash);
+
+			expect(hash.digest("hex")).toBe(expected);
+			expect(source.source()).toBe(text);
+		});
+	}
+
 	for (const hash of [
 		["md5", [crypto.createHash("md5"), crypto.createHash("md5")]],
 		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],

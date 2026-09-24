@@ -69,6 +69,42 @@ describe("rawSource", () => {
 		expect.assertions(3);
 	});
 
+	it("does not cache a buffer when hashing a string-backed source", () => {
+		const source = new RawSource(CODE_STRING);
+		const internal = /** @type {{ _valueAsBuffer?: Buffer }} */ (
+			/** @type {unknown} */ (source)
+		);
+
+		source.updateHash(crypto.createHash("md5"));
+
+		expect(internal._valueAsBuffer).toBeUndefined();
+	});
+
+	for (const text of [
+		"Text",
+		"\u00FC\u00EF \u2603 \uD83D\uDE80",
+		CODE_STRING,
+	]) {
+		it(`hashes a string without materializing its buffer (${JSON.stringify(
+			text,
+		)})`, () => {
+			const source = new RawSource(text);
+			const expected = crypto
+				.createHash("md5")
+				.update("RawSource")
+				.update(Buffer.from(text, "utf8"))
+				.digest("hex");
+
+			const hash = crypto.createHash("md5");
+			source.updateHash(hash);
+
+			expect(hash.digest("hex")).toBe(expected);
+			// hashing must not leave the source holding a second copy
+			expect(source.isBuffer()).toBe(false);
+			expect(source.source()).toBe(text);
+		});
+	}
+
 	for (const hash of [
 		["md5", [crypto.createHash("md5"), crypto.createHash("md5")]],
 		["md4", [new BatchedHash(createMd4()), new BatchedHash(createMd4())]],
