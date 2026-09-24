@@ -5,6 +5,12 @@
  * `npm run build:types`; don't edit them by hand. This file re-exports them in
  * the package's public shape: every class is available as both a value and a
  * type, next to the public helper types.
+ *
+ * TODO: remove this file in the next major release and point `types` in
+ * `package.json` at the generated `types/index.d.ts`. That requires the
+ * exports in `lib/index.js` to be typed so the classes are exported as types
+ * too (e.g. `Source` usable in `let source: Source`), which is a breaking
+ * change for the shape of the public types.
  */
 
 import CachedSource = require("./types/CachedSource");
