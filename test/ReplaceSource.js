@@ -56,7 +56,6 @@ describe("replaceSource", () => {
 			columns: false,
 		});
 
-		// @ts-expect-error for tests
 		expect(originalSource).toEqual(source._source);
 		expect(originalText).toBe(
 			"Hello World!\n{}\nLine 3\nLine 4\nLine 5\nLast\nLine",
