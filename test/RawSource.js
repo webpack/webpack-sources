@@ -1,6 +1,8 @@
 "use strict";
 
+const assert = require("assert");
 const crypto = require("crypto");
+const { afterEach, beforeEach, describe, it } = require("node:test");
 const BatchedHash = require("webpack/lib/util/hash/BatchedHash");
 const createMd4 = require("webpack/lib/util/hash/md4");
 const createXXHash64 = require("webpack/lib/util/hash/xxhash64");
@@ -18,55 +20,60 @@ const CODE_STRING =
 describe("rawSource", () => {
 	it("converts to buffer correctly", () => {
 		const source = new RawSource(Buffer.from(CODE_STRING), true);
-		expect(source.isBuffer()).toBe(false);
-		expect(source.buffer().toString("utf8")).toEqual(CODE_STRING);
+		assert.strictEqual(source.isBuffer(), false);
+		assert.deepStrictEqual(source.buffer().toString("utf8"), CODE_STRING);
 		// The buffer conversion should be cached.
-		expect(source.buffer()).toStrictEqual(source.buffer());
+		assert.deepStrictEqual(source.buffer(), source.buffer());
 	});
 
 	it("converts to string on source() when constructed from buffer with convertToString=true", () => {
 		const source = new RawSource(Buffer.from(CODE_STRING), true);
-		expect(source.source()).toBe(CODE_STRING);
+		assert.strictEqual(source.source(), CODE_STRING);
 		// Called again to hit cache path
-		expect(source.source()).toBe(CODE_STRING);
+		assert.strictEqual(source.source(), CODE_STRING);
 	});
 
 	it("should throw TypeError for non-string non-Buffer value", () => {
-		expect(() => {
+		assert.throws(() => {
 			// @ts-expect-error for tests
 			// eslint-disable-next-line no-new
 			new RawSource(42);
-		}).toThrow(TypeError);
-		expect(() => {
+		}, TypeError);
+		assert.throws(() => {
 			// @ts-expect-error for tests
 			// eslint-disable-next-line no-new
 			new RawSource(null);
-		}).toThrow(TypeError);
-		expect(() => {
+		}, TypeError);
+		assert.throws(() => {
 			// @ts-expect-error for tests
 			// eslint-disable-next-line no-new
 			new RawSource({});
-		}).toThrow(TypeError);
+		}, TypeError);
 	});
 
 	it("should report isBuffer() correctly for Buffer", () => {
 		const source = new RawSource(Buffer.from(CODE_STRING));
-		expect(source.isBuffer()).toBe(true);
+		assert.strictEqual(source.isBuffer(), true);
 	});
 
 	it("should return null from map()", () => {
 		const source = new RawSource(CODE_STRING);
-		expect(source.map()).toBeNull();
-		expect(source.map({ columns: false })).toBeNull();
+		assert.strictEqual(source.map(), null);
+		assert.strictEqual(source.map({ columns: false }), null);
 	});
 
 	it("stream chunks works correctly", () => {
 		const source = new RawSource(CODE_STRING, true);
+		let chunks = 0;
 		// @ts-expect-error for tests
 		source.streamChunks(null, (line, lineNum) => {
-			expect(line).toBe(`console.log('test${"2".repeat(lineNum - 1)}');\n`);
+			chunks++;
+			assert.strictEqual(
+				line,
+				`console.log('test${"2".repeat(lineNum - 1)}');\n`,
+			);
 		});
-		expect.assertions(3);
+		assert.strictEqual(chunks, 3);
 	});
 
 	it("does not cache a buffer when hashing a string-backed source", () => {
@@ -77,7 +84,7 @@ describe("rawSource", () => {
 
 		source.updateHash(crypto.createHash("md5"));
 
-		expect(internal._valueAsBuffer).toBeUndefined();
+		assert.strictEqual(internal._valueAsBuffer, undefined);
 	});
 
 	for (const text of [
@@ -98,10 +105,10 @@ describe("rawSource", () => {
 			const hash = crypto.createHash("md5");
 			source.updateHash(hash);
 
-			expect(hash.digest("hex")).toBe(expected);
+			assert.strictEqual(hash.digest("hex"), expected);
 			// hashing must not leave the source holding a second copy
-			expect(source.isBuffer()).toBe(false);
-			expect(source.source()).toBe(text);
+			assert.strictEqual(source.isBuffer(), false);
+			assert.strictEqual(source.source(), text);
 		});
 	}
 
@@ -117,13 +124,13 @@ describe("rawSource", () => {
 			const sourceString = new RawSource("Text");
 			const sourceBuffer = new RawSource(Buffer.from("Text"));
 
-			expect(sourceString.source()).toBe("Text");
-			expect(sourceString.buffer()).toEqual(sourceBuffer.buffer());
+			assert.strictEqual(sourceString.source(), "Text");
+			assert.deepStrictEqual(sourceString.buffer(), sourceBuffer.buffer());
 
 			sourceString.updateHash(hash[1][0]);
 			sourceBuffer.updateHash(hash[1][1]);
 
-			expect(hash[1][0].digest("hex")).toBe(hash[1][1].digest("hex"));
+			assert.strictEqual(hash[1][0].digest("hex"), hash[1][1].digest("hex"));
 		});
 	}
 
@@ -139,13 +146,13 @@ describe("rawSource", () => {
 			const sourceString = new RawSource("Text", true);
 			const sourceBuffer = new RawSource(Buffer.from("Text"), true);
 
-			expect(sourceString.source()).toBe("Text");
-			expect(sourceString.buffer()).toEqual(sourceBuffer.buffer());
+			assert.strictEqual(sourceString.source(), "Text");
+			assert.deepStrictEqual(sourceString.buffer(), sourceBuffer.buffer());
 
 			sourceString.updateHash(hash[1][0]);
 			sourceBuffer.updateHash(hash[1][1]);
 
-			expect(hash[1][0].digest("hex")).toBe(hash[1][1].digest("hex"));
+			assert.strictEqual(hash[1][0].digest("hex"), hash[1][1].digest("hex"));
 		});
 	}
 
@@ -162,27 +169,32 @@ describe("rawSource", () => {
 
 		it("should create new buffers when caching is not enabled", () => {
 			const source = new RawSource(CODE_STRING, true);
-			expect(source.buffer().toString("utf8")).toEqual(CODE_STRING);
+			assert.deepStrictEqual(source.buffer().toString("utf8"), CODE_STRING);
 			// The buffer conversion should not be cached.
-			expect(source.buffer()).toStrictEqual(source.buffer());
+			assert.deepStrictEqual(source.buffer(), source.buffer());
 		});
 
 		it("should not create new buffers when original value is a buffer", () => {
 			const originalValue = Buffer.from(CODE_STRING);
 			const source = new RawSource(originalValue, true);
-			expect(source.buffer().toString("utf8")).toEqual(CODE_STRING);
+			assert.deepStrictEqual(source.buffer().toString("utf8"), CODE_STRING);
 			// The same buffer as the original value should always be returned.
-			expect(originalValue).toStrictEqual(source.buffer());
-			expect(source.buffer()).toStrictEqual(source.buffer());
+			assert.deepStrictEqual(originalValue, source.buffer());
+			assert.deepStrictEqual(source.buffer(), source.buffer());
 		});
 
 		it("stream chunks works correctly", () => {
 			const source = new RawSource(CODE_STRING, true);
+			let chunks = 0;
 			// @ts-expect-error for tests
 			source.streamChunks(null, (line, lineNum) => {
-				expect(line).toBe(`console.log('test${"2".repeat(lineNum - 1)}');\n`);
+				chunks++;
+				assert.strictEqual(
+					line,
+					`console.log('test${"2".repeat(lineNum - 1)}');\n`,
+				);
 			});
-			expect.assertions(3);
+			assert.strictEqual(chunks, 3);
 		});
 
 		it("should handle streamChunks when constructed from a Buffer without pre-caching", () => {
@@ -194,29 +206,29 @@ describe("rawSource", () => {
 			source.streamChunks(null, (chunk) => {
 				chunks.push(chunk);
 			});
-			expect(chunks).toHaveLength(3);
+			assert.strictEqual(chunks.length, 3);
 		});
 
 		it("should expose source() on a Buffer-backed RawSource", () => {
 			const source = new RawSource(Buffer.from(CODE_STRING));
-			expect(source.source().toString("utf8")).toEqual(CODE_STRING);
+			assert.deepStrictEqual(source.source().toString("utf8"), CODE_STRING);
 		});
 	});
 
 	it("should expose buffers() returning a single-entry Buffer[]", () => {
 		const source = new RawSource(CODE_STRING);
 		const buffers = source.buffers();
-		expect(Array.isArray(buffers)).toBe(true);
-		expect(buffers).toHaveLength(1);
-		expect(buffers[0]).toEqual(Buffer.from(CODE_STRING));
-		expect(Buffer.concat(buffers)).toEqual(source.buffer());
+		assert.strictEqual(Array.isArray(buffers), true);
+		assert.strictEqual(buffers.length, 1);
+		assert.deepStrictEqual(buffers[0], Buffer.from(CODE_STRING));
+		assert.deepStrictEqual(Buffer.concat(buffers), source.buffer());
 	});
 
 	it("should reuse the underlying buffer in buffers() when constructed from a Buffer", () => {
 		const buffer = Buffer.from(CODE_STRING);
 		const source = new RawSource(buffer);
 		const buffers = source.buffers();
-		expect(buffers).toHaveLength(1);
-		expect(buffers[0]).toBe(buffer);
+		assert.strictEqual(buffers.length, 1);
+		assert.strictEqual(buffers[0], buffer);
 	});
 });

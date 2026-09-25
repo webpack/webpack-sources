@@ -109,8 +109,15 @@ jobs:
         run: npm ci
         if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x' && matrix.node-version != '16.x'
 
+      # Node.js 22+ runs the tests with `node:test`; older versions, which
+      # lack a usable `node:test` (e.g. snapshots), run them with Jest.
       - name: Run tests with coverage
-        run: npm run test:coverage -- --ci
+        run: npm run test:coverage
+        if: matrix.node-version != '10.x' && matrix.node-version != '12.x' && matrix.node-version != '14.x' && matrix.node-version != '16.x' && matrix.node-version != '18.x' && matrix.node-version != '20.x'
+
+      - name: Run tests with coverage (Jest)
+        run: npm run test:legacy:coverage -- --ci
+        if: matrix.node-version == '10.x' || matrix.node-version == '12.x' || matrix.node-version == '14.x' || matrix.node-version == '16.x' || matrix.node-version == '18.x' || matrix.node-version == '20.x'
 
       - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:

@@ -1,23 +1,25 @@
 "use strict";
 
+const assert = require("assert");
+const { describe, it } = require("node:test");
 const { Source } = require("../");
 
 describe("source", () => {
 	it("should throw an Abstract error for source()", () => {
 		const source = new Source();
-		expect(() => {
+		assert.throws(() => {
 			source.source();
-		}).toThrow("Abstract");
+		}, /Abstract/);
 	});
 
 	it("should throw an Abstract error for updateHash()", () => {
 		const source = new Source();
-		expect(() => {
+		assert.throws(() => {
 			source.updateHash({
 				// @ts-expect-error for tests
 				update() {},
 			});
-		}).toThrow("Abstract");
+		}, /Abstract/);
 	});
 
 	it("should return null for map() by default", () => {
@@ -27,7 +29,7 @@ describe("source", () => {
 			}
 		}
 		const source = new DummySource();
-		expect(source.map()).toBeNull();
+		assert.strictEqual(source.map(), null);
 	});
 
 	it("should return source and map for sourceAndMap()", () => {
@@ -37,7 +39,7 @@ describe("source", () => {
 			}
 		}
 		const source = new DummySource();
-		expect(source.sourceAndMap()).toEqual({
+		assert.deepStrictEqual(source.sourceAndMap(), {
 			source: "dummy",
 			map: null,
 		});
@@ -50,7 +52,7 @@ describe("source", () => {
 			}
 		}
 		const source = new DummySource();
-		expect(source.buffer()).toEqual(Buffer.from("dummy", "utf8"));
+		assert.deepStrictEqual(source.buffer(), Buffer.from("dummy", "utf8"));
 	});
 
 	it("should return buffer when source is already a buffer", () => {
@@ -61,7 +63,7 @@ describe("source", () => {
 			}
 		}
 		const source = new DummySource();
-		expect(source.buffer()).toBe(buffer);
+		assert.strictEqual(source.buffer(), buffer);
 	});
 
 	it("should compute size from buffer by default", () => {
@@ -71,7 +73,7 @@ describe("source", () => {
 			}
 		}
 		const source = new DummySource();
-		expect(source.size()).toBe(6);
+		assert.strictEqual(source.size(), 6);
 	});
 
 	it("should return a single-entry array for buffers() by default", () => {
@@ -82,9 +84,9 @@ describe("source", () => {
 		}
 		const source = new DummySource();
 		const buffers = source.buffers();
-		expect(Array.isArray(buffers)).toBe(true);
-		expect(buffers).toHaveLength(1);
-		expect(buffers[0]).toEqual(Buffer.from("dummy", "utf8"));
+		assert.strictEqual(Array.isArray(buffers), true);
+		assert.strictEqual(buffers.length, 1);
+		assert.deepStrictEqual(buffers[0], Buffer.from("dummy", "utf8"));
 	});
 
 	it("should return the buffer directly from buffers() when source is a buffer", () => {
@@ -96,7 +98,7 @@ describe("source", () => {
 		}
 		const source = new DummySource();
 		const buffers = source.buffers();
-		expect(buffers).toHaveLength(1);
-		expect(buffers[0]).toBe(buffer);
+		assert.strictEqual(buffers.length, 1);
+		assert.strictEqual(buffers[0], buffer);
 	});
 });

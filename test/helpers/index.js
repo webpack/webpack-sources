@@ -1,6 +1,6 @@
 "use strict";
 
-const readMappings = require("../lib/helpers/readMappings");
+const readMappings = require("../../lib/helpers/readMappings");
 
 module.exports.readableMappings = (mappings, sources, names, generatedCode) => {
 	let str = "";

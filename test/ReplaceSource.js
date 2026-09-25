@@ -1,10 +1,10 @@
 "use strict";
 
+const assert = require("assert");
+const crypto = require("crypto");
+const { describe, it } = require("node:test");
 /** @typedef {import("../lib/Source").RawSourceMap} RawSourceMap */
 
-jest.mock("./__mocks__/createMappingsSerializer");
-
-const crypto = require("crypto");
 const validate = require("sourcemap-validator");
 const { ReplaceSource } = require("../");
 const { OriginalSource } = require("../");
@@ -13,7 +13,7 @@ const { SourceMapSource } = require("../");
 const { withReadableMappings } = require("./helpers");
 
 describe("replaceSource", () => {
-	it("should replace correctly", () => {
+	it("should replace correctly", (t) => {
 		let line1;
 		let line2;
 		let line3;
@@ -56,35 +56,26 @@ describe("replaceSource", () => {
 			columns: false,
 		});
 
-		expect(originalSource).toEqual(source._source);
-		expect(originalText).toBe(
+		assert.deepStrictEqual(originalSource, source._source);
+		assert.strictEqual(
+			originalText,
 			"Hello World!\n{}\nLine 3\nLine 4\nLine 5\nLast\nLine",
 		);
 		// const resultText = "Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line";
-		expect(resultText).toBe("Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line");
-		expect(result.source).toEqual(resultText);
-		expect(resultListMap.source).toEqual(resultText);
+		assert.strictEqual(
+			resultText,
+			"Hi bye W0000rld!\n{\n Multi Line\n}\nLast Line",
+		);
+		assert.deepStrictEqual(result.source, resultText);
+		assert.deepStrictEqual(resultListMap.source, resultText);
 		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
 		const resultMap = /** @type {RawSourceMap} */ (result.map);
-		expect(listMap.file).toEqual(resultMap.file);
-		expect(listMap.version).toEqual(resultMap.version);
-		expect(listMap.sources).toEqual(resultMap.sources);
-		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
-		expect(withReadableMappings(resultMap)._mappings).toMatchInlineSnapshot(`
-		"1:0 -> [file.txt] 1:0, :1 -> [file.txt] 1:1, :3 -> [file.txt] 1:5, :8 -> [file.txt] 1:7, :12 -> [file.txt] 1:8
-		2:0 -> [file.txt] 2:0, :1 -> [file.txt] 2:1
-		3:0 -> [file.txt] 2:1
-		4:0 -> [file.txt] 2:1
-		5:0 -> [file.txt] 6:0, :4 -> [file.txt] 6:4, :5 -> [file.txt] 7:0"
-	`);
-		expect(withReadableMappings(resultListMap.map)._mappings)
-			.toMatchInlineSnapshot(`
-		"1:0 -> [file.txt] 1:0
-		2:0 -> [file.txt] 2:0
-		3:0 -> [file.txt] 2:0
-		4:0 -> [file.txt] 2:0
-		5:0 -> [file.txt] 6:0"
-	`);
+		assert.deepStrictEqual(listMap.file, resultMap.file);
+		assert.deepStrictEqual(listMap.version, resultMap.version);
+		assert.deepStrictEqual(listMap.sources, resultMap.sources);
+		assert.deepStrictEqual(listMap.sourcesContent, resultMap.sourcesContent);
+		t.assert.snapshot(withReadableMappings(resultMap)._mappings);
+		t.assert.snapshot(withReadableMappings(resultListMap.map)._mappings);
 	});
 
 	it("should replace multiple items correctly", () => {
@@ -102,17 +93,17 @@ describe("replaceSource", () => {
 			columns: false,
 		});
 
-		expect(resultText).toBe("Message: Hey Ad!");
-		expect(result.source).toEqual(resultText);
-		expect(resultListMap.source).toEqual(resultText);
+		assert.strictEqual(resultText, "Message: Hey Ad!");
+		assert.deepStrictEqual(result.source, resultText);
+		assert.deepStrictEqual(resultListMap.source, resultText);
 		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
 		const resultMap = /** @type {RawSourceMap} */ (result.map);
-		expect(listMap.file).toEqual(resultMap.file);
-		expect(listMap.version).toEqual(resultMap.version);
-		expect(listMap.sources).toEqual(resultMap.sources);
-		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
-		expect(resultMap.mappings).toBe("AAAA,WAAE,GACE");
-		expect(listMap.mappings).toBe("AAAA");
+		assert.deepStrictEqual(listMap.file, resultMap.file);
+		assert.deepStrictEqual(listMap.version, resultMap.version);
+		assert.deepStrictEqual(listMap.sources, resultMap.sources);
+		assert.deepStrictEqual(listMap.sourcesContent, resultMap.sourcesContent);
+		assert.strictEqual(resultMap.mappings, "AAAA,WAAE,GACE");
+		assert.strictEqual(listMap.mappings, "AAAA");
 	});
 
 	it("should prepend items correctly", () => {
@@ -127,17 +118,17 @@ describe("replaceSource", () => {
 			columns: false,
 		});
 
-		expect(resultText).toBe("Line -1\nLine 0\nLine 1");
-		expect(result.source).toEqual(resultText);
-		expect(resultListMap.source).toEqual(resultText);
+		assert.strictEqual(resultText, "Line -1\nLine 0\nLine 1");
+		assert.deepStrictEqual(result.source, resultText);
+		assert.deepStrictEqual(resultListMap.source, resultText);
 		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
 		const resultMap = /** @type {RawSourceMap} */ (result.map);
-		expect(listMap.file).toEqual(resultMap.file);
-		expect(listMap.version).toEqual(resultMap.version);
-		expect(listMap.sources).toEqual(resultMap.sources);
-		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
-		expect(resultMap.mappings).toBe("AAAA;AAAA;AAAA");
-		expect(listMap.mappings).toBe("AAAA;AAAA;AAAA");
+		assert.deepStrictEqual(listMap.file, resultMap.file);
+		assert.deepStrictEqual(listMap.version, resultMap.version);
+		assert.deepStrictEqual(listMap.sources, resultMap.sources);
+		assert.deepStrictEqual(listMap.sourcesContent, resultMap.sourcesContent);
+		assert.strictEqual(resultMap.mappings, "AAAA;AAAA;AAAA");
+		assert.strictEqual(listMap.mappings, "AAAA;AAAA;AAAA");
 	});
 
 	it("should prepend items with replace at start correctly", () => {
@@ -154,17 +145,17 @@ describe("replaceSource", () => {
 			columns: false,
 		});
 
-		expect(resultText).toBe("Line 0\nHello\nLine 2");
-		expect(result.source).toEqual(resultText);
-		expect(resultListMap.source).toEqual(resultText);
+		assert.strictEqual(resultText, "Line 0\nHello\nLine 2");
+		assert.deepStrictEqual(result.source, resultText);
+		assert.deepStrictEqual(resultListMap.source, resultText);
 		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
 		const resultMap = /** @type {RawSourceMap} */ (result.map);
-		expect(listMap.file).toEqual(resultMap.file);
-		expect(listMap.version).toEqual(resultMap.version);
-		expect(listMap.sources).toEqual(resultMap.sources);
-		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
-		expect(resultMap.mappings).toBe("AAAA;AAAA,KAAM;AACN");
-		expect(listMap.mappings).toBe("AAAA;AAAA;AACA");
+		assert.deepStrictEqual(listMap.file, resultMap.file);
+		assert.deepStrictEqual(listMap.version, resultMap.version);
+		assert.deepStrictEqual(listMap.sources, resultMap.sources);
+		assert.deepStrictEqual(listMap.sourcesContent, resultMap.sourcesContent);
+		assert.strictEqual(resultMap.mappings, "AAAA;AAAA,KAAM;AACN");
+		assert.strictEqual(listMap.mappings, "AAAA;AAAA;AACA");
 	});
 
 	it("should append items correctly", () => {
@@ -181,23 +172,23 @@ describe("replaceSource", () => {
 			columns: false,
 		});
 
-		expect(resultText).toBe("Line 1\nLine 2\n");
-		expect(result.source).toEqual(resultText);
-		expect(resultListMap.source).toEqual(resultText);
+		assert.strictEqual(resultText, "Line 1\nLine 2\n");
+		assert.deepStrictEqual(result.source, resultText);
+		assert.deepStrictEqual(resultListMap.source, resultText);
 		const listMap = /** @type {RawSourceMap} */ (resultListMap.map);
 		const resultMap = /** @type {RawSourceMap} */ (result.map);
-		expect(listMap.file).toEqual(resultMap.file);
-		expect(listMap.version).toEqual(resultMap.version);
-		expect(listMap.sources).toEqual(resultMap.sources);
-		expect(listMap.sourcesContent).toEqual(resultMap.sourcesContent);
-		expect(resultMap.mappings).toBe("AAAA");
-		expect(listMap.mappings).toBe("AAAA");
+		assert.deepStrictEqual(listMap.file, resultMap.file);
+		assert.deepStrictEqual(listMap.version, resultMap.version);
+		assert.deepStrictEqual(listMap.sources, resultMap.sources);
+		assert.deepStrictEqual(listMap.sourcesContent, resultMap.sourcesContent);
+		assert.strictEqual(resultMap.mappings, "AAAA");
+		assert.strictEqual(listMap.mappings, "AAAA");
 	});
 
 	it("should produce correct source map", () => {
 		const bootstrapCode = "   var hello\n   var world\n";
 
-		expect(() => {
+		assert.throws(() => {
 			const source = new ReplaceSource(
 				new OriginalSource(bootstrapCode, "file.js"),
 			);
@@ -205,7 +196,7 @@ describe("replaceSource", () => {
 			source.replace(20, 24, "w", "identifiers");
 			const resultMap = source.sourceAndMap();
 			validate(resultMap.source, JSON.stringify(resultMap.map));
-		}).toThrow(/mismatched names/);
+		}, /mismatched names/);
 
 		const source = new ReplaceSource(
 			new OriginalSource(bootstrapCode, "file.js"),
@@ -216,7 +207,7 @@ describe("replaceSource", () => {
 		validate(resultMap.source, JSON.stringify(resultMap.map));
 	});
 
-	it("should allow replacements at the start", () => {
+	it("should allow replacements at the start", (t) => {
 		const map = {
 			version: 3,
 			sources: ["abc"],
@@ -258,36 +249,10 @@ export default function StaticPage(_ref) {
 			168,
 			"(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_0__.jsx)",
 		);
-		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
-		Object {
-		  "_mappings": "3:0 -> [abc] 1:15, :9 -> [abc] 1:24 (StaticPage), :19 -> [abc] 1:15, :26 -> [abc] 1:45
-		4:0 -> [abc] 1:45, :6 -> [abc] 1:37 (data), :10 -> [abc] 1:45, :18 -> [abc] 1:37 (data), :22 -> [abc] 1:45
-		5:0 -> [abc] 2:2, :22 -> [abc] 2:9
-		6:0 -> [abc] 2:9, :14 -> [abc] 2:15 (data), :18 -> [abc] 2:19, :19 -> [abc] 2:20 (foo)
-		7:0 -> [abc] 2:9, :4 -> [abc] 2:2
-		8:0 -> [abc] 3:1",
-		  "file": "x",
-		  "mappings": ";;AAAe,SAASA,UAAT,OAA8B;AAAA,MAARC,IAAQ,QAARA,IAAQ;AAC3C,sBAAO;AAAA,cAAMA,IAAI,CAACC;AAAX,IAAP;AACD",
-		  "names": Array [
-		    "StaticPage",
-		    "data",
-		    "foo",
-		  ],
-		  "sources": Array [
-		    "abc",
-		  ],
-		  "sourcesContent": Array [
-		    "export default function StaticPage({ data }) {
-		  return <div>{data.foo}</div>
-		}
-		",
-		  ],
-		  "version": 3,
-		}
-	`);
+		t.assert.snapshot(withReadableMappings(source.map()));
 	});
 
-	it("should not generate invalid mappings when replacing multiple lines of code", () => {
+	it("should not generate invalid mappings when replacing multiple lines of code", (t) => {
 		const source = new ReplaceSource(
 			new OriginalSource(
 				["if (a;b;c) {", "  a; b; c;", "}"].join("\n"),
@@ -297,28 +262,8 @@ export default function StaticPage(_ref) {
 		);
 		source.replace(4, 8, "false");
 		source.replace(12, 23, "");
-		expect(source.source()).toMatchInlineSnapshot('"if (false) {}"');
-		expect(withReadableMappings(source.map(), source.source()))
-			.toMatchInlineSnapshot(`
-		Object {
-		  "_mappings": "1:0 -> [document.js] 1:0, :4 -> [document.js] 1:4, :9 -> [document.js] 1:9, :12 -> [document.js] 3:0
-		if (false) {}
-		^___^____^__^
-		",
-		  "file": "x",
-		  "mappings": "AAAA,IAAI,KAAK,GAET",
-		  "names": Array [],
-		  "sources": Array [
-		    "document.js",
-		  ],
-		  "sourcesContent": Array [
-		    "if (a;b;c) {
-		  a; b; c;
-		}",
-		  ],
-		  "version": 3,
-		}
-	`);
+		t.assert.snapshot(source.source());
+		t.assert.snapshot(withReadableMappings(source.map(), source.source()));
 	});
 
 	it("should return getName()", () => {
@@ -326,12 +271,12 @@ export default function StaticPage(_ref) {
 			new OriginalSource("Hello World", "file.txt"),
 			"named.txt",
 		);
-		expect(source.getName()).toBe("named.txt");
+		assert.strictEqual(source.getName(), "named.txt");
 	});
 
 	it("should return getName() as undefined when not provided", () => {
 		const source = new ReplaceSource(new OriginalSource("Hi", "file.txt"));
-		expect(source.getName()).toBeUndefined();
+		assert.strictEqual(source.getName(), undefined);
 	});
 
 	it("should return sorted replacements from getReplacements", () => {
@@ -341,9 +286,9 @@ export default function StaticPage(_ref) {
 		source.replace(6, 10, "Claude");
 		source.replace(0, 4, "Howdy");
 		const replacements = source.getReplacements();
-		expect(replacements).toHaveLength(2);
-		expect(replacements[0].content).toBe("Howdy");
-		expect(replacements[1].content).toBe("Claude");
+		assert.strictEqual(replacements.length, 2);
+		assert.strictEqual(replacements[0].content, "Howdy");
+		assert.strictEqual(replacements[1].content, "Claude");
 	});
 
 	it("should skip sorting when replacements were added in order", () => {
@@ -352,12 +297,19 @@ export default function StaticPage(_ref) {
 		);
 		source.replace(0, 4, "Howdy");
 		source.replace(6, 10, "Claude");
-		const sortSpy = jest.spyOn(Array.prototype, "sort");
+		const { sort: originalSort } = Array.prototype;
+		let sortCalls = 0;
+		// eslint-disable-next-line no-extend-native
+		Array.prototype.sort = function sort(...args) {
+			sortCalls++;
+			return originalSort.apply(this, args);
+		};
 		try {
-			expect(source.source()).toBe("Howdy Claude");
-			expect(sortSpy).not.toHaveBeenCalled();
+			assert.strictEqual(source.source(), "Howdy Claude");
+			assert.strictEqual(sortCalls, 0);
 		} finally {
-			sortSpy.mockRestore();
+			// eslint-disable-next-line no-extend-native
+			Array.prototype.sort = originalSort;
 		}
 	});
 
@@ -367,12 +319,19 @@ export default function StaticPage(_ref) {
 		);
 		source.replace(6, 10, "Claude");
 		source.replace(0, 4, "Howdy");
-		const sortSpy = jest.spyOn(Array.prototype, "sort");
+		const { sort: originalSort } = Array.prototype;
+		let sortCalls = 0;
+		// eslint-disable-next-line no-extend-native
+		Array.prototype.sort = function sort(...args) {
+			sortCalls++;
+			return originalSort.apply(this, args);
+		};
 		try {
-			expect(source.source()).toBe("Howdy Claude");
-			expect(sortSpy).toHaveBeenCalledTimes(1);
+			assert.strictEqual(source.source(), "Howdy Claude");
+			assert.strictEqual(sortCalls, 1);
 		} finally {
-			sortSpy.mockRestore();
+			// eslint-disable-next-line no-extend-native
+			Array.prototype.sort = originalSort;
 		}
 	});
 
@@ -381,9 +340,9 @@ export default function StaticPage(_ref) {
 			new OriginalSource("Hello World", "file.txt"),
 		);
 		source.replace(6, 10, "Claude");
-		expect(source.source()).toBe("Hello Claude");
+		assert.strictEqual(source.source(), "Hello Claude");
 		source.replace(0, 4, "Howdy");
-		expect(source.source()).toBe("Howdy Claude");
+		assert.strictEqual(source.source(), "Howdy Claude");
 	});
 
 	it("should keep insertion order for replacements at the same position", () => {
@@ -392,7 +351,7 @@ export default function StaticPage(_ref) {
 		);
 		inOrder.insert(5, " first");
 		inOrder.insert(5, " second");
-		expect(inOrder.source()).toBe("Hello first second World");
+		assert.strictEqual(inOrder.source(), "Hello first second World");
 
 		// same ties, but with an out-of-order append forcing a real sort
 		const sorted = new ReplaceSource(
@@ -401,41 +360,41 @@ export default function StaticPage(_ref) {
 		sorted.insert(5, " first");
 		sorted.insert(5, " second");
 		sorted.replace(0, 4, "Howdy");
-		expect(sorted.source()).toBe("Howdy first second World");
+		assert.strictEqual(sorted.source(), "Howdy first second World");
 	});
 
 	it("should throw when replace() gets non-string newValue", () => {
 		const source = new ReplaceSource(
 			new OriginalSource("Hello World", "file.txt"),
 		);
-		expect(() => {
+		assert.throws(() => {
 			// @ts-expect-error for tests
 			source.replace(0, 4, 123);
-		}).toThrow(/insertion must be a string/);
+		}, /insertion must be a string/);
 	});
 
 	it("should throw when insert() gets non-string newValue", () => {
 		const source = new ReplaceSource(
 			new OriginalSource("Hello World", "file.txt"),
 		);
-		expect(() => {
+		assert.throws(() => {
 			// @ts-expect-error for tests
 			source.insert(0, 123);
-		}).toThrow(/insertion must be a string/);
+		}, /insertion must be a string/);
 	});
 
 	it("should pass through source and map untouched when no replacements", () => {
 		const innerSource = new OriginalSource("Hello World", "file.txt");
 		const source = new ReplaceSource(innerSource);
-		expect(source.source()).toBe(innerSource.source());
-		expect(source.map()).toEqual(innerSource.map());
-		expect(source.sourceAndMap()).toEqual(innerSource.sourceAndMap());
+		assert.strictEqual(source.source(), innerSource.source());
+		assert.deepStrictEqual(source.map(), innerSource.map());
+		assert.deepStrictEqual(source.sourceAndMap(), innerSource.sourceAndMap());
 	});
 
 	it("should return original source when no replacements", () => {
 		const innerSource = new OriginalSource("Hello World", "file.txt");
 		const source = new ReplaceSource(innerSource);
-		expect(source.original()).toBe(innerSource);
+		assert.strictEqual(source.original(), innerSource);
 	});
 
 	it("should update hash consistently", () => {
@@ -464,8 +423,8 @@ export default function StaticPage(_ref) {
 		source3.updateHash(hash3);
 		const digest3 = hash3.digest("hex");
 
-		expect(digest1).toBe(digest2);
-		expect(digest1).not.toBe(digest3);
+		assert.strictEqual(digest1, digest2);
+		assert.notStrictEqual(digest1, digest3);
 	});
 
 	it("should handle replacements that skip a chunk ending with newline", () => {
@@ -476,7 +435,7 @@ export default function StaticPage(_ref) {
 			),
 		);
 		source.replace(6, 17, "X");
-		expect(source.source()).toBe("line1\nXline4");
+		assert.strictEqual(source.source(), "line1\nXline4");
 	});
 
 	it("should handle multi-line replacement content", () => {
@@ -484,14 +443,14 @@ export default function StaticPage(_ref) {
 			new OriginalSource("hello world", "file.txt"),
 		);
 		source.replace(6, 10, "multi\nline\nreplacement");
-		expect(source.source()).toBe("hello multi\nline\nreplacement");
+		assert.strictEqual(source.source(), "hello multi\nline\nreplacement");
 	});
 
 	it("should handle a replacement that happens at source end", () => {
 		const source = new ReplaceSource(new OriginalSource("hello", "file.txt"));
 		source.insert(5, " world");
 		source.insert(5, "!");
-		expect(source.source()).toBe("hello world!");
+		assert.strictEqual(source.source(), "hello world!");
 	});
 
 	it("should handle replacements ending with newline", () => {
@@ -499,33 +458,33 @@ export default function StaticPage(_ref) {
 			new OriginalSource("abc\ndef\nghi", "file.txt"),
 		);
 		source.replace(0, 2, "xyz\n");
-		expect(source.source()).toBe("xyz\n\ndef\nghi");
+		assert.strictEqual(source.source(), "xyz\n\ndef\nghi");
 	});
 
 	it("should work with RawSource as source (no map)", () => {
 		const source = new ReplaceSource(new RawSource("Hello World"));
 		source.replace(6, 10, "You");
-		expect(source.source()).toBe("Hello You");
-		expect(source.sourceAndMap()).toHaveProperty("source", "Hello You");
+		assert.strictEqual(source.source(), "Hello You");
+		assert.strictEqual(source.sourceAndMap().source, "Hello You");
 	});
 
 	it("should expose buffers() reflecting the replaced source", () => {
 		const source = new ReplaceSource(new RawSource("Hello World"));
 		source.replace(6, 10, "You");
 		const buffers = source.buffers();
-		expect(Array.isArray(buffers)).toBe(true);
-		expect(buffers).toHaveLength(1);
-		expect(buffers[0]).toEqual(Buffer.from("Hello You"));
-		expect(Buffer.concat(buffers)).toEqual(source.buffer());
+		assert.strictEqual(Array.isArray(buffers), true);
+		assert.strictEqual(buffers.length, 1);
+		assert.deepStrictEqual(buffers[0], Buffer.from("Hello You"));
+		assert.deepStrictEqual(Buffer.concat(buffers), source.buffer());
 	});
 
 	it("should delegate buffers() to the underlying source when no replacements", () => {
 		const inner = new RawSource(Buffer.from("untouched"));
 		const source = new ReplaceSource(inner);
 		const buffers = source.buffers();
-		expect(buffers).toHaveLength(1);
-		expect(buffers[0]).toBe(inner.buffer());
-		expect(source.buffer()).toBe(inner.buffer());
+		assert.strictEqual(buffers.length, 1);
+		assert.strictEqual(buffers[0], inner.buffer());
+		assert.strictEqual(source.buffer(), inner.buffer());
 	});
 
 	it("streamChunks() trailing-remainer reuses column offset from prior in-chunk replacement", () => {
@@ -546,8 +505,8 @@ export default function StaticPage(_ref) {
 			() => {},
 		);
 		const trailing = chunks[chunks.length - 1];
-		expect(trailing[0]).toBe("Y");
-		expect(trailing[1]).toBe(1);
+		assert.strictEqual(trailing[0], "Y");
+		assert.strictEqual(trailing[1], 1);
 	});
 
 	it("streamChunks() emits trailing inserts past end-of-source", () => {
@@ -564,11 +523,11 @@ export default function StaticPage(_ref) {
 			() => {},
 			() => {},
 		);
-		expect(src.source()).toBe("helloXY");
+		assert.strictEqual(src.source(), "helloXY");
 		const trailing = chunks[chunks.length - 1];
-		expect(trailing[0]).toBe("XY");
-		expect(trailing[1]).toBe(1);
-		expect(trailing[2]).toBe(5);
+		assert.strictEqual(trailing[0], "XY");
+		assert.strictEqual(trailing[1], 1);
+		assert.strictEqual(trailing[2], 5);
 	});
 
 	it("streamChunks() handles in-chunk multi-line replacement ending without newline", () => {
@@ -580,7 +539,7 @@ export default function StaticPage(_ref) {
 		const inner = new OriginalSource("ab", "x.js");
 		const src = new ReplaceSource(inner);
 		src.replace(0, 0, "A\nB");
-		expect(src.source()).toBe("A\nBb");
+		assert.strictEqual(src.source(), "A\nBb");
 		const chunks = [];
 		src.streamChunks(
 			{},
@@ -588,8 +547,8 @@ export default function StaticPage(_ref) {
 			() => {},
 			() => {},
 		);
-		expect(chunks).toContain("A\n");
-		expect(chunks).toContain("B");
+		assert.ok(chunks.includes("A\n"));
+		assert.ok(chunks.includes("B"));
 	});
 
 	it("streamChunks() emits multi-line trailing inserts via splitIntoLines", () => {
@@ -603,11 +562,11 @@ export default function StaticPage(_ref) {
 			() => {},
 			() => {},
 		);
-		expect(src.source()).toBe("aB\nC");
+		assert.strictEqual(src.source(), "aB\nC");
 		// splitIntoLines("B\nC") returns ["B\n", "C"] — both should be
 		// emitted as separate chunks rather than coalesced.
-		expect(chunks).toContain("B\n");
-		expect(chunks).toContain("C");
+		assert.ok(chunks.includes("B\n"));
+		assert.ok(chunks.includes("C"));
 	});
 
 	it("streamChunks() handles empty replacement without emitting a zero-length chunk", () => {
@@ -621,8 +580,11 @@ export default function StaticPage(_ref) {
 			() => {},
 			() => {},
 		);
-		expect(src.source()).toBe("abef");
-		expect(chunks.every((c) => c === undefined || c.length > 0)).toBe(true);
+		assert.strictEqual(src.source(), "abef");
+		assert.strictEqual(
+			chunks.every((c) => c === undefined || c.length > 0),
+			true,
+		);
 	});
 
 	it("streamChunks() pads sourceContents for multi-source inner (sourceIndex > 0)", () => {
@@ -642,10 +604,10 @@ export default function StaticPage(_ref) {
 		const src = new ReplaceSource(inner);
 		src.replace(0, 0, "A"); // force at least one replacement
 		const result = src.sourceAndMap({});
-		expect(result.source).toBe("A\nb\nc\n");
+		assert.strictEqual(result.source, "A\nb\nc\n");
 		// All three inner sources must survive into the result map.
 		const { map } = result;
-		expect(/** @type {RawSourceMap} */ (map).sources).toEqual([
+		assert.deepStrictEqual(/** @type {RawSourceMap} */ (map).sources, [
 			"a.js",
 			"b.js",
 			"c.js",
@@ -657,7 +619,7 @@ export default function StaticPage(_ref) {
 		const src = new ReplaceSource(inner);
 		src.replace(0, 0, "BBBBB");
 		src.replace(2, 2, "CC");
-		expect(src.source()).toBe("BBBBBaCCaa");
+		assert.strictEqual(src.source(), "BBBBBaCCaa");
 		const chunks = [];
 		src.streamChunks(
 			{},
@@ -668,6 +630,9 @@ export default function StaticPage(_ref) {
 		const lineOneCols = chunks
 			.filter(([, gl]) => gl === 1)
 			.map(([, , gc]) => gc);
-		expect(lineOneCols).toEqual([...lineOneCols].sort((a, b) => a - b));
+		assert.deepStrictEqual(
+			lineOneCols,
+			[...lineOneCols].sort((a, b) => a - b),
+		);
 	});
 });

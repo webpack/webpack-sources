@@ -1,7 +1,7 @@
 "use strict";
 
-jest.mock("./__mocks__/createMappingsSerializer");
-
+const assert = require("assert");
+const { describe, it } = require("node:test");
 const { ConcatSource } = require("../");
 const { RawSource } = require("../");
 const { OriginalSource } = require("../");
@@ -36,21 +36,23 @@ describe("concatSource", () => {
 			"Hello2",
 			"",
 		].join("\n");
-		expect(source.size()).toBe(62);
-		expect(source.source()).toEqual(expectedSource);
-		expect(
+		assert.strictEqual(source.size(), 62);
+		assert.deepStrictEqual(source.source(), expectedSource);
+		assert.deepStrictEqual(
 			source.map({
 				columns: false,
 			}),
-		).toEqual(expectedMap1);
-		expect(
+			expectedMap1,
+		);
+		assert.deepStrictEqual(
 			source.sourceAndMap({
 				columns: false,
 			}),
-		).toEqual({
-			source: expectedSource,
-			map: expectedMap1,
-		});
+			{
+				source: expectedSource,
+				map: expectedMap1,
+			},
+		);
 
 		const expectedMap2 = {
 			version: 3,
@@ -63,8 +65,8 @@ describe("concatSource", () => {
 				"Hello2\n",
 			],
 		};
-		expect(source.map()).toEqual(expectedMap2);
-		expect(source.sourceAndMap()).toEqual({
+		assert.deepStrictEqual(source.map(), expectedMap2);
+		assert.deepStrictEqual(source.sourceAndMap(), {
 			source: expectedSource,
 			map: expectedMap2,
 		});
@@ -98,28 +100,34 @@ describe("concatSource", () => {
 			sources: ["console.js"],
 			sourcesContent: ["console.log('test');\nconsole.log('test2');\n"],
 		};
-		expect(source.size()).toBe(76);
-		expect(source.source()).toEqual(expectedSource);
-		expect(source.buffer()).toEqual(Buffer.from(expectedSource, "utf8"));
-		expect(
+		assert.strictEqual(source.size(), 76);
+		assert.deepStrictEqual(source.source(), expectedSource);
+		assert.deepStrictEqual(
+			source.buffer(),
+			Buffer.from(expectedSource, "utf8"),
+		);
+		assert.deepStrictEqual(
 			source.map({
 				columns: false,
 			}),
-		).toEqual(expectedMap1);
-		expect(
+			expectedMap1,
+		);
+		assert.deepStrictEqual(
 			source.sourceAndMap({
 				columns: false,
 			}),
-		).toEqual({
-			source: expectedSource,
-			map: expectedMap1,
-		});
+			{
+				source: expectedSource,
+				map: expectedMap1,
+			},
+		);
 
 		const hash = require("crypto").createHash("sha256");
 
 		source.updateHash(hash);
 		const digest = hash.digest("hex");
-		expect(digest).toBe(
+		assert.strictEqual(
+			digest,
 			"183e6e9393eddb8480334aebeebb3366d6cce0124bc429c6e9246cc216167cb2",
 		);
 
@@ -134,17 +142,17 @@ describe("concatSource", () => {
 			"console.log('string')",
 		);
 		source2.updateHash(hash2);
-		expect(hash2.digest("hex")).toEqual(digest);
+		assert.deepStrictEqual(hash2.digest("hex"), digest);
 
 		const clone = new ConcatSource();
 		clone.addAllSkipOptimizing(source.getChildren());
 
-		expect(clone.source()).toEqual(source.source());
+		assert.deepStrictEqual(clone.source(), source.source());
 
 		const hash3 = require("crypto").createHash("sha256");
 
 		clone.updateHash(hash3);
-		expect(hash3.digest("hex")).toEqual(digest);
+		assert.deepStrictEqual(hash3.digest("hex"), digest);
 	});
 
 	it("should return null as map when only generated code is concatenated", () => {
@@ -162,14 +170,14 @@ describe("concatSource", () => {
 			columns: false,
 		});
 
-		expect(resultText).toBe("Hello World\nHello World\n");
-		expect(resultMap.source).toEqual(resultText);
-		expect(resultListMap.source).toEqual(resultText);
-		expect(resultListMap.map).toBeNull();
-		expect(resultMap.map).toBeNull();
+		assert.strictEqual(resultText, "Hello World\nHello World\n");
+		assert.deepStrictEqual(resultMap.source, resultText);
+		assert.deepStrictEqual(resultListMap.source, resultText);
+		assert.strictEqual(resultListMap.map, null);
+		assert.strictEqual(resultMap.map, null);
 	});
 
-	it("should allow to concatenate in a single line", () => {
+	it("should allow to concatenate in a single line", (t) => {
 		const source = new ConcatSource(
 			new OriginalSource("Hello", "hello.txt"),
 			" ",
@@ -181,35 +189,12 @@ describe("concatSource", () => {
 			"is here",
 		);
 
-		expect(withReadableMappings(source.map())).toMatchInlineSnapshot(`
-		Object {
-		  "_mappings": "1:0 -> [hello.txt] 1:0, :5, :6 -> [world.txt] 1:0, :12
-		2:0 -> [hello.txt] 1:0
-		4:0 -> [world.txt] 1:0",
-		  "file": "x",
-		  "mappings": "AAAA,K,CCAA,M;ADAA;;ACAA",
-		  "names": Array [],
-		  "sources": Array [
-		    "hello.txt",
-		    "world.txt",
-		  ],
-		  "sourcesContent": Array [
-		    "Hello",
-		    "World ",
-		  ],
-		  "version": 3,
-		}
-	`);
+		t.assert.snapshot(withReadableMappings(source.map()));
 	});
 
-	it("should allow to concat buffer sources", () => {
+	it("should allow to concat buffer sources", (t) => {
 		const source = new ConcatSource("a", new RawSource(Buffer.from("b")), "c");
-		expect(source.sourceAndMap()).toMatchInlineSnapshot(`
-		Object {
-		  "map": null,
-		  "source": "abc",
-		}
-	`);
+		t.assert.snapshot(source.sourceAndMap());
 	});
 
 	it("should concat a SourceLike child without a buffer() method that returns a Buffer", () => {
@@ -224,7 +209,8 @@ describe("concatSource", () => {
 		};
 		const source = new ConcatSource(customSource, new RawSource("-after"));
 		const result = source.buffer();
-		expect(result).toEqual(
+		assert.deepStrictEqual(
+			result,
 			Buffer.concat([customBuffer, Buffer.from("-after")]),
 		);
 	});
@@ -235,12 +221,12 @@ describe("concatSource", () => {
 		const c = new RawSource(Buffer.from("c"));
 		const source = new ConcatSource(a, b, c);
 		const buffers = source.buffers();
-		expect(Array.isArray(buffers)).toBe(true);
-		expect(buffers).toHaveLength(3);
-		expect(buffers[0]).toEqual(Buffer.from("a"));
-		expect(buffers[1]).toEqual(Buffer.from("b"));
-		expect(buffers[2]).toEqual(Buffer.from("c"));
-		expect(Buffer.concat(buffers)).toEqual(source.buffer());
+		assert.strictEqual(Array.isArray(buffers), true);
+		assert.strictEqual(buffers.length, 3);
+		assert.deepStrictEqual(buffers[0], Buffer.from("a"));
+		assert.deepStrictEqual(buffers[1], Buffer.from("b"));
+		assert.deepStrictEqual(buffers[2], Buffer.from("c"));
+		assert.deepStrictEqual(Buffer.concat(buffers), source.buffer());
 	});
 
 	it("should flatten nested ConcatSource buffers() into a flat Buffer[]", () => {
@@ -250,8 +236,8 @@ describe("concatSource", () => {
 		);
 		const outer = new ConcatSource(new RawSource(Buffer.from("a")), inner);
 		const buffers = outer.buffers();
-		expect(buffers).toHaveLength(3);
-		expect(Buffer.concat(buffers).toString("utf8")).toBe("axy");
+		assert.strictEqual(buffers.length, 3);
+		assert.strictEqual(Buffer.concat(buffers).toString("utf8"), "axy");
 	});
 
 	it("should fall back to buffer()/source() in buffers() for SourceLike children", () => {
@@ -277,9 +263,9 @@ describe("concatSource", () => {
 		};
 		const source = new ConcatSource(bufferOnly, sourceOnly);
 		const buffers = source.buffers();
-		expect(buffers).toHaveLength(2);
-		expect(buffers[0]).toBe(customBuffer);
-		expect(buffers[1]).toEqual(Buffer.from("more"));
+		assert.strictEqual(buffers.length, 2);
+		assert.strictEqual(buffers[0], customBuffer);
+		assert.deepStrictEqual(buffers[1], Buffer.from("more"));
 	});
 
 	it("should concat a SourceLike child where source() returns a string (no buffer())", () => {
@@ -293,7 +279,8 @@ describe("concatSource", () => {
 		};
 		const source = new ConcatSource(customSource, new RawSource("-after"));
 		const result = source.buffer();
-		expect(result).toEqual(
+		assert.deepStrictEqual(
+			result,
 			Buffer.concat([Buffer.from("custom-content"), Buffer.from("-after")]),
 		);
 	});
@@ -312,7 +299,7 @@ describe("concatSource", () => {
 		merged.add(c2);
 		merged.add("y");
 		merged.add(c1);
-		expect(merged.source()).toBe("abxcdyab");
+		assert.strictEqual(merged.source(), "abxcdyab");
 	});
 
 	it("should re-optimize when raw source followed by regular source", () => {
@@ -322,15 +309,15 @@ describe("concatSource", () => {
 		const merged = new ConcatSource();
 		merged.add(c1); // flatten
 		merged.add(regular);
-		expect(merged.source()).toBe("abZ");
-		expect(merged.getChildren()).toHaveLength(2);
+		assert.strictEqual(merged.source(), "abZ");
+		assert.strictEqual(merged.getChildren().length, 2);
 	});
 
 	it("should reflect empty ConcatSource", () => {
 		const source = new ConcatSource();
-		expect(source.source()).toBe("");
-		expect(source.size()).toBe(0);
-		expect(source.buffer()).toEqual(Buffer.alloc(0));
+		assert.strictEqual(source.source(), "");
+		assert.strictEqual(source.size(), 0);
+		assert.deepStrictEqual(source.buffer(), Buffer.alloc(0));
 	});
 
 	it("should flatten nested ConcatSource via add()", () => {
@@ -338,14 +325,14 @@ describe("concatSource", () => {
 		const outer = new ConcatSource();
 		outer.add(inner);
 		outer.add("c");
-		expect(outer.source()).toBe("abc");
+		assert.strictEqual(outer.source(), "abc");
 	});
 
 	it("should optimize on first getChildren() call", () => {
 		const source = new ConcatSource("a", "b", new RawSource("c"));
 		// Call getChildren without first calling source()/size()/buffer()
 		const children = source.getChildren();
-		expect(children.length).toBeGreaterThan(0);
+		assert.ok(children.length > 0);
 	});
 
 	it("should handle column mapping correctly with missing sources", () => {
@@ -375,13 +362,14 @@ describe("concatSource", () => {
 				names: [],
 			},
 		};
-		expect(
+		assert.deepStrictEqual(
 			source.sourceAndMap({
 				columns: true,
 			}),
-		).toEqual({
-			source: expected.source,
-			map: expected.map,
-		});
+			{
+				source: expected.source,
+				map: expected.map,
+			},
+		);
 	});
 });

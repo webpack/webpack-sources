@@ -1,0 +1,335 @@
+exports[`sourceMapSource (enableMemoryOptimizations: false) > map correctly 1`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "YAAAA,K,CAAMC;AACN,O,MAAU;ACCC,O,CAAM",
+  "sources": [
+    "hello-world.txt",
+    "text"
+  ],
+  "sourcesContent": [
+    "Hello World\\nis a test string\\n",
+    "Hello World\\nis a test string\\nTranslate: Other text"
+  ],
+  "names": [
+    "Hello",
+    "World"
+  ],
+  "_mappings": "1:12 -> [hello-world.txt] 1:0 (Hello), :17, :18 -> [hello-world.txt] 1:6 (World)\\n2:0 -> [hello-world.txt] 2:0, :7, :13 -> [hello-world.txt] 2:10\\n3:0 -> [text] 3:11, :7, :8 -> [text] 3:17"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: false) > map correctly 2`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "YAAAA,K,CAAMC;AACN,O,MAAU",
+  "sources": [
+    "hello-world.txt"
+  ],
+  "sourcesContent": [
+    "Hello World\\nis a test string\\n"
+  ],
+  "names": [
+    "Hello",
+    "World"
+  ],
+  "_mappings": "1:12 -> [hello-world.txt] 1:0 (Hello), :17, :18 -> [hello-world.txt] 1:6 (World)\\n2:0 -> [hello-world.txt] 2:0, :7, :13 -> [hello-world.txt] 2:10"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: false) > map correctly 3`] = `
+"a61a2da7f3d541e458b1af9c0ec25d853fb929339d7d8b22361468be67326a52"
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: false) > should handle null innerSourceMap 1`] = `
+{
+  "version": 3,
+  "sources": [
+    "hello.txt"
+  ],
+  "mappings": "AAAAA",
+  "names": [
+    "hello"
+  ],
+  "file": "",
+  "_mappings": "1:0 -> [hello.txt] 1:0 (hello)"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: false) > should handle null innerSourceMap 2`] = `
+{
+  "version": 3,
+  "sources": [
+    "hello.txt"
+  ],
+  "mappings": "AAAAA",
+  "names": [
+    "hello"
+  ],
+  "file": "",
+  "_mappings": "1:0 -> [hello.txt] 1:0 (hello)"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: false) > should handle null sources and sourcesContent 1`] = `
+"hi world\\nhi world\\nhi world\\n"
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: false) > should handle null sources and sourcesContent 2`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "AAAA;;ACAA,CAAC,CAAI",
+  "sources": [
+    null,
+    "hello-source.txt"
+  ],
+  "sourcesContent": [
+    null,
+    "hello world\\n"
+  ],
+  "names": [],
+  "_mappings": "1:0 -> [null] 1:0\\nhi world\\n^_______\\n3:0 -> [hello-source.txt] 1:0, :1 -> [hello-source.txt] 1:1, :2 -> [hello-source.txt] 1:5\\nhi world\\n^^^_____\\n"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: false) > should handle null sources and sourcesContent 3`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "AAAA;;ACAA",
+  "sources": [
+    null,
+    "hello-source.txt"
+  ],
+  "sourcesContent": [
+    null,
+    "hello world\\n"
+  ],
+  "names": [],
+  "_mappings": "1:0 -> [null] 1:0\\nhi world\\n^_______\\n3:0 -> [hello-source.txt] 1:0\\nhi world\\n^_______\\n"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: false) > should map generated lines to the inner source 1`] = `
+{
+  "source": "Message: H W!",
+  "map": {
+    "version": 3,
+    "file": "x",
+    "mappings": "AAAAA,SCAA,ECAMC,C",
+    "sources": [
+      "messages.txt",
+      "hello world.txt",
+      "HELLO_WORLD.txt"
+    ],
+    "sourcesContent": [
+      null,
+      "hello world",
+      "HELLO WORLD"
+    ],
+    "names": [
+      "Message",
+      "world"
+    ]
+  },
+  "_mappings": "1:0 -> [messages.txt] 1:0 (Message), :9 -> [hello world.txt] 1:0, :11 -> [HELLO_WORLD.txt] 1:6 (world), :12\\nMessage: H W!\\n^________^_^.\\n"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: false) > should not crash without original source when mapping names 1`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "AAAA",
+  "sources": [
+    "hello world.txt"
+  ],
+  "names": [],
+  "_mappings": "1:0 -> [hello world.txt] 1:0"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: false) > should not emit zero sizes mappings when ending with empty mapping 1`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "AAAA;AAAA;ACAA,ICAA,EDAA,ECAA,EFAA;AEAA,EFAA;ACAA",
+  "sources": [
+    "hello1",
+    "hello2",
+    "hello3"
+  ],
+  "names": [],
+  "_mappings": "1:0 -> [hello1] 1:0\\nhello\\n^____\\n2:0 -> [hello1] 1:0\\nhello\\n^____\\n3:0 -> [hello2] 1:0, :4 -> [hello3] 1:0, :6 -> [hello2] 1:0, :8 -> [hello3] 1:0, :10 -> [hello1] 1:0\\nhihihihihihello\\n^___^_^_^_^____\\n4:0 -> [hello3] 1:0, :2 -> [hello1] 1:0\\nhihello\\n^_^____\\n5:0 -> [hello2] 1:0\\nhi\\n^_\\n"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > map correctly 1`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "YAAAA,K,CAAMC;AACN,O,MAAU;ACCC,O,CAAM",
+  "sources": [
+    "hello-world.txt",
+    "text"
+  ],
+  "sourcesContent": [
+    "Hello World\\nis a test string\\n",
+    "Hello World\\nis a test string\\nTranslate: Other text"
+  ],
+  "names": [
+    "Hello",
+    "World"
+  ],
+  "_mappings": "1:12 -> [hello-world.txt] 1:0 (Hello), :17, :18 -> [hello-world.txt] 1:6 (World)\\n2:0 -> [hello-world.txt] 2:0, :7, :13 -> [hello-world.txt] 2:10\\n3:0 -> [text] 3:11, :7, :8 -> [text] 3:17"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > map correctly 2`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "YAAAA,K,CAAMC;AACN,O,MAAU",
+  "sources": [
+    "hello-world.txt"
+  ],
+  "sourcesContent": [
+    "Hello World\\nis a test string\\n"
+  ],
+  "names": [
+    "Hello",
+    "World"
+  ],
+  "_mappings": "1:12 -> [hello-world.txt] 1:0 (Hello), :17, :18 -> [hello-world.txt] 1:6 (World)\\n2:0 -> [hello-world.txt] 2:0, :7, :13 -> [hello-world.txt] 2:10"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > map correctly 3`] = `
+"a61a2da7f3d541e458b1af9c0ec25d853fb929339d7d8b22361468be67326a52"
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > should handle null innerSourceMap 1`] = `
+{
+  "version": 3,
+  "sources": [
+    "hello.txt"
+  ],
+  "mappings": "AAAAA",
+  "names": [
+    "hello"
+  ],
+  "file": "",
+  "_mappings": "1:0 -> [hello.txt] 1:0 (hello)"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > should handle null innerSourceMap 2`] = `
+{
+  "version": 3,
+  "sources": [
+    "hello.txt"
+  ],
+  "mappings": "AAAAA",
+  "names": [
+    "hello"
+  ],
+  "file": "",
+  "_mappings": "1:0 -> [hello.txt] 1:0 (hello)"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > should handle null sources and sourcesContent 1`] = `
+"hi world\\nhi world\\nhi world\\n"
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > should handle null sources and sourcesContent 2`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "AAAA;;ACAA,CAAC,CAAI",
+  "sources": [
+    null,
+    "hello-source.txt"
+  ],
+  "sourcesContent": [
+    null,
+    "hello world\\n"
+  ],
+  "names": [],
+  "_mappings": "1:0 -> [null] 1:0\\nhi world\\n^_______\\n3:0 -> [hello-source.txt] 1:0, :1 -> [hello-source.txt] 1:1, :2 -> [hello-source.txt] 1:5\\nhi world\\n^^^_____\\n"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > should handle null sources and sourcesContent 3`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "AAAA;;ACAA",
+  "sources": [
+    null,
+    "hello-source.txt"
+  ],
+  "sourcesContent": [
+    null,
+    "hello world\\n"
+  ],
+  "names": [],
+  "_mappings": "1:0 -> [null] 1:0\\nhi world\\n^_______\\n3:0 -> [hello-source.txt] 1:0\\nhi world\\n^_______\\n"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > should map generated lines to the inner source 1`] = `
+{
+  "source": "Message: H W!",
+  "map": {
+    "version": 3,
+    "file": "x",
+    "mappings": "AAAAA,SCAA,ECAMC,C",
+    "sources": [
+      "messages.txt",
+      "hello world.txt",
+      "HELLO_WORLD.txt"
+    ],
+    "sourcesContent": [
+      null,
+      "hello world",
+      "HELLO WORLD"
+    ],
+    "names": [
+      "Message",
+      "world"
+    ]
+  },
+  "_mappings": "1:0 -> [messages.txt] 1:0 (Message), :9 -> [hello world.txt] 1:0, :11 -> [HELLO_WORLD.txt] 1:6 (world), :12\\nMessage: H W!\\n^________^_^.\\n"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > should not crash without original source when mapping names 1`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "AAAA",
+  "sources": [
+    "hello world.txt"
+  ],
+  "names": [],
+  "_mappings": "1:0 -> [hello world.txt] 1:0"
+}
+`;
+
+exports[`sourceMapSource (enableMemoryOptimizations: true) > should not emit zero sizes mappings when ending with empty mapping 1`] = `
+{
+  "version": 3,
+  "file": "x",
+  "mappings": "AAAA;AAAA;ACAA,ICAA,EDAA,ECAA,EFAA;AEAA,EFAA;ACAA",
+  "sources": [
+    "hello1",
+    "hello2",
+    "hello3"
+  ],
+  "names": [],
+  "_mappings": "1:0 -> [hello1] 1:0\\nhello\\n^____\\n2:0 -> [hello1] 1:0\\nhello\\n^____\\n3:0 -> [hello2] 1:0, :4 -> [hello3] 1:0, :6 -> [hello2] 1:0, :8 -> [hello3] 1:0, :10 -> [hello1] 1:0\\nhihihihihihello\\n^___^_^_^_^____\\n4:0 -> [hello3] 1:0, :2 -> [hello1] 1:0\\nhihello\\n^_^____\\n5:0 -> [hello2] 1:0\\nhi\\n^_\\n"
+}
+`;

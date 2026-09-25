@@ -1,16 +1,16 @@
 "use strict";
 
+// Jest runs the tests on Node.js versions without a usable `node:test` (see
+// `test:legacy` in package.json); newer versions use `node --test`.
+
 /** @type {import("jest").Config} */
 const config = {
-	prettierPath: require.resolve("prettier-2"),
 	forceExit: true,
 	testMatch: ["<rootDir>/test/*.js"],
-	testPathIgnorePatterns: ["<rootDir>/test/helpers.js"],
 	transformIgnorePatterns: ["<rootDir>"],
 	testEnvironment: "node",
-	snapshotFormat: {
-		escapeString: true,
-		printBasicPrototype: true,
+	moduleNameMapper: {
+		"^node:test$": "<rootDir>/test/helpers/jest-node-test.js",
 	},
 };
 

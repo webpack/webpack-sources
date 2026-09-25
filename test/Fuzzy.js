@@ -1,7 +1,7 @@
 "use strict";
 
-jest.mock("./__mocks__/createMappingsSerializer");
-
+const assert = require("assert");
+const { describe, it } = require("node:test");
 const { SourceMapConsumer } = require("source-map");
 const validate = require("sourcemap-validator");
 const CachedSource = require("../lib/CachedSource");
@@ -94,25 +94,28 @@ describe("fuzzy", () => {
 				const validNames = getReplacementNames(input);
 				const validateSourceMap = async (sourceMap, code) => {
 					try {
-						expect(sourceMap.mappings).toMatch(
-							/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/,
+						assert.ok(
+							/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/.test(
+								sourceMap.mappings,
+							),
 						);
-						expect(sourceMap.sources).toContain("lorem.txt");
+						assert.ok(sourceMap.sources.includes("lorem.txt"));
 						for (const name of sourceMap.names) {
-							expect(validNames).toContain(name);
+							assert.ok(validNames.includes(name));
 						}
 						validate(code, JSON.stringify(sourceMap));
 						await SourceMapConsumer.with(sourceMap, null, (consumer) => {
 							if (offset === 0) {
 								// TODO test for other offset too
-								expect(
+								assert.deepStrictEqual(
 									consumer.originalPositionFor({ line: 1, column: 0 }),
-								).toEqual({
-									source: "lorem.txt",
-									line: 1,
-									column: 0,
-									name: null,
-								});
+									{
+										source: "lorem.txt",
+										line: 1,
+										column: 0,
+										name: null,
+									},
+								);
 							}
 						});
 					} catch (err) {
@@ -137,69 +140,79 @@ describe("fuzzy", () => {
 						["original", originalSourceFn],
 					]) {
 						if (options === undefined) {
-							it(`${inputSourceName} ${inputName} should return correct .source()`, () => {
+							it(`${inputSourceName} ${inputName} should return correct .source()`, (t) => {
 								const source = sourceFn();
 								const result = source.source();
-								expect(source.source()).toEqual(result);
+								assert.deepStrictEqual(source.source(), result);
 								if (snapshot) {
-									expect(result).toMatchSnapshot();
+									t.assert.snapshot(result);
 								}
 							});
 
-							it(`${inputSourceName} ${inputName} should return correct .size()`, () => {
+							it(`${inputSourceName} ${inputName} should return correct .size()`, (t) => {
 								const source = sourceFn();
 								const result = source.size();
-								expect(source.size()).toEqual(result);
+								assert.deepStrictEqual(source.size(), result);
 								if (snapshot) {
-									expect(result).toMatchSnapshot();
+									t.assert.snapshot(result);
 								}
 							});
 						}
 
-						it(`${inputSourceName} ${inputName} should return correct .map(${o})`, async () => {
+						it(`${inputSourceName} ${inputName} should return correct .map(${o})`, async (t) => {
 							const source = sourceFn();
 							const result = withReadableMappings(source.map(options));
-							expect(withReadableMappings(source.map(options))).toEqual(result);
+							assert.deepStrictEqual(
+								withReadableMappings(source.map(options)),
+								result,
+							);
 							if (inputSourceName === "original") {
-								expect(result).toBeTruthy();
+								assert.ok(result);
 							}
 							if (result) {
 								const code = source.source();
 								await validateSourceMap(result, code);
 							}
 							if (snapshot) {
-								expect(result).toMatchSnapshot();
+								t.assert.snapshot(result);
 							}
 						});
 
-						it(`${inputSourceName} ${inputName} should return correct .sourceAndMap(${o})`, async () => {
+						it(`${inputSourceName} ${inputName} should return correct .sourceAndMap(${o})`, async (t) => {
 							const source = sourceFn();
 							const result = source.sourceAndMap(options);
 							result.map = withReadableMappings(result.map);
 							if (result.map) {
-								expect(result.map.mappings).toMatch(
-									/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/,
+								assert.ok(
+									/^[A-Za-z0-9+/]{1,10}((,|;+)[A-Za-z0-9+/]{1,10})*$/.test(
+										result.map.mappings,
+									),
 								);
 								await validateSourceMap(result.map, result.source);
 							}
 							const result2 = source.sourceAndMap(options);
 							result2.map = withReadableMappings(result.map);
-							expect(result).toEqual(result2);
-							expect(result.map).toEqual(
+							assert.deepStrictEqual(result, result2);
+							assert.deepStrictEqual(
+								result.map,
 								withReadableMappings(sourceFn().map(options)),
 							);
 							if (snapshot) {
-								expect(result).toMatchSnapshot();
+								t.assert.snapshot(result);
 							}
 						});
 					}
 
 					it(`${inputName} RawSource and OriginalSource should return equal .source(${o})`, () => {
-						expect(originalSourceFn().source()).toEqual(rawSourceFn().source());
+						assert.deepStrictEqual(
+							originalSourceFn().source(),
+							rawSourceFn().source(),
+						);
 					});
 
 					it(`${inputName} RawSource and OriginalSource should return equal .sourceAndMap(${o}).source`, () => {
-						expect(originalSourceFn().sourceAndMap(options).source).toEqual(
+						assert.deepStrictEqual(
+							originalSourceFn().sourceAndMap(options).source,
 							rawSourceFn().sourceAndMap(options).source,
 						);
 					});

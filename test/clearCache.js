@@ -1,6 +1,8 @@
 "use strict";
 
+const assert = require("assert");
 const crypto = require("crypto");
+const { describe, it } = require("node:test");
 
 const {
 	CachedSource,
@@ -69,9 +71,9 @@ describe("clearCache", () => {
 			}
 		}
 		const dummy = new Dummy();
-		expect(() => {
+		assert.doesNotThrow(() => {
 			dummy.clearCache();
-		}).not.toThrow();
+		});
 	});
 
 	it("cachedSource drops cached maps and source entries", () => {
@@ -80,21 +82,21 @@ describe("clearCache", () => {
 		);
 		const cached = new CachedSource(inner);
 
-		expect(cached.source()).toBe("TestTestTest");
-		expect(typeof cached.map()).toBe("object");
-		expect(typeof cached.map({ columns: false })).toBe("object");
-		expect(inner.calls.source).toBe(1);
-		expect(inner.calls.map).toBe(2);
+		assert.strictEqual(cached.source(), "TestTestTest");
+		assert.strictEqual(typeof cached.map(), "object");
+		assert.strictEqual(typeof cached.map({ columns: false }), "object");
+		assert.strictEqual(inner.calls.source, 1);
+		assert.strictEqual(inner.calls.map, 2);
 
 		cached.clearCache();
-		expect(inner.calls.clearCache).toBe(1);
+		assert.strictEqual(inner.calls.clearCache, 1);
 
 		// After clearCache, queries go back to the wrapped source.
-		expect(cached.source()).toBe("TestTestTest");
-		expect(typeof cached.map()).toBe("object");
-		expect(typeof cached.map({ columns: false })).toBe("object");
-		expect(inner.calls.source).toBe(2);
-		expect(inner.calls.map).toBe(4);
+		assert.strictEqual(cached.source(), "TestTestTest");
+		assert.strictEqual(typeof cached.map(), "object");
+		assert.strictEqual(typeof cached.map({ columns: false }), "object");
+		assert.strictEqual(inner.calls.source, 2);
+		assert.strictEqual(inner.calls.map, 4);
 	});
 
 	it("cachedSource does not invoke a lazy `_source` when cleared", () => {
@@ -106,22 +108,22 @@ describe("clearCache", () => {
 		const cached = new CachedSource(lazy);
 
 		cached.clearCache();
-		expect(lazyCalls).toBe(0);
-		expect(cached.source()).toBe("Lazy");
-		expect(lazyCalls).toBe(1);
+		assert.strictEqual(lazyCalls, 0);
+		assert.strictEqual(cached.source(), "Lazy");
+		assert.strictEqual(lazyCalls, 1);
 	});
 
 	it("cachedSource clearCache preserves source contract", () => {
 		const cached = new CachedSource(
 			new OriginalSource("Hello World", "file.js"),
 		);
-		expect(cached.size()).toBe(11);
-		expect(cached.source()).toBe("Hello World");
-		expect(cached.buffer().toString("utf8")).toBe("Hello World");
+		assert.strictEqual(cached.size(), 11);
+		assert.strictEqual(cached.source(), "Hello World");
+		assert.strictEqual(cached.buffer().toString("utf8"), "Hello World");
 		cached.clearCache();
-		expect(cached.size()).toBe(11);
-		expect(cached.source()).toBe("Hello World");
-		expect(cached.buffer().toString("utf8")).toBe("Hello World");
+		assert.strictEqual(cached.size(), 11);
+		assert.strictEqual(cached.source(), "Hello World");
+		assert.strictEqual(cached.buffer().toString("utf8"), "Hello World");
 	});
 
 	it("concatSource recursively clears children", () => {
@@ -130,22 +132,22 @@ describe("clearCache", () => {
 		const concat = new ConcatSource(a, "literal-string", b);
 
 		concat.clearCache();
-		expect(a.calls.clearCache).toBe(1);
-		expect(b.calls.clearCache).toBe(1);
+		assert.strictEqual(a.calls.clearCache, 1);
+		assert.strictEqual(b.calls.clearCache, 1);
 	});
 
 	it("prefixSource recursively clears the inner source", () => {
 		const inner = new TrackedSource(new OriginalSource("body", "f.js"));
 		const prefixed = new PrefixSource("> ", inner);
 		prefixed.clearCache();
-		expect(inner.calls.clearCache).toBe(1);
+		assert.strictEqual(inner.calls.clearCache, 1);
 	});
 
 	it("replaceSource recursively clears the inner source", () => {
 		const inner = new TrackedSource(new OriginalSource("body", "f.js"));
 		const replaced = new ReplaceSource(inner);
 		replaced.clearCache();
-		expect(inner.calls.clearCache).toBe(1);
+		assert.strictEqual(inner.calls.clearCache, 1);
 	});
 
 	it("compatSource forwards clearCache when the source-like supports it", () => {
@@ -158,15 +160,15 @@ describe("clearCache", () => {
 		};
 		const compat = new CompatSource(sourceLike);
 		compat.clearCache();
-		expect(clearCalled).toBe(1);
+		assert.strictEqual(clearCalled, 1);
 	});
 
 	it("compatSource silently ignores source-likes without clearCache", () => {
 		const sourceLike = { source: () => "x" };
 		const compat = new CompatSource(sourceLike);
-		expect(() => {
+		assert.doesNotThrow(() => {
 			compat.clearCache();
-		}).not.toThrow();
+		});
 	});
 
 	it("rawSource drops the secondary buffer cache when constructed from a string", () => {
@@ -176,19 +178,19 @@ describe("clearCache", () => {
 		const internal = /** @type {{ _valueAsBuffer?: Buffer }} */ (
 			/** @type {unknown} */ (raw)
 		);
-		expect(internal._valueAsBuffer).toBeDefined();
+		assert.notStrictEqual(internal._valueAsBuffer, undefined);
 		raw.clearCache();
-		expect(internal._valueAsBuffer).toBeUndefined();
+		assert.strictEqual(internal._valueAsBuffer, undefined);
 		// Data is preserved via the primary string form.
-		expect(raw.source()).toBe("hello");
-		expect(raw.buffer().toString("utf8")).toBe("hello");
+		assert.strictEqual(raw.source(), "hello");
+		assert.strictEqual(raw.buffer().toString("utf8"), "hello");
 	});
 
 	it("rawSource keeps the primary buffer when constructed from a Buffer", () => {
 		const raw = new RawSource(Buffer.from("hello", "utf8"));
 		raw.source();
 		raw.clearCache();
-		expect(raw.buffer().toString("utf8")).toBe("hello");
+		assert.strictEqual(raw.buffer().toString("utf8"), "hello");
 	});
 
 	it("originalSource drops the cached string when constructed from a Buffer", () => {
@@ -196,8 +198,8 @@ describe("clearCache", () => {
 		// Cause the string form to be cached.
 		orig.source();
 		orig.clearCache();
-		expect(orig.source()).toBe("hello");
-		expect(orig.buffer().toString("utf8")).toBe("hello");
+		assert.strictEqual(orig.source(), "hello");
+		assert.strictEqual(orig.buffer().toString("utf8"), "hello");
 	});
 
 	it("sourceMapSource drops redundant string/buffer duplicates", () => {
@@ -232,20 +234,24 @@ describe("clearCache", () => {
 		source.map();
 		source.clearCache();
 		// All inputs still readable after clear.
-		expect(source.source()).toBe("hello\n");
+		assert.strictEqual(source.source(), "hello\n");
 		const map = /** @type {{ mappings: string }} */ (source.map());
-		expect(map.mappings).toBe("AAAA");
+		assert.strictEqual(map.mappings, "AAAA");
 		// Round-trip the buffers once more to confirm internal state stays
 		// consistent after clearCache.
 		const [valueBuf, name, smBuf, origBuf, innerBuf] =
 			source.getArgsAsBuffers();
-		expect(valueBuf.toString("utf8")).toBe("hello\n");
-		expect(name).toBe("out.js");
-		expect(JSON.parse(smBuf.toString("utf8")).mappings).toBe("AAAA");
-		expect(/** @type {Buffer} */ (origBuf).toString("utf8")).toBe("original\n");
-		expect(
+		assert.strictEqual(valueBuf.toString("utf8"), "hello\n");
+		assert.strictEqual(name, "out.js");
+		assert.strictEqual(JSON.parse(smBuf.toString("utf8")).mappings, "AAAA");
+		assert.strictEqual(
+			/** @type {Buffer} */ (origBuf).toString("utf8"),
+			"original\n",
+		);
+		assert.strictEqual(
 			JSON.parse(/** @type {Buffer} */ (innerBuf).toString("utf8")).file,
-		).toBe("a.js");
+			"a.js",
+		);
 	});
 
 	it("a shared subtree is walked once when a `visited` WeakSet is passed", () => {
@@ -263,7 +269,7 @@ describe("clearCache", () => {
 		top2.clearCache(undefined, visited);
 
 		// The shared module's clearCache must run exactly once, not twice.
-		expect(sharedInner.calls.clearCache).toBe(1);
+		assert.strictEqual(sharedInner.calls.clearCache, 1);
 	});
 
 	it("without a shared `visited` set, each top-level call re-walks the shared subtree", () => {
@@ -279,7 +285,7 @@ describe("clearCache", () => {
 		top1.clearCache();
 		top2.clearCache();
 
-		expect(sharedInner.calls.clearCache).toBe(2);
+		assert.strictEqual(sharedInner.calls.clearCache, 2);
 	});
 
 	it("`{ maps: true, source: false }` keeps the cached source string", () => {
@@ -293,12 +299,12 @@ describe("clearCache", () => {
 		cached.clearCache({ maps: true, source: false });
 
 		// source() served from cache (no new call to inner).
-		expect(cached.source()).toBe("body");
-		expect(inner.calls.source).toBe(sourceCallsBefore);
+		assert.strictEqual(cached.source(), "body");
+		assert.strictEqual(inner.calls.source, sourceCallsBefore);
 		// map() re-walks inner because the map cache was dropped.
 		const mapCallsBefore = inner.calls.map;
 		cached.map();
-		expect(inner.calls.map).toBe(mapCallsBefore + 1);
+		assert.strictEqual(inner.calls.map, mapCallsBefore + 1);
 	});
 
 	it("default clearCache preserves the cached hash payload", () => {
@@ -309,9 +315,9 @@ describe("clearCache", () => {
 			/** @type {unknown} */ (cached)
 		);
 		const before = internal._cachedHashUpdate;
-		expect(before).toBeDefined();
+		assert.notStrictEqual(before, undefined);
 		cached.clearCache();
-		expect(internal._cachedHashUpdate).toBe(before);
+		assert.strictEqual(internal._cachedHashUpdate, before);
 	});
 
 	it("default clearCache keeps the cached byte size", () => {
@@ -320,9 +326,9 @@ describe("clearCache", () => {
 		const internal = /** @type {{ _cachedSize?: number }} */ (
 			/** @type {unknown} */ (cached)
 		);
-		expect(internal._cachedSize).toBe(5);
+		assert.strictEqual(internal._cachedSize, 5);
 		cached.clearCache();
-		expect(internal._cachedSize).toBe(5);
+		assert.strictEqual(internal._cachedSize, 5);
 	});
 
 	it("cachedSource reuses the `_cachedMaps` Map instead of reallocating", () => {
@@ -333,8 +339,8 @@ describe("clearCache", () => {
 		);
 		const before = internal._cachedMaps;
 		cached.clearCache();
-		expect(internal._cachedMaps).toBe(before);
-		expect(internal._cachedMaps.size).toBe(0);
+		assert.strictEqual(internal._cachedMaps, before);
+		assert.strictEqual(internal._cachedMaps.size, 0);
 	});
 
 	it("`{ parsedMap: true }` drops the parsed object form when a buffer survives", () => {
@@ -352,13 +358,13 @@ describe("clearCache", () => {
 			/** @type {{ _sourceMapAsObject?: { mappings: string }, _sourceMapAsBuffer?: Buffer }} */ (
 				/** @type {unknown} */ (source)
 			);
-		expect(internal._sourceMapAsObject).toBeDefined();
-		expect(internal._sourceMapAsBuffer).toBeDefined();
+		assert.notStrictEqual(internal._sourceMapAsObject, undefined);
+		assert.notStrictEqual(internal._sourceMapAsBuffer, undefined);
 		source.clearCache({ parsedMap: true });
-		expect(internal._sourceMapAsObject).toBeUndefined();
+		assert.strictEqual(internal._sourceMapAsObject, undefined);
 		// map() rehydrates from the buffer — value preserved.
 		const map = /** @type {{ mappings: string }} */ (source.map());
-		expect(map.mappings).toBe("AAAA");
+		assert.strictEqual(map.mappings, "AAAA");
 	});
 
 	it("`parsedMap` defaults to false — parsed object form is kept on default clearCache", () => {
@@ -376,9 +382,9 @@ describe("clearCache", () => {
 				/** @type {unknown} */ (source)
 			);
 		const before = internal._sourceMapAsObject;
-		expect(before).toBeDefined();
+		assert.notStrictEqual(before, undefined);
 		source.clearCache();
-		expect(internal._sourceMapAsObject).toBe(before);
+		assert.strictEqual(internal._sourceMapAsObject, before);
 	});
 
 	it("`{ parsedMap: true }` is a no-op when no serialized form survives", () => {
@@ -397,9 +403,9 @@ describe("clearCache", () => {
 				/** @type {unknown} */ (source)
 			);
 		const before = internal._sourceMapAsObject;
-		expect(before).toBeDefined();
+		assert.notStrictEqual(before, undefined);
 		source.clearCache({ parsedMap: true });
-		expect(internal._sourceMapAsObject).toBe(before);
+		assert.strictEqual(internal._sourceMapAsObject, before);
 	});
 
 	it("getCachedData() after clearCache() rehydrates buffer and preserves CachedData contract", () => {
@@ -418,13 +424,13 @@ describe("clearCache", () => {
 		// after clearCache(), getCachedData() must return a Buffer so
 		// downstream persistent-cache writers don't crash. The buffer
 		// is rehydrated via the wrapped source.
-		expect(Buffer.isBuffer(data.buffer)).toBe(true);
-		expect(data.buffer.toString("utf8")).toBe("Hello World");
+		assert.strictEqual(Buffer.isBuffer(data.buffer), true);
+		assert.strictEqual(data.buffer.toString("utf8"), "Hello World");
 		// Maps were cleared — the bufferedMaps Map is empty.
-		expect(data.maps.size).toBe(0);
+		assert.strictEqual(data.maps.size, 0);
 		// Hash + size survive a default clearCache.
-		expect(data.hash).toBeDefined();
-		expect(data.size).toBe(11);
+		assert.notStrictEqual(data.hash, undefined);
+		assert.strictEqual(data.size, 11);
 
 		// Round-trip: feeding the cleared data into a new CachedSource
 		// reads back the same source content.
@@ -432,7 +438,7 @@ describe("clearCache", () => {
 			new OriginalSource("Hello World", "file.js"),
 			data,
 		);
-		expect(rehydrated.source()).toBe("Hello World");
+		assert.strictEqual(rehydrated.source(), "Hello World");
 	});
 
 	it("composite over CachedSource clears nested cache via single call", () => {
@@ -445,9 +451,9 @@ describe("clearCache", () => {
 		concat.map();
 
 		concat.clearCache();
-		expect(inner.calls.clearCache).toBe(1);
+		assert.strictEqual(inner.calls.clearCache, 1);
 
 		// Re-querying still produces the same output.
-		expect(concat.source()).toBe("Hello\n//eof");
+		assert.strictEqual(concat.source(), "Hello\n//eof");
 	});
 });
