@@ -72,7 +72,7 @@ export function collectSourceScopes(
  * far into it the map reaches. Both lines are counted from zero, so a caller
  * whose lines start at one subtracts before feeding a segment in.
  * @param {number=} sourceCount number of entries in the map's `sources`, when known
- * @returns {{ add: (generatedLine: number, generatedColumn: number, sourceIndex: number, originalLine: number) => void, finish: (lastLine: number) => SourceScope[] }} collector
+ * @returns {{ add: (generatedLine: number, generatedColumn: number, sourceIndex: number, originalLine: number) => void, finish: (lastLine: number, lastColumn?: number) => SourceScope[] }} collector
  */
 export function createScopeCollector(sourceCount?: number | undefined): {
 	add: (
@@ -81,13 +81,14 @@ export function createScopeCollector(sourceCount?: number | undefined): {
 		sourceIndex: number,
 		originalLine: number,
 	) => void;
-	finish: (lastLine: number) => SourceScope[];
+	finish: (lastLine: number, lastColumn?: number) => SourceScope[];
 };
 /**
  * Builds the `scopes` field while a map is being written, so the segments are
  * read as they are produced rather than decoded back out of `mappings`. Lines
- * are the one-based ones the chunk stream reports.
- * @returns {{ add: (generatedLine: number, generatedColumn: number, sourceIndex: number, originalLine: number) => void, addSource: (sourceIndex: number, scopeBindings?: ScopeBindings) => void, finish: (map: RawSourceMap, generatedLine: number) => void }} writer
+ * are the one-based ones the chunk stream reports; `finish` takes the position
+ * the generated code ends at, where the last range closes.
+ * @returns {{ add: (generatedLine: number, generatedColumn: number, sourceIndex: number, originalLine: number) => void, addSource: (sourceIndex: number, scopeBindings?: ScopeBindings) => void, finish: (map: RawSourceMap, generatedLine: number, generatedColumn?: number) => void }} writer
  */
 export function createScopesWriter(): {
 	add: (
@@ -97,7 +98,11 @@ export function createScopesWriter(): {
 		originalLine: number,
 	) => void;
 	addSource: (sourceIndex: number, scopeBindings?: ScopeBindings) => void;
-	finish: (map: RawSourceMap, generatedLine: number) => void;
+	finish: (
+		map: RawSourceMap,
+		generatedLine: number,
+		generatedColumn?: number,
+	) => void;
 };
 /**
  * Encodes the scope tree into the `scopes` field of the proposal, appending any

@@ -11,6 +11,7 @@ const {
 const {
 	addScopesToSourceMap,
 	collectSourceScopes,
+	createScopeCollector,
 	encodeScopes,
 } = require("../lib/helpers/scopes");
 
@@ -175,6 +176,37 @@ describe("scopes", () => {
 			assert.strictEqual(
 				encodeScopes(scopes, map.sources.length, names),
 				streamed.scopes,
+			);
+		});
+
+		it("closes the last range where output without a trailing newline ends", () => {
+			// "x();" and "a;" share one generated line: lib.js's range starts at
+			// column 4 and has to end at column 6, not at column 0 before it.
+			const source = new ConcatSource(
+				new OriginalSource("x();", "entry.js"),
+				new OriginalSource("a;", "lib.js", BINDINGS),
+			);
+			const options = { columns: true, scopes: true };
+			const map = mapOf(source, options);
+
+			const collector = createScopeCollector();
+			collector.add(0, 0, 0, 0);
+			collector.add(0, 4, 1, 0);
+			const scopes = collector.finish(0, 6);
+			assert.deepStrictEqual(scopes[1].rangeStarts, [{ line: 0, column: 4 }]);
+			assert.deepStrictEqual(scopes[1].rangeEnds, [{ line: 0, column: 6 }]);
+			for (const [name, value] of BINDINGS) {
+				scopes[1].variables.push(name);
+				scopes[1].values.push(value);
+			}
+			const names = [...mapOf(source, { columns: true }).names];
+			assert.strictEqual(
+				encodeScopes(scopes, map.sources.length, names),
+				map.scopes,
+			);
+			assert.strictEqual(
+				/** @type {RawSourceMap} */ (source.sourceAndMap(options).map).scopes,
+				map.scopes,
 			);
 		});
 	});
