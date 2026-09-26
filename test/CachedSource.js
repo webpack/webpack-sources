@@ -686,5 +686,53 @@ for (const enableMemoryOptimizations of [false, true]) {
 			source.updateHash(sourceHash);
 			assert.strictEqual(cloneHash.digest("hex"), sourceHash.digest("hex"));
 		});
+
+		it("should allocate no map cache until a map is asked for", () => {
+			const original = new OriginalSource("Hello World", "hello.txt");
+			const source = new CachedSource(original);
+			const mapCache = () =>
+				/** @type {{ _cachedMaps: Map<string, unknown> | undefined }} */ (
+					/** @type {unknown} */ (source)
+				)._cachedMaps;
+
+			source.source();
+			source.buffer();
+			source.size();
+			source.updateHash(crypto.createHash("md5"));
+			source.getCachedData();
+			source.clearCache();
+			assert.strictEqual(mapCache(), undefined);
+
+			assert.deepStrictEqual(source.map({}), original.map({}));
+			assert.strictEqual(mapCache() instanceof Map, true);
+			assert.deepStrictEqual(
+				source.sourceAndMap({}),
+				original.sourceAndMap({}),
+			);
+
+			source.clearCache();
+			assert.strictEqual(
+				/** @type {Map<string, unknown>} */ (mapCache()).size,
+				0,
+			);
+			assert.deepStrictEqual(source.map({}), original.map({}));
+		});
+
+		it("should stream a source whose map cache was never created", () => {
+			const original = new OriginalSource("Hello World", "hello.txt");
+			const source = new CachedSource(original);
+			const chunks = [];
+
+			source.source();
+			streamChunks(
+				source,
+				{ finalSource: false, columns: true },
+				(chunk) => chunks.push(chunk),
+				() => {},
+				() => {},
+			);
+
+			assert.deepStrictEqual(chunks, ["Hello World"]);
+		});
 	});
 }

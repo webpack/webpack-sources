@@ -37,13 +37,19 @@ declare class CachedSource extends Source {
 	 */
 	_cachedSize: number | undefined;
 	/**
-	 * @type {BufferedMaps}
+	 * @type {BufferedMaps | undefined}
 	 */
-	_cachedMaps: BufferedMaps;
+	_cachedMaps: BufferedMaps | undefined;
 	/**
 	 * @type {(string | Buffer)[] | undefined}
 	 */
 	_cachedHashUpdate: (string | Buffer)[] | undefined;
+	/**
+	 * The map cache, created on first use: a source nobody asks a map of holds
+	 * none, since V8 allocates a Map's hash table whether or not it is filled.
+	 * @returns {BufferedMaps} map cache
+	 */
+	_getOrCreateCachedMaps(): BufferedMaps;
 	/**
 	 * @returns {CachedData} cached data
 	 */
