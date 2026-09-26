@@ -9,6 +9,9 @@ const config = {
 	testMatch: ["<rootDir>/test/*.js"],
 	transformIgnorePatterns: ["<rootDir>"],
 	testEnvironment: "node",
+	// checks every mapping the library writes; `node --test` loads it with
+	// `--require` (see package.json)
+	setupFiles: ["<rootDir>/test/helpers/validate-mappings.js"],
 	moduleNameMapper: {
 		"^node:test$": "<rootDir>/test/helpers/jest-node-test.js",
 	},

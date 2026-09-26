@@ -404,14 +404,20 @@ describe("createMappingsSerializer / createMappingsWriter", () => {
 	const longEvents = [];
 	for (let i = 0; i < 3000; i++) {
 		const line = Math.floor(i / 2) + 1;
-		longEvents.push([
-			line,
-			(i % 2) * 7,
-			i % 4 === 3 ? -1 : i % 3,
-			(i * 37) % 5000 || 1,
-			(i % 9) * 2,
-			i % 7 === 0 ? i % 5 : -1,
-		]);
+		// every fourth segment names no source, so it has no original
+		// position or name either
+		longEvents.push(
+			i % 4 === 3
+				? [line, (i % 2) * 7, -1, -1, -1, -1]
+				: [
+						line,
+						(i % 2) * 7,
+						i % 3,
+						(i * 37) % 5000 || 1,
+						(i % 9) * 2,
+						i % 7 === 0 ? i % 5 : -1,
+					],
+		);
 	}
 	// a trailing multi-line jump
 	longEvents.push([2000, 0, 0, 1, 0, -1]);
