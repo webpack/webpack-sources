@@ -16,9 +16,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# The runner image and Node.js version are pinned: CodSpeed compares a pull
+# request against its base commit's run, and a different OS image or Node.js
+# version between the two (`ubuntu-latest` and `lts/*` move on their own)
+# changes the numbers of every benchmark at once. Update them in a pull request
+# of their own, so the shift is attributed to it.
+env:
+  NODE_VERSION: 24.21.0
+
 jobs:
   benchmark:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write # Required for OIDC authentication with CodSpeed
@@ -31,7 +39,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: lts/*
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - run: npm ci
@@ -43,7 +51,7 @@ jobs:
           mode: "simulation"
 
   memory-benchmark:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write # Required for OIDC authentication with CodSpeed
@@ -56,7 +64,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: lts/*
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - run: npm ci

@@ -34,7 +34,7 @@
     "test:legacy": "jest",
     "test:legacy:coverage": "jest --coverage",
     "benchmark": "node --max-old-space-size=4096 --hash-seed=1 --random-seed=1 --no-opt --predictable --predictable-gc-schedule --interpreted-frames-native-stack --allow-natives-syntax --expose-gc --no-concurrent-sweeping ./benchmark/run.mjs cases",
-    "benchmark:memory": "node --expose-gc --max-old-space-size=4096 ./benchmark/run.mjs memory",
+    "benchmark:memory": "node --max-old-space-size=4096 --hash-seed=1 --random-seed=1 --no-opt --predictable --predictable-gc-schedule --interpreted-frames-native-stack --allow-natives-syntax --expose-gc --no-concurrent-sweeping ./benchmark/run.mjs memory",
     "version": "changeset version && npm run fmt",
     "release": "changeset publish"
   },
