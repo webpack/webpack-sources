@@ -36,10 +36,9 @@ declare class OriginalSource extends Source {
 	 */
 	_name: string;
 	/**
-	 * @private
 	 * @type {undefined | ScopeBindings}
 	 */
-	private _scopeBindings;
+	_scopeBindings: undefined | ScopeBindings;
 	getName(): string;
 	_cachedSize: number | undefined;
 	/**
