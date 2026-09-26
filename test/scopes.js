@@ -1,5 +1,7 @@
 "use strict";
 
+const assert = require("assert");
+const { describe, it } = require("node:test");
 const {
 	CachedSource,
 	ConcatSource,
@@ -42,7 +44,7 @@ describe("scopes", () => {
 		const map = mapOf(sourceWithBindings("lib.js", BINDINGS), {
 			columns: true,
 		});
-		expect(map.scopes).toBeUndefined();
+		assert.strictEqual(map.scopes, undefined);
 	});
 
 	it("emits nothing when no source declares a binding", () => {
@@ -50,7 +52,7 @@ describe("scopes", () => {
 			columns: true,
 			scopes: true,
 		});
-		expect(map.scopes).toBeUndefined();
+		assert.strictEqual(map.scopes, undefined);
 	});
 
 	it("names each binding and the expression it reads", () => {
@@ -58,11 +60,11 @@ describe("scopes", () => {
 			columns: true,
 			scopes: true,
 		});
-		expect(typeof map.scopes).toBe("string");
-		expect(map.names).toContain("mutable");
-		expect(map.names).toContain("ns.mutable");
-		expect(map.names).toContain("fn");
-		expect(map.names).toContain("ns.fn");
+		assert.strictEqual(typeof map.scopes, "string");
+		assert.ok(map.names.includes("mutable"));
+		assert.ok(map.names.includes("ns.mutable"));
+		assert.ok(map.names.includes("fn"));
+		assert.ok(map.names.includes("ns.fn"));
 	});
 
 	it("carries bindings through ConcatSource and ReplaceSource", () => {
@@ -72,8 +74,8 @@ describe("scopes", () => {
 			new ConcatSource(new OriginalSource("x();\n", "entry.js"), replaced),
 			{ columns: true, scopes: true },
 		);
-		expect(typeof map.scopes).toBe("string");
-		expect(map.names).toContain("ns.mutable");
+		assert.strictEqual(typeof map.scopes, "string");
+		assert.ok(map.names.includes("ns.mutable"));
 	});
 
 	it("keeps the map's own names ahead of the ones it adds", () => {
@@ -84,24 +86,25 @@ describe("scopes", () => {
 			),
 			{ columns: true, scopes: true },
 		);
-		expect(map.names.indexOf("mutable")).toBeGreaterThanOrEqual(0);
-		expect(new Set(map.names).size).toBe(map.names.length);
+		assert.ok(map.names.includes("mutable"));
+		assert.strictEqual(new Set(map.names).size, map.names.length);
 	});
 
 	it("reports the same field through sourceAndMap", () => {
 		const source = new ConcatSource(sourceWithBindings("lib.js", BINDINGS));
 		const options = { columns: true, scopes: true };
-		expect(
+		assert.strictEqual(
 			/** @type {RawSourceMap} */ (source.sourceAndMap(options).map).scopes,
-		).toBe(mapOf(source, options).scopes);
+			mapOf(source, options).scopes,
+		);
 	});
 
 	it("exposes the helpers on the public util export", () => {
 		const { util } = require("../");
 
-		expect(util.scopes.addScopesToSourceMap).toBe(addScopesToSourceMap);
-		expect(util.scopes.collectSourceScopes).toBe(collectSourceScopes);
-		expect(util.scopes.encodeScopes).toBe(encodeScopes);
+		assert.strictEqual(util.scopes.addScopesToSourceMap, addScopesToSourceMap);
+		assert.strictEqual(util.scopes.collectSourceScopes, collectSourceScopes);
+		assert.strictEqual(util.scopes.encodeScopes, encodeScopes);
 	});
 
 	describe("cachedSource", () => {
@@ -115,18 +118,20 @@ describe("scopes", () => {
 
 		it("does not serve a scopes-less cached map to a scopes request", () => {
 			const source = cached();
-			expect(mapOf(source, { columns: true }).scopes).toBeUndefined();
-			expect(
+			assert.strictEqual(mapOf(source, { columns: true }).scopes, undefined);
+			assert.notStrictEqual(
 				mapOf(source, { columns: true, scopes: true }).scopes,
-			).toBeDefined();
+				undefined,
+			);
 		});
 
 		it("does not leak scopes into a request that did not ask", () => {
 			const source = cached();
-			expect(
+			assert.notStrictEqual(
 				mapOf(source, { columns: true, scopes: true }).scopes,
-			).toBeDefined();
-			expect(mapOf(source, { columns: true }).scopes).toBeUndefined();
+				undefined,
+			);
+			assert.strictEqual(mapOf(source, { columns: true }).scopes, undefined);
 		});
 
 		it("still reports bindings once the source has been streamed", () => {
@@ -137,7 +142,7 @@ describe("scopes", () => {
 				new ConcatSource(new OriginalSource("x();\n", "entry.js"), module),
 				{ columns: true, scopes: true },
 			);
-			expect(map.names).toContain("ns.mutable");
+			assert.ok(map.names.includes("ns.mutable"));
 		});
 	});
 
@@ -147,9 +152,12 @@ describe("scopes", () => {
 				columns: true,
 			});
 			const scopes = collectSourceScopes(map.mappings, map.sources.length);
-			expect(scopes).toHaveLength(1);
-			expect(scopes[0].sourceIndex).toBe(0);
-			expect(scopes[0].rangeStarts).toHaveLength(scopes[0].rangeEnds.length);
+			assert.strictEqual(scopes.length, 1);
+			assert.strictEqual(scopes[0].sourceIndex, 0);
+			assert.strictEqual(
+				scopes[0].rangeStarts.length,
+				scopes[0].rangeEnds.length,
+			);
 		});
 
 		it("agrees with the field built while the map was written", () => {
@@ -164,7 +172,8 @@ describe("scopes", () => {
 				}
 			}
 			const names = [...map.names];
-			expect(encodeScopes(scopes, map.sources.length, names)).toBe(
+			assert.strictEqual(
+				encodeScopes(scopes, map.sources.length, names),
 				streamed.scopes,
 			);
 		});
@@ -187,41 +196,41 @@ describe("scopes", () => {
 		it("does nothing when the map has no mappings", () => {
 			const map = mapOf_("");
 			addScopesToSourceMap(map, () => BINDINGS);
-			expect(map.scopes).toBeUndefined();
+			assert.strictEqual(map.scopes, undefined);
 		});
 
 		it("does nothing when no source is asked for bindings", () => {
 			const map = mapOf_("AAAA");
 			addScopesToSourceMap(map, () => undefined);
-			expect(map.scopes).toBeUndefined();
+			assert.strictEqual(map.scopes, undefined);
 		});
 
 		it("does nothing when a source reports an empty set", () => {
 			const map = mapOf_("AAAA");
 			addScopesToSourceMap(map, () => new Map());
-			expect(map.scopes).toBeUndefined();
+			assert.strictEqual(map.scopes, undefined);
 		});
 
 		it("names the bindings a finished map's source declares", () => {
 			const map = mapOf_("AAAA,IAAI");
 			addScopesToSourceMap(map, () => BINDINGS);
-			expect(typeof map.scopes).toBe("string");
-			expect(map.names).toContain("mutable");
-			expect(map.names).toContain("ns.mutable");
+			assert.strictEqual(typeof map.scopes, "string");
+			assert.ok(map.names.includes("mutable"));
+			assert.ok(map.names.includes("ns.mutable"));
 		});
 
 		it("skips a segment that names no source", () => {
 			// the second segment carries only a column delta, so it maps nowhere
 			const map = mapOf_("AAAA,C");
 			addScopesToSourceMap(map, () => BINDINGS);
-			expect(typeof map.scopes).toBe("string");
+			assert.strictEqual(typeof map.scopes, "string");
 		});
 
 		it("skips a segment whose source index the map does not have", () => {
 			// the second segment steps sourceIndex to 1, past the single source
 			const map = mapOf_("AAAA,ACAA");
 			addScopesToSourceMap(map, () => BINDINGS);
-			expect(typeof map.scopes).toBe("string");
+			assert.strictEqual(typeof map.scopes, "string");
 		});
 
 		it("reaches the furthest original line a source explains", () => {
@@ -229,29 +238,29 @@ describe("scopes", () => {
 			const map = mapOf_("AAAA;ACAA;ADEA", ["lib.js", "other.js"]);
 			addScopesToSourceMap(map, (i) => (i === 0 ? BINDINGS : undefined));
 			const scopes = collectSourceScopes(map.mappings, 2);
-			expect(scopes[0].originalEnd.line).toBeGreaterThan(1);
+			assert.ok(scopes[0].originalEnd.line > 1);
 		});
 
 		it("reuses a name the map already carries", () => {
 			const map = mapOf_("AAAA");
 			map.names = ["mutable", "mutable"];
 			addScopesToSourceMap(map, () => new Map([["mutable", "ns.mutable"]]));
-			expect(map.names.filter((n) => n === "mutable")).toHaveLength(2);
-			expect(map.names).toContain("ns.mutable");
+			assert.strictEqual(map.names.filter((n) => n === "mutable").length, 2);
+			assert.ok(map.names.includes("ns.mutable"));
 		});
 
 		it("encodes a value too large for one digit", () => {
 			// forty lines puts the scope's end past what one base64 digit holds
 			const map = mapOf_(Array.from({ length: 40 }, () => "AACA").join(";"));
 			addScopesToSourceMap(map, () => BINDINGS);
-			expect(typeof map.scopes).toBe("string");
-			expect(/** @type {string} */ (map.scopes).length).toBeGreaterThan(10);
+			assert.strictEqual(typeof map.scopes, "string");
+			assert.ok(/** @type {string} */ (map.scopes).length > 10);
 		});
 
 		it("orders the generated ranges it emits", () => {
 			const map = mapOf_("AAAA,IAAI;AAAA,IAAI;AAAA,IAAI");
 			addScopesToSourceMap(map, () => BINDINGS);
-			expect(typeof map.scopes).toBe("string");
+			assert.strictEqual(typeof map.scopes, "string");
 		});
 	});
 });
