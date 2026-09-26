@@ -152,17 +152,27 @@ export function withCodSpeed(bench) {
 				if (hooks.afterEach) await hooks.afterEach.call(task);
 			}
 
+			// Two gc() passes: the first reclaims young-generation objects
+			// from the warmup loop, the second sweeps any old-generation
+			// references those young objects pinned. A single call leaves
+			// transient warmup allocations alive in old-gen and pollutes the
+			// per-task memory measurement that CodSpeed records. In simulation
+			// mode it keeps garbage from earlier tasks out of this one, so a
+			// task's result does not depend on the tasks that ran before it.
+			// There, the body then runs once more, so the heap's re-setup
+			// after the collection (~40k instructions, with syscalls, which
+			// dominated the short tasks and varied between runners) is not
+			// measured either.
+			if (mode !== "memory") {
+				global.gc?.();
+				global.gc?.();
+				if (hooks.beforeEach) await hooks.beforeEach.call(task);
+				await m.fn();
+				if (hooks.afterEach) await hooks.afterEach.call(task);
+			}
+
 			// Instrumented run.
 			if (hooks.beforeEach) await hooks.beforeEach.call(task);
-			// Memory mode only: two gc() passes, the first reclaims
-			// young-generation objects from the warmup loop, the second
-			// sweeps any old-generation references those young objects
-			// pinned. A single call leaves transient warmup allocations alive
-			// in old-gen and pollutes the per-task memory measurement that
-			// CodSpeed records. In simulation mode a collection right before
-			// the measured call would put the heap's re-setup (~40k
-			// instructions, with syscalls) into it, which dominates the
-			// short benchmarks and varies between runners.
 			if (mode === "memory") {
 				global.gc?.();
 				global.gc?.();
@@ -198,8 +208,16 @@ export function withCodSpeed(bench) {
 				if (hooks.afterEach) hooks.afterEach.call(task);
 			}
 
+			// See the async path above for when and why this collects twice.
+			if (mode !== "memory") {
+				global.gc?.();
+				global.gc?.();
+				if (hooks.beforeEach) hooks.beforeEach.call(task);
+				m.fn();
+				if (hooks.afterEach) hooks.afterEach.call(task);
+			}
+
 			if (hooks.beforeEach) hooks.beforeEach.call(task);
-			// See the async path above for why memory mode collects twice.
 			if (mode === "memory") {
 				global.gc?.();
 				global.gc?.();
