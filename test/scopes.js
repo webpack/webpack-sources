@@ -1,12 +1,17 @@
 "use strict";
 
 const assert = require("assert");
+const fs = require("fs");
 const { describe, it } = require("node:test");
+const path = require("path");
+const v8 = require("v8");
 const {
 	CachedSource,
 	ConcatSource,
 	OriginalSource,
+	PrefixSource,
 	ReplaceSource,
+	SourceMapSource,
 } = require("../");
 const {
 	addScopesToSourceMap,
@@ -18,6 +23,8 @@ const {
 /** @typedef {import("../lib/Source").MapOptions} MapOptions */
 /** @typedef {import("../lib/Source").RawSourceMap} RawSourceMap */
 /** @typedef {import("../lib/helpers/streamChunks").ScopeBindings} ScopeBindings */
+/** @typedef {import("../lib/Source")} Source */
+/** @typedef {import("../lib/CachedSource").CachedData} CachedData */
 
 /**
  * @param {{ map: (options?: MapOptions) => RawSourceMap | null }} source source
@@ -144,6 +151,122 @@ describe("scopes", () => {
 				{ columns: true, scopes: true },
 			);
 			assert.ok(map.names.includes("ns.mutable"));
+		});
+
+		/**
+		 * @returns {{ module: CachedSource, streams: () => number }} a cached module and how often its original was streamed
+		 */
+		const countedModule = () => {
+			const original = sourceWithBindings("lib.js", BINDINGS);
+			const { streamChunks } = original;
+			let streams = 0;
+			original.streamChunks = (...args) => {
+				streams++;
+				return streamChunks.apply(original, args);
+			};
+			return {
+				module: new CachedSource(original),
+				streams: () => streams,
+			};
+		};
+
+		/**
+		 * @param {CachedSource} module module
+		 * @returns {ConcatSource} a bundle composing the module
+		 */
+		const bundleOf = (module) =>
+			new ConcatSource(new OriginalSource("x();\n", "entry.js"), module);
+
+		it("keeps the bindings when a composed map is built again", () => {
+			const { module, streams } = countedModule();
+			const options = { columns: true, scopes: true };
+			const first = mapOf(bundleOf(module), options);
+			assert.notStrictEqual(first.scopes, undefined);
+			assert.strictEqual(streams(), 1);
+
+			// The module now replays its cached map instead of streaming again.
+			assert.strictEqual(mapOf(bundleOf(module), options).scopes, first.scopes);
+			assert.strictEqual(streams(), 1);
+
+			// sourceAndMap asks the module for its source too, a separate cache
+			// entry: filled by one stream, then replayed as well.
+			for (let i = 0; i < 2; i++) {
+				assert.strictEqual(
+					/** @type {RawSourceMap} */
+					(bundleOf(module).sourceAndMap(options).map).scopes,
+					first.scopes,
+				);
+				assert.strictEqual(streams(), 2);
+			}
+		});
+
+		it("streams once to record bindings a map() call did not see", () => {
+			const { module, streams } = countedModule();
+			const options = { columns: true, scopes: true };
+			// map() fills the entry for these options without seeing bindings
+			assert.notStrictEqual(mapOf(module, options).scopes, undefined);
+			const afterMap = streams();
+
+			/** @type {(ScopeBindings | undefined)[]} */
+			const reported = [];
+			/**
+			 * @returns {void}
+			 */
+			const stream = () => {
+				reported.length = 0;
+				module.streamChunks(
+					options,
+					() => {},
+					(sourceIndex, _source, _content, bindings) => {
+						reported[sourceIndex] = bindings;
+					},
+					() => {},
+				);
+			};
+			stream();
+			assert.strictEqual(reported[0], BINDINGS);
+			assert.strictEqual(streams(), afterMap + 1);
+			stream();
+			assert.strictEqual(reported[0], BINDINGS);
+			assert.strictEqual(streams(), afterMap + 1);
+		});
+
+		it("keeps the bindings in the data a restored source is built from", () => {
+			const { module } = countedModule();
+			const options = { columns: true, scopes: true };
+			const first = mapOf(bundleOf(module), options);
+			module.source();
+
+			// A persistently cached module is restored from its data alone.
+			const restored = new CachedSource(() => {
+				throw new Error("the original must not be needed");
+			}, module.getCachedData());
+			assert.strictEqual(
+				mapOf(bundleOf(restored), options).scopes,
+				first.scopes,
+			);
+		});
+
+		it("adds nothing to the data when no request asked for scopes", () => {
+			const { module } = countedModule();
+			mapOf(bundleOf(module), { columns: true });
+			module.source();
+			for (const entry of module.getCachedData().maps.values()) {
+				assert.ok(!("scopes" in entry));
+			}
+		});
+
+		it("records no bindings for a request without the option", () => {
+			const { module, streams } = countedModule();
+			assert.strictEqual(
+				mapOf(bundleOf(module), { columns: true }).scopes,
+				undefined,
+			);
+			assert.strictEqual(
+				mapOf(bundleOf(module), { columns: true }).scopes,
+				undefined,
+			);
+			assert.strictEqual(streams(), 1);
 		});
 	});
 
@@ -294,5 +417,302 @@ describe("scopes", () => {
 			addScopesToSourceMap(map, () => BINDINGS);
 			assert.strictEqual(typeof map.scopes, "string");
 		});
+	});
+});
+
+describe("scopes through cached compositions", () => {
+	const A_BINDINGS = new Map([
+		["readFile", "_fs__WEBPACK_IMPORTED_MODULE_0__.readFile"],
+		["join", "_path__WEBPACK_IMPORTED_MODULE_1__.join"],
+	]);
+	const B_BINDINGS = new Map([
+		["useState", "react__WEBPACK_IMPORTED_MODULE_0__.useState"],
+	]);
+	/** @type {Map<string, ScopeBindings>} */
+	const BINDINGS_BY_NAME = new Map([
+		["a.js", A_BINDINGS],
+		["b.js", B_BINDINGS],
+	]);
+
+	const a = () =>
+		new OriginalSource(
+			'readFile(join("x", "y"));\nreadFile("z");\n',
+			"a.js",
+			A_BINDINGS,
+		);
+	const b = () =>
+		new OriginalSource(
+			"const [s] = useState(0);\nexport default s;\n",
+			"b.js",
+			B_BINDINGS,
+		);
+	const c = () => new OriginalSource("console.log(1);\n", "c.js");
+	// A bundled library with its own map: its mappings reference names, so a
+	// module containing it reports names of its own before the ones its
+	// `scopes` field appends.
+	const promise = () =>
+		new SourceMapSource(
+			fs.readFileSync(
+				path.resolve(__dirname, "fixtures", "es6-promise.js"),
+				"utf8",
+			),
+			"es6-promise.js",
+			fs.readFileSync(
+				path.resolve(__dirname, "fixtures", "es6-promise.map"),
+				"utf8",
+			),
+		);
+
+	/** @typedef {(source: Source) => Source} Cache */
+
+	// Shaped like webpack output: modules are CachedSources, composed again by
+	// uncached ConcatSource, PrefixSource and ReplaceSource wrappers.
+	/** @type {[string, (cache: Cache) => Source][]} */
+	const CASES = [
+		[
+			"concatenated modules",
+			(cache) => new ConcatSource(cache(a()), cache(b())),
+		],
+		[
+			"a module without bindings between two with",
+			(cache) => new ConcatSource(cache(a()), cache(c()), cache(b())),
+		],
+		[
+			"prefixed modules",
+			(cache) =>
+				new ConcatSource(new PrefixSource("\t", cache(a())), cache(b())),
+		],
+		[
+			"a replaced module",
+			(cache) => {
+				const replaced = new ReplaceSource(cache(a()));
+				replaced.replace(0, 7, "_fs__WEBPACK_IMPORTED_MODULE_0__.readFile");
+				return new ConcatSource(cache(c()), replaced);
+			},
+		],
+		[
+			"a cached chunk of cached modules",
+			(cache) => cache(new ConcatSource(cache(a()), cache(b()))),
+		],
+		[
+			// b.js and a.js are sources 0 and 1 inside the module, 1 and 2 in the
+			// bundle, so a replay has to follow the remapped indices.
+			"a cached module that bundles two sources",
+			(cache) =>
+				new ConcatSource(cache(c()), cache(new ConcatSource(b(), a()))),
+		],
+		[
+			"a cached module whose mappings name identifiers",
+			(cache) =>
+				new ConcatSource(
+					cache(new ConcatSource(promise(), "\n", a())),
+					cache(b()),
+				),
+		],
+	];
+
+	/** @type {[string, boolean, (source: Source) => RawSourceMap][]} */
+	const REQUESTS = [];
+	for (const columns of [true, false]) {
+		REQUESTS.push([
+			`map({ columns: ${columns}, scopes: true })`,
+			columns,
+			(source) => mapOf(source, { columns, scopes: true }),
+		]);
+		REQUESTS.push([
+			`sourceAndMap({ columns: ${columns}, scopes: true })`,
+			columns,
+			(source) =>
+				/** @type {RawSourceMap} */
+				(source.sourceAndMap({ columns, scopes: true }).map),
+		]);
+	}
+
+	/**
+	 * The field decoded from a map built without caching or the option, so it
+	 * checks the streamed field independently of both.
+	 * @param {(cache: Cache) => Source} build build
+	 * @param {boolean} columns columns
+	 * @returns {string} expected `scopes` field
+	 */
+	const expectedScopes = (build, columns) => {
+		const map = mapOf(
+			build((source) => source),
+			{ columns },
+		);
+		addScopesToSourceMap(map, (sourceIndex) =>
+			BINDINGS_BY_NAME.get(map.sources[sourceIndex]),
+		);
+		return /** @type {string} */ (map.scopes);
+	};
+
+	/**
+	 * @returns {{ cache: Cache, reuse: () => Cache, instances: CachedSource[] }} a cache that records its instances, and one handing them out again in the same order
+	 */
+	const recordingCache = () => {
+		/** @type {CachedSource[]} */
+		const instances = [];
+		return {
+			instances,
+			cache: (source) => {
+				const cached = new CachedSource(source);
+				instances.push(cached);
+				return cached;
+			},
+			reuse: () => {
+				let i = 0;
+				return () => instances[i++];
+			},
+		};
+	};
+
+	/**
+	 * @param {CachedData[]} data cached data, in cache order
+	 * @returns {Cache} a cache restoring each instance from its data alone
+	 */
+	const restoringCache = (data) => {
+		let i = 0;
+		return () =>
+			new CachedSource(() => {
+				throw new Error("a restored source must not need its original");
+			}, data[i++]);
+	};
+
+	/**
+	 * @param {() => void} fn fn
+	 * @returns {number} how often an OriginalSource was streamed while running fn
+	 */
+	const countStreams = (fn) => {
+		const { streamChunks: originalStreamChunks } = OriginalSource.prototype;
+		let streams = 0;
+		OriginalSource.prototype.streamChunks = function streamChunks(...args) {
+			streams++;
+			return originalStreamChunks.apply(this, args);
+		};
+		try {
+			fn();
+		} finally {
+			OriginalSource.prototype.streamChunks = originalStreamChunks;
+		}
+		return streams;
+	};
+
+	for (const [name, build] of CASES) {
+		describe(name, () => {
+			it("builds the field every source's bindings produce", () => {
+				for (const [request, columns, get] of REQUESTS) {
+					const expected = expectedScopes(build, columns);
+					assert.strictEqual(typeof expected, "string", request);
+					assert.strictEqual(
+						get(build(recordingCache().cache)).scopes,
+						expected,
+						request,
+					);
+				}
+			});
+
+			it("replays the same field without streaming a module again", () => {
+				const { cache, reuse } = recordingCache();
+				const first = REQUESTS.map(([, , get], i) =>
+					get(i === 0 ? build(cache) : build(reuse())),
+				);
+				const streams = countStreams(() => {
+					for (let round = 0; round < 2; round++) {
+						for (const [i, [request, columns, get]] of REQUESTS.entries()) {
+							const map = get(build(reuse()));
+							// emitted byte-identical to the first build, names included
+							assert.strictEqual(
+								JSON.stringify(map),
+								JSON.stringify(first[i]),
+								request,
+							);
+							assert.strictEqual(
+								map.scopes,
+								expectedScopes(build, columns),
+								request,
+							);
+						}
+					}
+				});
+				// expectedScopes streams its own uncached tree for each check
+				const uncached = countStreams(() => {
+					for (let round = 0; round < 2; round++) {
+						for (const [, columns] of REQUESTS) expectedScopes(build, columns);
+					}
+				});
+				assert.strictEqual(streams, uncached);
+			});
+
+			for (const [
+				how,
+				prepare,
+			] of /** @type {[string, (data: CachedData[]) => CachedData[]][]} */ ([
+				["restored from cached data", (data) => data],
+				[
+					"restored from serialized cached data",
+					(data) => data.map((item) => v8.deserialize(v8.serialize(item))),
+				],
+			])) {
+				it(`keeps the field when ${how}`, () => {
+					const { cache, reuse, instances } = recordingCache();
+					for (const [i, [, , get]] of REQUESTS.entries()) {
+						get(i === 0 ? build(cache) : build(reuse()));
+					}
+					const data = prepare(
+						instances.map((instance) => instance.getCachedData()),
+					);
+					for (const [request, columns, get] of REQUESTS) {
+						const map = get(build(restoringCache(data)));
+						// emitted byte-identical to a fresh build
+						assert.strictEqual(
+							JSON.stringify(map),
+							JSON.stringify(get(build(recordingCache().cache))),
+							request,
+						);
+						assert.strictEqual(
+							map.scopes,
+							expectedScopes(build, columns),
+							request,
+						);
+					}
+				});
+			}
+
+			it("builds the field again after the caches are cleared", () => {
+				const { cache, reuse, instances } = recordingCache();
+				const [[request, columns, get]] = REQUESTS;
+				get(build(cache));
+				for (const instance of instances) instance.clearCache();
+				assert.strictEqual(
+					get(build(reuse())).scopes,
+					expectedScopes(build, columns),
+					request,
+				);
+			});
+		});
+	}
+
+	it("streams a restored module once when its data holds no bindings", () => {
+		const options = { columns: true, scopes: true };
+		const module = new CachedSource(a());
+		// map() fills an entry without seeing bindings, and the bundle's own
+		// request is a different entry, so the data carries none
+		mapOf(module, options);
+		const data = module.getCachedData();
+		let originals = 0;
+		const restored = new CachedSource(() => {
+			originals++;
+			return a();
+		}, data);
+		const bundle = () =>
+			new ConcatSource(new OriginalSource("x();\n", "entry.js"), restored);
+		const expected = expectedScopes(
+			(cache) =>
+				new ConcatSource(new OriginalSource("x();\n", "entry.js"), cache(a())),
+			true,
+		);
+		assert.strictEqual(mapOf(bundle(), options).scopes, expected);
+		assert.strictEqual(mapOf(bundle(), options).scopes, expected);
+		assert.strictEqual(originals, 1);
 	});
 });
