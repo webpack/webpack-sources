@@ -1,7 +1,9 @@
 "use strict";
 
 const assert = require("assert");
+const fs = require("fs");
 const { describe, it } = require("node:test");
+const path = require("path");
 const v8 = require("v8");
 const {
 	CachedSource,
@@ -9,6 +11,7 @@ const {
 	OriginalSource,
 	PrefixSource,
 	ReplaceSource,
+	SourceMapSource,
 } = require("../");
 const {
 	addScopesToSourceMap,
@@ -444,6 +447,21 @@ describe("scopes through cached compositions", () => {
 			B_BINDINGS,
 		);
 	const c = () => new OriginalSource("console.log(1);\n", "c.js");
+	// A bundled library with its own map: its mappings reference names, so a
+	// module containing it reports names of its own before the ones its
+	// `scopes` field appends.
+	const promise = () =>
+		new SourceMapSource(
+			fs.readFileSync(
+				path.resolve(__dirname, "fixtures", "es6-promise.js"),
+				"utf8",
+			),
+			"es6-promise.js",
+			fs.readFileSync(
+				path.resolve(__dirname, "fixtures", "es6-promise.map"),
+				"utf8",
+			),
+		);
 
 	/** @typedef {(source: Source) => Source} Cache */
 
@@ -482,6 +500,14 @@ describe("scopes through cached compositions", () => {
 			"a cached module that bundles two sources",
 			(cache) =>
 				new ConcatSource(cache(c()), cache(new ConcatSource(b(), a()))),
+		],
+		[
+			"a cached module whose mappings name identifiers",
+			(cache) =>
+				new ConcatSource(
+					cache(new ConcatSource(promise(), "\n", a())),
+					cache(b()),
+				),
 		],
 	];
 
