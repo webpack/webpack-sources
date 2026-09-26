@@ -1,5 +1,15 @@
 # webpack-sources
 
+## 3.6.0
+
+### Minor Changes
+
+- Add `map({ scopes: true })`, emitting the source map `scopes` field from the bindings a source declares. (by [@alexander-akait](https://github.com/alexander-akait) in [#275](https://github.com/webpack/webpack-sources/pull/275))
+
+### Patch Changes
+
+- Create a cached source's map cache only once a map is asked for. (by [@alexander-akait](https://github.com/alexander-akait) in [#296](https://github.com/webpack/webpack-sources/pull/296))
+
 ## 3.5.3
 
 ### Patch Changes
