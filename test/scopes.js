@@ -224,6 +224,31 @@ describe("scopes", () => {
 			assert.strictEqual(streams(), afterMap + 1);
 		});
 
+		it("keeps the bindings in the data a restored source is built from", () => {
+			const { module } = countedModule();
+			const options = { columns: true, scopes: true };
+			const first = mapOf(bundleOf(module), options);
+			module.source();
+
+			// A persistently cached module is restored from its data alone.
+			const restored = new CachedSource(() => {
+				throw new Error("the original must not be needed");
+			}, module.getCachedData());
+			assert.strictEqual(
+				mapOf(bundleOf(restored), options).scopes,
+				first.scopes,
+			);
+		});
+
+		it("adds nothing to the data when no request asked for scopes", () => {
+			const { module } = countedModule();
+			mapOf(bundleOf(module), { columns: true });
+			module.source();
+			for (const entry of module.getCachedData().maps.values()) {
+				assert.ok(!("scopeBindings" in entry));
+			}
+		});
+
 		it("records no bindings for a request without the option", () => {
 			const { module, streams } = countedModule();
 			assert.strictEqual(
