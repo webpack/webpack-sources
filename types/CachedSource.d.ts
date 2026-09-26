@@ -89,6 +89,7 @@ declare namespace CachedSource {
 		Options,
 		ScopeBindings,
 		BufferedMap,
+		ScopesReplay,
 		BufferEntry,
 		BufferedMaps,
 		CachedData,
@@ -139,15 +140,26 @@ type BufferedMap = {
 	file: string;
 };
 /**
- * `scopeBindings` holds, by the map's source index, the bindings each source
- * reported while the entry was streamed. The map only keeps the encoded
- * `scopes` field, so a replay needs them to report the bindings again. It is
- * only recorded for requests with the `scopes` option.
+ * What replaying an entry streamed for a `scopes` request needs besides its
+ * map. The map only keeps the encoded `scopes` field, so `bindings` holds, by
+ * source index, the bindings each source reported. The field also appended
+ * names to the map, and `names` counts the ones the stream itself reported,
+ * so a replay reports the same names a fresh stream would.
  */
+type ScopesReplay = {
+	/**
+	 * bindings by source index
+	 */
+	bindings: (ScopeBindings | undefined)[];
+	/**
+	 * number of names the stream reported
+	 */
+	names: number;
+};
 type BufferEntry = {
 	map?: null | RawSourceMap;
 	bufferedMap?: null | BufferedMap;
-	scopeBindings?: (ScopeBindings | undefined)[];
+	scopes?: ScopesReplay;
 };
 type BufferedMaps = Map<string, BufferEntry>;
 type CachedData = {
