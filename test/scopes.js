@@ -145,6 +145,97 @@ describe("scopes", () => {
 			);
 			assert.ok(map.names.includes("ns.mutable"));
 		});
+
+		/**
+		 * @returns {{ module: CachedSource, streams: () => number }} a cached module and how often its original was streamed
+		 */
+		const countedModule = () => {
+			const original = sourceWithBindings("lib.js", BINDINGS);
+			const { streamChunks } = original;
+			let streams = 0;
+			original.streamChunks = (...args) => {
+				streams++;
+				return streamChunks.apply(original, args);
+			};
+			return {
+				module: new CachedSource(original),
+				streams: () => streams,
+			};
+		};
+
+		/**
+		 * @param {CachedSource} module module
+		 * @returns {ConcatSource} a bundle composing the module
+		 */
+		const bundleOf = (module) =>
+			new ConcatSource(new OriginalSource("x();\n", "entry.js"), module);
+
+		it("keeps the bindings when a composed map is built again", () => {
+			const { module, streams } = countedModule();
+			const options = { columns: true, scopes: true };
+			const first = mapOf(bundleOf(module), options);
+			assert.notStrictEqual(first.scopes, undefined);
+			assert.strictEqual(streams(), 1);
+
+			// The module now replays its cached map instead of streaming again.
+			assert.strictEqual(mapOf(bundleOf(module), options).scopes, first.scopes);
+			assert.strictEqual(streams(), 1);
+
+			// sourceAndMap asks the module for its source too, a separate cache
+			// entry: filled by one stream, then replayed as well.
+			for (let i = 0; i < 2; i++) {
+				assert.strictEqual(
+					/** @type {RawSourceMap} */
+					(bundleOf(module).sourceAndMap(options).map).scopes,
+					first.scopes,
+				);
+				assert.strictEqual(streams(), 2);
+			}
+		});
+
+		it("streams once to record bindings a map() call did not see", () => {
+			const { module, streams } = countedModule();
+			const options = { columns: true, scopes: true };
+			// map() fills the entry for these options without seeing bindings
+			assert.notStrictEqual(mapOf(module, options).scopes, undefined);
+			const afterMap = streams();
+
+			/** @type {(ScopeBindings | undefined)[]} */
+			const reported = [];
+			/**
+			 * @returns {void}
+			 */
+			const stream = () => {
+				reported.length = 0;
+				module.streamChunks(
+					options,
+					() => {},
+					(sourceIndex, _source, _content, bindings) => {
+						reported[sourceIndex] = bindings;
+					},
+					() => {},
+				);
+			};
+			stream();
+			assert.strictEqual(reported[0], BINDINGS);
+			assert.strictEqual(streams(), afterMap + 1);
+			stream();
+			assert.strictEqual(reported[0], BINDINGS);
+			assert.strictEqual(streams(), afterMap + 1);
+		});
+
+		it("records no bindings for a request without the option", () => {
+			const { module, streams } = countedModule();
+			assert.strictEqual(
+				mapOf(bundleOf(module), { columns: true }).scopes,
+				undefined,
+			);
+			assert.strictEqual(
+				mapOf(bundleOf(module), { columns: true }).scopes,
+				undefined,
+			);
+			assert.strictEqual(streams(), 1);
+		});
 	});
 
 	describe("encoding", () => {

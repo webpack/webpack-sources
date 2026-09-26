@@ -87,6 +87,7 @@ declare namespace CachedSource {
 		OnName,
 		OnSource,
 		Options,
+		ScopeBindings,
 		BufferedMap,
 		BufferEntry,
 		BufferedMaps,
@@ -106,6 +107,7 @@ type OnChunk = import("./helpers/streamChunks").OnChunk;
 type OnName = import("./helpers/streamChunks").OnName;
 type OnSource = import("./helpers/streamChunks").OnSource;
 type Options = import("./helpers/streamChunks").Options;
+type ScopeBindings = import("./helpers/streamChunks").ScopeBindings;
 type BufferedMap = {
 	/**
 	 * version
@@ -136,9 +138,16 @@ type BufferedMap = {
 	 */
 	file: string;
 };
+/**
+ * `scopeBindings` holds, by the map's source index, the bindings each source
+ * reported while the entry was streamed. The map only keeps the encoded
+ * `scopes` field, so a replay needs them to report the bindings again. It is
+ * only recorded for requests with the `scopes` option.
+ */
 type BufferEntry = {
 	map?: null | RawSourceMap;
 	bufferedMap?: null | BufferedMap;
+	scopeBindings?: (ScopeBindings | undefined)[];
 };
 type BufferedMaps = Map<string, BufferEntry>;
 type CachedData = {
