@@ -10,12 +10,19 @@ export = OriginalSource;
 /** @typedef {import("./helpers/streamChunks").OnName} OnName */
 /** @typedef {import("./helpers/streamChunks").OnSource} OnSource */
 /** @typedef {import("./helpers/streamChunks").Options} Options */
+/** @typedef {import("./helpers/streamChunks").ScopeBindings} ScopeBindings */
 declare class OriginalSource extends Source {
 	/**
 	 * @param {string | Buffer} value value
 	 * @param {string} name name
+	 * @param {ScopeBindings=} scopeBindings what each name this source declares
+	 * evaluates to in the generated code, for the map's `scopes` field
 	 */
-	constructor(value: string | Buffer, name: string);
+	constructor(
+		value: string | Buffer,
+		name: string,
+		scopeBindings?: ScopeBindings | undefined,
+	);
 	/**
 	 * @type {undefined | string}
 	 */
@@ -28,6 +35,10 @@ declare class OriginalSource extends Source {
 	 * @type {string}
 	 */
 	_name: string;
+	/**
+	 * @type {undefined | ScopeBindings}
+	 */
+	_scopeBindings: undefined | ScopeBindings;
 	getName(): string;
 	_cachedSize: number | undefined;
 	/**
@@ -57,6 +68,7 @@ declare namespace OriginalSource {
 		OnName,
 		OnSource,
 		Options,
+		ScopeBindings,
 	};
 }
 import Source = require("./Source");
@@ -72,3 +84,4 @@ type OnChunk = import("./helpers/streamChunks").OnChunk;
 type OnName = import("./helpers/streamChunks").OnName;
 type OnSource = import("./helpers/streamChunks").OnSource;
 type Options = import("./helpers/streamChunks").Options;
+type ScopeBindings = import("./helpers/streamChunks").ScopeBindings;

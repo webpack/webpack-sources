@@ -1,11 +1,4 @@
 export = streamAndGetSourceAndMap;
-/** @typedef {import("../Source").RawSourceMap} RawSourceMap */
-/** @typedef {import("./streamChunks").GeneratedSourceInfo} GeneratedSourceInfo */
-/** @typedef {import("./streamChunks").OnChunk} OnChunk */
-/** @typedef {import("./streamChunks").OnName} OnName */
-/** @typedef {import("./streamChunks").OnSource} OnSource */
-/** @typedef {import("./streamChunks").Options} Options */
-/** @typedef {import("./streamChunks").SourceMaybeWithStreamChunksFunction} SourceMaybeWithStreamChunksFunction */
 /**
  * @param {SourceMaybeWithStreamChunksFunction} inputSource input source
  * @param {Options} options options

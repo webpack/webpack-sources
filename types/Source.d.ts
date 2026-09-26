@@ -3,6 +3,7 @@ export = Source;
  * @typedef {object} MapOptions
  * @property {boolean=} columns need columns?
  * @property {boolean=} module is module
+ * @property {boolean=} scopes emit the `scopes` field from the bindings the sources declare
  */
 /**
  * @typedef {object} RawSourceMap
@@ -15,6 +16,7 @@ export = Source;
  * @property {string} file file
  * @property {string=} debugId debug id
  * @property {number[]=} ignoreList ignore list
+ * @property {string=} scopes encoded `scopes` field of the "Scopes" proposal
  */
 /** @typedef {string | Buffer} SourceValue */
 /**
@@ -103,6 +105,10 @@ type MapOptions = {
 	 * is module
 	 */
 	module?: boolean | undefined;
+	/**
+	 * emit the `scopes` field from the bindings the sources declare
+	 */
+	scopes?: boolean | undefined;
 };
 type RawSourceMap = {
 	/**
@@ -141,6 +147,10 @@ type RawSourceMap = {
 	 * ignore list
 	 */
 	ignoreList?: number[] | undefined;
+	/**
+	 * encoded `scopes` field of the "Scopes" proposal
+	 */
+	scopes?: string | undefined;
 };
 type SourceValue = string | Buffer;
 type SourceAndMap = {
