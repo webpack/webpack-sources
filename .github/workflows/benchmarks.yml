@@ -16,9 +16,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# The runner image is pinned: CodSpeed compares a pull request against its
+# base commit's run, and `ubuntu-latest` moving to a new image between the two
+# changes the numbers of every benchmark at once. Update it in a pull request of
+# its own, so the shift is attributed to it.
+
 jobs:
   benchmark:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write # Required for OIDC authentication with CodSpeed
@@ -43,7 +48,7 @@ jobs:
           mode: "simulation"
 
   memory-benchmark:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write # Required for OIDC authentication with CodSpeed

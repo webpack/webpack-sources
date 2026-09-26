@@ -30,8 +30,12 @@ the wrapper detects the CodSpeed runner environment and switches to
 instruction-counting mode automatically.
 
 The V8 flags in `package.json` (`--no-opt --predictable --hash-seed=1` etc.)
-are required by CodSpeed's instrumentation mode for deterministic results —
-do not drop them.
+are required by CodSpeed's instrumentation and memory modes for deterministic
+results — do not drop them. `benchmark:memory` needs them as much as
+`benchmark`: without them, V8 optimizes functions on background threads, and
+the compiler's own allocations land in whichever benchmark happens to be
+measured at the time, so the same commit reports different memory numbers
+from run to run. CodSpeed warns `missing required flags` when any is absent.
 
 ### Optional: running real instruction counts locally
 

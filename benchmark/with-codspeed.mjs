@@ -15,6 +15,7 @@
  * Modes (via getCodspeedRunnerMode() from @codspeed/core):
  *   "disabled"   — returns the bench untouched (local runs)
  *   "simulation" — overrides bench.run/runSync for CodSpeed instrumentation
+ *   "memory"     — same as "simulation"; CodSpeed tracks allocations instead
  *   "walltime"   — left untouched; tinybench's built-in timing is used
  */
 
@@ -93,7 +94,7 @@ export function withCodSpeed(bench) {
 	const mode = getCodspeedRunnerMode();
 	if (mode === "disabled" || mode === "walltime") return bench;
 
-	// --- simulation mode ---
+	// --- simulation and memory modes ---
 
 	const meta = getOrCreateMeta(bench);
 	const rawAdd = bench.add.bind(bench);
@@ -107,7 +108,7 @@ export function withCodSpeed(bench) {
 
 	const setup = () => {
 		setupCore();
-		console.log("[CodSpeed] running in simulation mode");
+		console.log(`[CodSpeed] running in ${mode} mode`);
 	};
 
 	const teardown = () => {
