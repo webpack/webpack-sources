@@ -1,7 +1,7 @@
 "use strict";
 
-jest.mock("./__mocks__/createMappingsSerializer");
-
+const assert = require("assert");
+const { describe, it } = require("node:test");
 const { CompatSource } = require("../");
 const { RawSource } = require("../");
 
@@ -16,16 +16,16 @@ describe("compatSource", () => {
 				return 42;
 			},
 		});
-		expect(CompatSource.from(source)).toEqual(source);
+		assert.deepStrictEqual(CompatSource.from(source), source);
 		const rawSource = new RawSource(CONTENT);
-		expect(CompatSource.from(rawSource)).toEqual(rawSource);
-		expect(source.source()).toEqual(CONTENT);
-		expect(source.size()).toBe(42);
-		expect(source.buffer()).toEqual(Buffer.from(CONTENT));
-		expect(source.map()).toBeNull();
+		assert.deepStrictEqual(CompatSource.from(rawSource), rawSource);
+		assert.deepStrictEqual(source.source(), CONTENT);
+		assert.strictEqual(source.size(), 42);
+		assert.deepStrictEqual(source.buffer(), Buffer.from(CONTENT));
+		assert.strictEqual(source.map(), null);
 		const sourceAndMap = source.sourceAndMap();
-		expect(sourceAndMap).toHaveProperty("source", CONTENT);
-		expect(sourceAndMap).toHaveProperty("map", null);
+		assert.strictEqual(sourceAndMap.source, CONTENT);
+		assert.strictEqual(sourceAndMap.map, null);
 		/** @type {(string | Buffer)[]} */
 		const calledWith = [];
 		source.updateHash({
@@ -34,7 +34,7 @@ describe("compatSource", () => {
 				calledWith.push(value);
 			},
 		});
-		expect(calledWith).toEqual([Buffer.from(CONTENT)]);
+		assert.deepStrictEqual(calledWith, [Buffer.from(CONTENT)]);
 	});
 
 	it("should use buffer from source-like when provided", () => {
@@ -48,7 +48,7 @@ describe("compatSource", () => {
 				return buffer;
 			},
 		});
-		expect(source.buffer()).toBe(buffer);
+		assert.strictEqual(source.buffer(), buffer);
 	});
 
 	it("should use buffers from source-like when provided", () => {
@@ -61,7 +61,7 @@ describe("compatSource", () => {
 				return buffers;
 			},
 		});
-		expect(source.buffers()).toBe(buffers);
+		assert.strictEqual(source.buffers(), buffers);
 	});
 
 	it("should fall back to super buffers() when sourceLike doesn't provide it", () => {
@@ -72,8 +72,8 @@ describe("compatSource", () => {
 			},
 		});
 		const buffers = source.buffers();
-		expect(buffers).toHaveLength(1);
-		expect(buffers[0]).toEqual(Buffer.from(CONTENT));
+		assert.strictEqual(buffers.length, 1);
+		assert.deepStrictEqual(buffers[0], Buffer.from(CONTENT));
 	});
 
 	it("should use size from super when sourceLike doesn't define size", () => {
@@ -83,7 +83,7 @@ describe("compatSource", () => {
 				return CONTENT;
 			},
 		});
-		expect(source.size()).toBe(5);
+		assert.strictEqual(source.size(), 5);
 	});
 
 	it("should call map from sourceLike when provided", () => {
@@ -105,7 +105,7 @@ describe("compatSource", () => {
 				hash.update("custom");
 			},
 		});
-		expect(source.map()).toBe(map);
+		assert.strictEqual(source.map(), map);
 	});
 
 	it("should call sourceAndMap from sourceLike when provided", () => {
@@ -125,7 +125,7 @@ describe("compatSource", () => {
 				return sourceAndMap;
 			},
 		});
-		expect(source.sourceAndMap()).toBe(sourceAndMap);
+		assert.strictEqual(source.sourceAndMap(), sourceAndMap);
 	});
 
 	it("should call updateHash from sourceLike when provided", () => {
@@ -145,7 +145,7 @@ describe("compatSource", () => {
 				calledWith.push(value);
 			},
 		});
-		expect(calledWith).toEqual(["custom-hash"]);
+		assert.deepStrictEqual(calledWith, ["custom-hash"]);
 	});
 
 	it("should throw when map is defined but updateHash is not", () => {
@@ -157,11 +157,11 @@ describe("compatSource", () => {
 				return null;
 			},
 		});
-		expect(() => {
+		assert.throws(() => {
 			source.updateHash({
 				// @ts-expect-error for tests
 				update() {},
 			});
-		}).toThrow(/'map' method must also provide an 'updateHash' method/);
+		}, /'map' method must also provide an 'updateHash' method/);
 	});
 });

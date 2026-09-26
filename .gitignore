@@ -2,3 +2,4 @@
 /coverage
 .eslintcache
 yarn.lock
+/lcov.info

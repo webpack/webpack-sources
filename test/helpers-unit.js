@@ -1,5 +1,7 @@
 "use strict";
 
+const assert = require("assert");
+const { afterEach, describe, it } = require("node:test");
 const createMappingsSerializer = require("../lib/helpers/createMappingsSerializer");
 const {
 	createMappingsWriter,
@@ -25,12 +27,12 @@ const {
 
 describe("getGeneratedSourceInfo", () => {
 	it("should return empty object when source is undefined", () => {
-		expect(getGeneratedSourceInfo(undefined)).toEqual({});
+		assert.deepStrictEqual(getGeneratedSourceInfo(undefined), {});
 	});
 
 	it("should return correct info for single line", () => {
 		const info = getGeneratedSourceInfo("hello world");
-		expect(info).toEqual({
+		assert.deepStrictEqual(info, {
 			generatedLine: 1,
 			generatedColumn: 11,
 			source: "hello world",
@@ -39,19 +41,19 @@ describe("getGeneratedSourceInfo", () => {
 
 	it("should return correct info for multi-line source", () => {
 		const info = getGeneratedSourceInfo("hello\nworld\nfoo");
-		expect(info.generatedLine).toBe(3);
-		expect(info.generatedColumn).toBe(3);
+		assert.strictEqual(info.generatedLine, 3);
+		assert.strictEqual(info.generatedColumn, 3);
 	});
 
 	it("should count newlines accurately for trailing newline", () => {
 		const info = getGeneratedSourceInfo("a\nb\n");
-		expect(info.generatedLine).toBe(3);
-		expect(info.generatedColumn).toBe(0);
+		assert.strictEqual(info.generatedLine, 3);
+		assert.strictEqual(info.generatedColumn, 0);
 	});
 
 	it("should handle empty string as single empty line", () => {
 		const info = getGeneratedSourceInfo("");
-		expect(info).toEqual({
+		assert.deepStrictEqual(info, {
 			generatedLine: 1,
 			generatedColumn: 0,
 			source: "",
@@ -69,69 +71,77 @@ describe("getSource", () => {
 	};
 
 	it("should return null for negative index", () => {
-		expect(getSource(baseMap, -1)).toBeNull();
+		assert.strictEqual(getSource(baseMap, -1), null);
 	});
 
 	it("should return source as-is when no sourceRoot", () => {
-		expect(getSource(baseMap, 0)).toBe("a.js");
-		expect(getSource(baseMap, 1)).toBe("b.js");
+		assert.strictEqual(getSource(baseMap, 0), "a.js");
+		assert.strictEqual(getSource(baseMap, 1), "b.js");
 	});
 
 	it("should prefix sourceRoot without trailing slash", () => {
-		expect(getSource({ ...baseMap, sourceRoot: "src" }, 0)).toBe("src/a.js");
+		assert.strictEqual(
+			getSource({ ...baseMap, sourceRoot: "src" }, 0),
+			"src/a.js",
+		);
 	});
 
 	it("should prefix sourceRoot with trailing slash", () => {
-		expect(getSource({ ...baseMap, sourceRoot: "src/" }, 0)).toBe("src/a.js");
+		assert.strictEqual(
+			getSource({ ...baseMap, sourceRoot: "src/" }, 0),
+			"src/a.js",
+		);
 	});
 });
 
 describe("splitIntoLines", () => {
 	it("should split simple lines", () => {
-		expect(splitIntoLines("a\nb\nc")).toEqual(["a\n", "b\n", "c"]);
+		assert.deepStrictEqual(splitIntoLines("a\nb\nc"), ["a\n", "b\n", "c"]);
 	});
 
 	it("should handle trailing newline", () => {
-		expect(splitIntoLines("a\nb\n")).toEqual(["a\n", "b\n"]);
+		assert.deepStrictEqual(splitIntoLines("a\nb\n"), ["a\n", "b\n"]);
 	});
 
 	it("should handle empty string", () => {
-		expect(splitIntoLines("")).toEqual([]);
+		assert.deepStrictEqual(splitIntoLines(""), []);
 	});
 });
 
 describe("splitIntoPotentialTokens", () => {
 	it("should split tokens from a non-empty string", () => {
 		const result = splitIntoPotentialTokens("a b c");
-		expect(result).not.toBeNull();
+		assert.notStrictEqual(result, null);
 	});
 
 	it("should return null for empty string", () => {
-		expect(splitIntoPotentialTokens("")).toBeNull();
+		assert.strictEqual(splitIntoPotentialTokens(""), null);
 	});
 
 	// The tokens must always concatenate back to the original input,
 	// regardless of which scan phase the string ends in.
-	it.each([
+	for (const input of [
 		"a b c", // phase 1 runs to end of string (no stop char)
 		"a;", // phase 2 delimiter run ends the string
 		"a\nb", // phase 3 consumes a trailing newline, then a final token
 		"\n", // a lone newline token
 		"a;b{c}\nd e\n", // mixed stops, whitespace and a trailing newline
 		"function foo() {\n\treturn 1;\n}\n", // realistic snippet (\t, spaces, ;{}\n)
-	])("round-trips %j back to the original string", (input) => {
-		const tokens = splitIntoPotentialTokens(input);
-		expect(tokens).not.toBeNull();
-		expect(/** @type {string[]} */ (tokens).join("")).toBe(input);
-	});
+	]) {
+		it(`round-trips ${JSON.stringify(input)} back to the original string`, () => {
+			const tokens = splitIntoPotentialTokens(input);
+			assert.notStrictEqual(tokens, null);
+			assert.strictEqual(/** @type {string[]} */ (tokens).join(""), input);
+		});
+	}
 
 	it("keeps a trailing newline attached to its token", () => {
 		// "a\n" ends in phase 3; "b" is emitted by the bottom push.
-		expect(splitIntoPotentialTokens("a\nb")).toEqual(["a\n", "b"]);
+		assert.deepStrictEqual(splitIntoPotentialTokens("a\nb"), ["a\n", "b"]);
 	});
 
 	it("emits a delimiter-run token when the string ends in phase 2", () => {
-		expect(splitIntoPotentialTokens("a;")).toEqual(["a;"]);
+		assert.deepStrictEqual(splitIntoPotentialTokens("a;"), ["a;"]);
 	});
 });
 
@@ -142,8 +152,8 @@ describe("readMappings", () => {
 		readMappings("AAAA~;AAAA", (...args) => {
 			mappings.push(args);
 		});
-		expect(mappings).toHaveLength(2);
-		expect(mappings[0]).toEqual([1, 0, 0, 1, 0, -1]);
+		assert.strictEqual(mappings.length, 2);
+		assert.deepStrictEqual(mappings[0], [1, 0, 0, 1, 0, -1]);
 	});
 
 	it("should handle empty mappings", () => {
@@ -151,7 +161,7 @@ describe("readMappings", () => {
 		readMappings("", (...args) => {
 			mappings.push(args);
 		});
-		expect(mappings).toHaveLength(0);
+		assert.strictEqual(mappings.length, 0);
 	});
 
 	it("should parse simple mapping with source", () => {
@@ -159,8 +169,8 @@ describe("readMappings", () => {
 		readMappings("AAAA", (...args) => {
 			mappings.push(args);
 		});
-		expect(mappings).toHaveLength(1);
-		expect(mappings[0]).toEqual([1, 0, 0, 1, 0, -1]);
+		assert.strictEqual(mappings.length, 1);
+		assert.deepStrictEqual(mappings[0], [1, 0, 0, 1, 0, -1]);
 	});
 
 	it("should parse mapping with name", () => {
@@ -168,8 +178,8 @@ describe("readMappings", () => {
 		readMappings("AAAAA", (...args) => {
 			mappings.push(args);
 		});
-		expect(mappings).toHaveLength(1);
-		expect(mappings[0]).toEqual([1, 0, 0, 1, 0, 0]);
+		assert.strictEqual(mappings.length, 1);
+		assert.deepStrictEqual(mappings[0], [1, 0, 0, 1, 0, 0]);
 	});
 
 	it("should parse multiple lines", () => {
@@ -177,7 +187,7 @@ describe("readMappings", () => {
 		readMappings("AAAA;AACA", (...args) => {
 			mappings.push(args);
 		});
-		expect(mappings).toHaveLength(2);
+		assert.strictEqual(mappings.length, 2);
 	});
 
 	it("should preserve negative cumulative deltas (signed VLQ)", () => {
@@ -188,9 +198,9 @@ describe("readMappings", () => {
 		readMappings("AAAA;CAAD", (...args) => {
 			mappings.push(args);
 		});
-		expect(mappings).toHaveLength(2);
-		expect(mappings[0]).toEqual([1, 0, 0, 1, 0, -1]);
-		expect(mappings[1]).toEqual([2, 1, 0, 1, -1, -1]);
+		assert.strictEqual(mappings.length, 2);
+		assert.deepStrictEqual(mappings[0], [1, 0, 0, 1, 0, -1]);
+		assert.deepStrictEqual(mappings[1], [2, 1, 0, 1, -1, -1]);
 	});
 });
 
@@ -214,24 +224,28 @@ describe("getFromStreamChunks", () => {
 		const map =
 			/** @type {import("../lib/Source").RawSourceMap} */
 			(getMap(makeSparseSource()));
-		expect(map).not.toBeNull();
-		expect(map.sources).toEqual(["first.js", null, "third.js"]);
-		expect(map.sourcesContent).toEqual([
+		assert.notStrictEqual(map, null);
+		assert.deepStrictEqual(map.sources, ["first.js", null, "third.js"]);
+		assert.deepStrictEqual(map.sourcesContent, [
 			"first content",
 			null,
 			"third content",
 		]);
-		expect(map.names).toEqual(["alpha", null, "gamma"]);
+		assert.deepStrictEqual(map.names, ["alpha", null, "gamma"]);
 	});
 
 	it("getSourceAndMap fills missing source and name indices with null", () => {
 		const { map, source } = getSourceAndMap(makeSparseSource());
 		const m = /** @type {import("../lib/Source").RawSourceMap} */ (map);
-		expect(source).toBe("xy");
-		expect(m).not.toBeNull();
-		expect(m.sources).toEqual(["first.js", null, "third.js"]);
-		expect(m.sourcesContent).toEqual(["first content", null, "third content"]);
-		expect(m.names).toEqual(["alpha", null, "gamma"]);
+		assert.strictEqual(source, "xy");
+		assert.notStrictEqual(m, null);
+		assert.deepStrictEqual(m.sources, ["first.js", null, "third.js"]);
+		assert.deepStrictEqual(m.sourcesContent, [
+			"first content",
+			null,
+			"third content",
+		]);
+		assert.deepStrictEqual(m.names, ["alpha", null, "gamma"]);
 	});
 
 	it("getMap returns null when no mappings are produced", () => {
@@ -240,7 +254,7 @@ describe("getFromStreamChunks", () => {
 				return { generatedLine: 1, generatedColumn: 0, source: "" };
 			},
 		};
-		expect(getMap(emptySource)).toBeNull();
+		assert.strictEqual(getMap(emptySource), null);
 	});
 });
 
@@ -276,12 +290,12 @@ describe("streamAndGetSourceAndMap", () => {
 		);
 		const { map: rawMap } = result;
 		const map = /** @type {import("../lib/Source").RawSourceMap} */ (rawMap);
-		expect(result.source).toBe("xy");
-		expect(map.sources).toEqual(["first.js", null, "third.js"]);
-		expect(map.names).toEqual(["alpha", null, "gamma"]);
-		expect(chunks).toHaveLength(2);
-		expect(sources).toHaveLength(2);
-		expect(names).toHaveLength(2);
+		assert.strictEqual(result.source, "xy");
+		assert.deepStrictEqual(map.sources, ["first.js", null, "third.js"]);
+		assert.deepStrictEqual(map.names, ["alpha", null, "gamma"]);
+		assert.strictEqual(chunks.length, 2);
+		assert.strictEqual(sources.length, 2);
+		assert.strictEqual(names.length, 2);
 	});
 });
 
@@ -291,26 +305,26 @@ describe("stringBufferUtils", () => {
 	});
 
 	it("should toggle dual string buffer caching", () => {
-		expect(isDualStringBufferCachingEnabled()).toBe(true);
+		assert.strictEqual(isDualStringBufferCachingEnabled(), true);
 		disableDualStringBufferCaching();
-		expect(isDualStringBufferCachingEnabled()).toBe(false);
+		assert.strictEqual(isDualStringBufferCachingEnabled(), false);
 		enableDualStringBufferCaching();
-		expect(isDualStringBufferCachingEnabled()).toBe(true);
+		assert.strictEqual(isDualStringBufferCachingEnabled(), true);
 	});
 
 	it("should intern strings only when interning is enabled", () => {
 		const big = "a".repeat(200);
 		const big2 = `${"a".repeat(199)}a`;
 		// Ensure we start from a clean slate
-		expect(internString(big)).toBe(big);
+		assert.strictEqual(internString(big), big);
 
 		enterStringInterningRange();
 		try {
 			const interned1 = internString(big);
 			const interned2 = internString(big2);
-			expect(interned1).toBe(big);
+			assert.strictEqual(interned1, big);
 			// Both strings have same content so should be deduplicated
-			expect(interned2).toBe(interned1);
+			assert.strictEqual(interned2, interned1);
 		} finally {
 			exitStringInterningRange();
 		}
@@ -320,7 +334,7 @@ describe("stringBufferUtils", () => {
 		enterStringInterningRange();
 		try {
 			const shortStr = "short";
-			expect(internString(shortStr)).toBe(shortStr);
+			assert.strictEqual(internString(shortStr), shortStr);
 		} finally {
 			exitStringInterningRange();
 		}
@@ -329,7 +343,7 @@ describe("stringBufferUtils", () => {
 	it("should not intern falsy strings", () => {
 		enterStringInterningRange();
 		try {
-			expect(internString("")).toBe("");
+			assert.strictEqual(internString(""), "");
 		} finally {
 			exitStringInterningRange();
 		}
@@ -343,11 +357,11 @@ describe("stringBufferUtils", () => {
 		exitStringInterningRange();
 		// Still enabled because one range is still open
 		const interned2 = internString(big);
-		expect(interned2).toBe(interned1);
+		assert.strictEqual(interned2, interned1);
 		exitStringInterningRange();
 		// Now disabled; cache should be cleared, fresh string returned as-is
 		const freshStr = "c".repeat(200);
-		expect(internString(freshStr)).toBe(freshStr);
+		assert.strictEqual(internString(freshStr), freshStr);
 	});
 });
 
@@ -426,21 +440,22 @@ describe("createMappingsSerializer / createMappingsWriter", () => {
 	for (const [label, options] of modes) {
 		it(`${label}: writer output equals serializer output (branch stream)`, () => {
 			const { fromSerializer, fromWriter } = encodeBoth(options, branchEvents);
-			expect(fromWriter).toBe(fromSerializer);
-			expect(fromWriter.length).toBeGreaterThan(0);
+			assert.strictEqual(fromWriter, fromSerializer);
+			assert.ok(fromWriter.length > 0);
 		});
 
 		it(`${label}: writer output equals serializer output (long stream, buffer growth)`, () => {
 			const { fromSerializer, fromWriter } = encodeBoth(options, longEvents);
-			expect(fromWriter).toBe(fromSerializer);
+			assert.strictEqual(fromWriter, fromSerializer);
 			// must exceed the writer's initial 1024-byte buffer
-			expect(fromWriter.length).toBeGreaterThan(2048);
+			assert.ok(fromWriter.length > 2048);
 		});
 	}
 
 	it("full: encodes the branch stream to the expected mappings", () => {
 		const { fromSerializer } = encodeBoth(undefined, branchEvents);
-		expect(fromSerializer).toBe(
+		assert.strictEqual(
+			fromSerializer,
 			"AAAA,Q;AACAA,KCCEC;;;AD8592BF,GAh692BA;AEIAC;EACA",
 		);
 	});
@@ -470,8 +485,11 @@ describe("createMappingsSerializer / createMappingsWriter", () => {
 			{ columns: false },
 			events,
 		);
-		expect(fromWriter).toBe(fromSerializer);
-		expect(fromSerializer).toBe("AAAA;AACA;AAKA;ACNA;;;AACA;;AAOA;;ADLA");
+		assert.strictEqual(fromWriter, fromSerializer);
+		assert.strictEqual(
+			fromSerializer,
+			"AAAA;AACA;AAKA;ACNA;;;AACA;;AAOA;;ADLA",
+		);
 	});
 
 	it("writer finish() returns an empty string when nothing was written", () => {
@@ -479,7 +497,7 @@ describe("createMappingsSerializer / createMappingsWriter", () => {
 			const writer = createMappingsWriter(options);
 			// only skippable events
 			writer.add(1, 0, -1, -1, -1, -1);
-			expect(writer.finish()).toBe("");
+			assert.strictEqual(writer.finish(), "");
 		}
 	});
 });

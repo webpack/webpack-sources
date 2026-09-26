@@ -1,30 +1,32 @@
 "use strict";
 
+const assert = require("assert");
+const { describe, it } = require("node:test");
 const { SizeOnlySource } = require("../");
 
 describe("sizeOnlySource", () => {
 	it("should report the size", () => {
 		const source = new SizeOnlySource(42);
-		expect(source.size()).toBe(42);
+		assert.strictEqual(source.size(), 42);
 	});
 
 	for (const method of ["source", "map", "sourceAndMap", "buffer", "buffers"]) {
 		it(`should throw on ${method}()`, () => {
 			const source = new SizeOnlySource(42);
-			expect(() => {
+			assert.throws(() => {
 				// @ts-expect-error for tests
 				source[/** @type {keyof SizeOnlySource} */ (method)]();
-			}).toThrow(/not available/);
+			}, /not available/);
 		});
 	}
 
 	it("should throw on updateHash()", () => {
 		const source = new SizeOnlySource(42);
-		expect(() => {
+		assert.throws(() => {
 			source.updateHash({
 				// @ts-expect-error for tests
 				update() {},
 			});
-		}).toThrow(/not available/);
+		}, /not available/);
 	});
 });

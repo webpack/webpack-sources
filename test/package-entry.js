@@ -1,7 +1,9 @@
 "use strict";
 
+const assert = require("assert");
+const { describe, it } = require("node:test");
+
 describe("package-entry", () => {
-	// eslint-disable-next-line jest/expect-expect
 	it("should not throw SyntaxError", () => {
 		require("../");
 	});
@@ -19,32 +21,38 @@ describe("package-entry", () => {
 			"SourceMapSource",
 			"CompatSource",
 		]) {
-			expect(require("../")[name]).toBe(require(`../lib/${name}`));
-			expect(require("../")[name]).toBe(require(`../lib/${name}`));
+			assert.strictEqual(require("../")[name], require(`../lib/${name}`));
+			assert.strictEqual(require("../")[name], require(`../lib/${name}`));
 		}
 	});
 
 	it("should expose util.stringBufferUtils", () => {
 		const { util } = require("../");
 
-		expect(util.stringBufferUtils).toBe(
+		assert.strictEqual(
+			util.stringBufferUtils,
 			require("../lib/helpers/stringBufferUtils"),
 		);
-		expect(typeof util.stringBufferUtils.isDualStringBufferCachingEnabled).toBe(
+		assert.strictEqual(
+			typeof util.stringBufferUtils.isDualStringBufferCachingEnabled,
 			"function",
 		);
-		expect(typeof util.stringBufferUtils.enableDualStringBufferCaching).toBe(
+		assert.strictEqual(
+			typeof util.stringBufferUtils.enableDualStringBufferCaching,
 			"function",
 		);
-		expect(typeof util.stringBufferUtils.disableDualStringBufferCaching).toBe(
+		assert.strictEqual(
+			typeof util.stringBufferUtils.disableDualStringBufferCaching,
 			"function",
 		);
-		expect(typeof util.stringBufferUtils.enterStringInterningRange).toBe(
+		assert.strictEqual(
+			typeof util.stringBufferUtils.enterStringInterningRange,
 			"function",
 		);
-		expect(typeof util.stringBufferUtils.exitStringInterningRange).toBe(
+		assert.strictEqual(
+			typeof util.stringBufferUtils.exitStringInterningRange,
 			"function",
 		);
-		expect(typeof util.stringBufferUtils.internString).toBe("function");
+		assert.strictEqual(typeof util.stringBufferUtils.internString, "function");
 	});
 });
