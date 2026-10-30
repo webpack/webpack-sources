@@ -42,6 +42,53 @@ for (const enableMemoryOptimizations of [false, true]) {
 			}
 		});
 
+		it("should keep an empty source content", () => {
+			// `""` is content (an empty file), unlike a missing entry, which
+			// sends a consumer off to fetch the file.
+			/** @type {RawSourceMap} */
+			const map = {
+				version: 3,
+				file: "x.js",
+				sources: ["empty.js"],
+				sourcesContent: [""],
+				names: [],
+				mappings: "AAAA",
+			};
+			const source = new SourceMapSource("x", "x.js", map);
+			for (const options of [{}, { columns: false }]) {
+				assert.deepStrictEqual(
+					/** @type {RawSourceMap} */ (source.map(options)).sourcesContent,
+					[""],
+				);
+				assert.deepStrictEqual(
+					/** @type {RawSourceMap} */ (source.sourceAndMap(options).map)
+						.sourcesContent,
+					[""],
+				);
+			}
+			// The same through an inner source map, as a minimizer chain composes.
+			/** @type {RawSourceMap} */
+			const outerMap = {
+				version: 3,
+				file: "y.js",
+				sources: ["x.js"],
+				names: [],
+				mappings: "AAAA",
+			};
+			const combined = new SourceMapSource(
+				"y",
+				"x.js",
+				outerMap,
+				"x",
+				map,
+				true,
+			);
+			assert.deepStrictEqual(
+				/** @type {RawSourceMap} */ (combined.map()).sourcesContent,
+				[""],
+			);
+		});
+
 		it("map correctly", (t) => {
 			const innerSourceCode = `${["Hello World", "is a test string"].join(
 				"\n",
