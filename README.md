@@ -277,3 +277,21 @@ CompatSource.from(sourceLike: any | Source)
 ```
 
 If `sourceLike` is a real Source it returns it unmodified. Otherwise it returns it wrapped in a CompatSource.
+
+## `util.sourceMap`
+
+Helpers for reading a source map.
+
+### `originalPositionFor`
+
+<!-- eslint-skip -->
+
+```typescript
+util.sourceMap.originalPositionFor(
+	sourceMap: RawSourceMap | string | Buffer,
+	line: number,
+	column: number,
+): { source: string, line: number, column: number, name: string | null } | null
+```
+
+Returns where a generated position came from: the closest mapping at or before `column` on `line`, or `null` when nothing maps there. Lines count from one and columns from zero, on both sides. `source` is joined with the map's `sourceRoot`. It decodes the whole map, so it suits a one-off lookup such as an error location.

@@ -25,12 +25,14 @@ import Source = require("./types/Source");
 import SourceMapSource = require("./types/SourceMapSource");
 import GetGeneratedSourceInfo = require("./types/helpers/getGeneratedSourceInfo");
 import Scopes = require("./types/helpers/scopes");
+import SourceMap = require("./types/helpers/sourceMap");
 import StreamChunks = require("./types/helpers/streamChunks");
 import StringBufferUtils = require("./types/helpers/stringBufferUtils");
 
 declare namespace exports {
 	export namespace util {
 		export import scopes = Scopes;
+		export import sourceMap = SourceMap;
 		export import stringBufferUtils = StringBufferUtils;
 	}
 	export type OnChunk = StreamChunks.OnChunk;

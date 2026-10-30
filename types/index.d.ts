@@ -29,6 +29,7 @@ declare namespace _exports {
 	const CompatSource: typeof import("./CompatSource");
 	namespace util {
 		const scopes: typeof import("./helpers/scopes");
+		const sourceMap: typeof import("./helpers/sourceMap");
 		const stringBufferUtils: typeof import("./helpers/stringBufferUtils");
 	}
 }

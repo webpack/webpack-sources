@@ -55,4 +55,11 @@ describe("package-entry", () => {
 		);
 		assert.strictEqual(typeof util.stringBufferUtils.internString, "function");
 	});
+
+	it("should expose util.sourceMap", () => {
+		const { util } = require("../");
+
+		assert.strictEqual(util.sourceMap, require("../lib/helpers/sourceMap"));
+		assert.strictEqual(typeof util.sourceMap.originalPositionFor, "function");
+	});
 });
