@@ -62,6 +62,17 @@ describe("sourceMap.originalPositionFor", () => {
 		assert.strictEqual(originalPositionFor(map, 3, 0), null);
 	});
 
+	it("should ignore indexes past the end of sources and names", () => {
+		// Line 1 points at source 1 and name 1, which neither list has.
+		/** @type {import("../lib/Source").RawSourceMap} */
+		const malformed = { ...map, mappings: "ACAAC" };
+		assert.strictEqual(originalPositionFor(malformed, 1, 0), null);
+		assert.deepStrictEqual(
+			originalPositionFor({ ...map, mappings: "AAAAC" }, 1, 0),
+			{ source: "a.js", line: 1, column: 0, name: null },
+		);
+	});
+
 	it("should join the source with sourceRoot", () => {
 		assert.strictEqual(
 			/** @type {NonNullable<ReturnType<typeof originalPositionFor>>} */ (
