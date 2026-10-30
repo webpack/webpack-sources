@@ -1,5 +1,15 @@
 # webpack-sources
 
+## 3.7.0
+
+### Minor Changes
+
+- Add `util.sourceMap.originalPositionFor` to find the original position of a generated one. (by [@alexander-akait](https://github.com/alexander-akait) in [#313](https://github.com/webpack/webpack-sources/pull/313))
+
+### Patch Changes
+
+- Keep an empty string in `sourcesContent` instead of dropping it. (by [@alexander-akait](https://github.com/alexander-akait) in [#314](https://github.com/webpack/webpack-sources/pull/314))
+
 ## 3.6.0
 
 ### Minor Changes
