@@ -42,7 +42,7 @@
     "@changesets/cli": "^3.0.3",
     "@changesets/get-github-info": "^1.0.1",
     "@codspeed/core": "^5.5.0",
-    "del-cli": "^7.0.0",
+    "del-cli": "^8.0.1",
     "eslint": "^9.39.5",
     "eslint-config-webpack": "^4.14.0",
     "jest": "^30.5.2",
