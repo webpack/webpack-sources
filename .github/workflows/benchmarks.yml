@@ -42,7 +42,7 @@ jobs:
       - run: npm ci
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@61efe07e57e55bedeab750c434504de272a56e8c # v5.6.1
+        uses: CodSpeedHQ/action@af75f77f17a054769abefaa42fe8dc2975469b5f # v5.6.3
         with:
           run: npm run benchmark
           mode: "simulation"
@@ -67,7 +67,7 @@ jobs:
       - run: npm ci
 
       - name: Run memory benchmarks
-        uses: CodSpeedHQ/action@61efe07e57e55bedeab750c434504de272a56e8c # v5.6.1
+        uses: CodSpeedHQ/action@af75f77f17a054769abefaa42fe8dc2975469b5f # v5.6.3
         with:
           run: npm run benchmark:memory
           mode: "memory"
