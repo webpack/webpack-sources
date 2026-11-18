@@ -1,5 +1,11 @@
 # webpack-sources
 
+## 3.7.1
+
+### Patch Changes
+
+- Keep a `RawSource` created from a `Buffer` with `convertToString` intact after `clearCache()`. Its only copy of the content was dropped, so `size()` and `updateHash()` threw on sources webpack restored from the filesystem cache. Bytes that are not valid UTF-8 are now kept as they were. (by [@alexander-akait](https://github.com/alexander-akait) in [#324](https://github.com/webpack/webpack-sources/pull/324))
+
 ## 3.7.0
 
 ### Minor Changes
