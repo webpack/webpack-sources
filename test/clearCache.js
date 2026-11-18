@@ -215,10 +215,12 @@ describe("clearCache", () => {
 			raw.clearCache({ source: true });
 			assert.strictEqual(raw.size(), 7);
 			assert.strictEqual(raw.source(), '{"a":1}');
-			assert.strictEqual(raw.buffer().toString("utf8"), '{"a":1}');
+			// Hash before `buffer()` can rebuild the dropped buffer, so the
+			// cached-string path is the one checked.
 			const hash = createHash();
 			raw.updateHash(hash);
 			assert.strictEqual(hash.digest("hex"), expected);
+			assert.strictEqual(raw.buffer().toString("utf8"), '{"a":1}');
 			// A second clear on the now string-only state is still safe.
 			raw.clearCache();
 			assert.strictEqual(raw.source(), '{"a":1}');
@@ -236,6 +238,40 @@ describe("clearCache", () => {
 		assert.strictEqual(internal._valueAsBuffer, undefined);
 		assert.strictEqual(raw.size(), 5);
 		assert.strictEqual(raw.buffer().toString("utf8"), "hello");
+	});
+
+	it("rawSource keeps the original bytes of a convertToString buffer that is not valid UTF-8", () => {
+		const bytes = Buffer.from([0x61, 0xff, 0x62, 0xf0, 0x90, 0x80, 0x63]);
+		const createHash = () => crypto.createHash("md5");
+		const expectedHash = createHash();
+		new RawSource(bytes).updateHash(expectedHash);
+		const expected = expectedHash.digest("hex");
+
+		const raw = new RawSource(Buffer.from(bytes), true);
+		const internal = /** @type {{ _valueAsBuffer: Buffer | undefined }} */ (
+			/** @type {unknown} */ (raw)
+		);
+		raw.source();
+		raw.clearCache();
+		assert.notStrictEqual(internal._valueAsBuffer, undefined);
+		assert.strictEqual(raw.size(), bytes.length);
+		assert.ok(raw.buffer().equals(bytes));
+		const hash = createHash();
+		raw.updateHash(hash);
+		assert.strictEqual(hash.digest("hex"), expected);
+	});
+
+	it("rawSource drops the buffer of a convertToString source containing a real U+FFFD", () => {
+		const raw = new RawSource(Buffer.from("a\uFFFDb", "utf8"), true);
+		const internal = /** @type {{ _valueAsBuffer: Buffer | undefined }} */ (
+			/** @type {unknown} */ (raw)
+		);
+		raw.source();
+		raw.clearCache();
+		assert.strictEqual(internal._valueAsBuffer, undefined);
+		assert.strictEqual(raw.size(), 5);
+		assert.strictEqual(raw.source(), "a\uFFFDb");
+		assert.ok(raw.buffer().equals(Buffer.from("a\uFFFDb", "utf8")));
 	});
 
 	it("originalSource drops the cached string when constructed from a Buffer", () => {
