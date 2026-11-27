@@ -28,9 +28,9 @@ declare class OriginalSource extends Source {
 	 */
 	_value: undefined | string;
 	/**
-	 * @type {undefined | Uint8Array}
+	 * @type {undefined | Buffer}
 	 */
-	_valueAsBuffer: undefined | Uint8Array;
+	_valueAsBuffer: undefined | Buffer;
 	/**
 	 * @type {string}
 	 */

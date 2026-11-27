@@ -6,6 +6,14 @@ export type BufferOutputType = "buffer" | "uint8array";
  */
 export function concatBytes(list: Uint8Array[]): Uint8Array;
 /**
+ * Joins bytes into a new array in the configured output type. With the
+ * `"buffer"` output type `Buffer.concat` builds it directly, skipping the
+ * zero-fill of a fresh `Uint8Array` and the wrapping as a `Buffer`.
+ * @param {Uint8Array[]} list list of bytes
+ * @returns {Buffer} all bytes joined, in the configured output type
+ */
+export function concatBytesOutput(list: Uint8Array[]): Buffer;
+/**
  * Number of bytes `str` takes as utf8, without encoding it. Lone surrogates
  * count as U+FFFD (3 bytes), as encoding replaces them with it. Used where
  * `Buffer.byteLength` is missing: no standard typed-array API counts utf8
@@ -54,12 +62,18 @@ export function isBytes(value: unknown): value is Uint8Array;
  *
  * `"uint8array"` hands out a plain `Uint8Array` (a zero-copy view when the
  * bytes are held as a `Buffer`), so nothing handed out relies on `Buffer`.
+ *
+ * Bytes are converted when a source stores them, so set this once, before
+ * creating sources: a source created earlier keeps handing out the form it
+ * stored.
  * @param {BufferOutputType} type output type
  * @returns {void}
  */
 export function setBufferOutputType(type: BufferOutputType): void;
 /**
- * Converts bytes to the configured output type, without copying.
+ * Converts bytes to the configured output type, without copying. Sources call
+ * it once, when they store bytes, so the hot accessors return the stored
+ * value directly.
  * @param {Uint8Array} bytes bytes
  * @returns {Buffer} bytes in the configured output type (typed as `Buffer`
  * for compatibility; a plain `Uint8Array` with the `"uint8array"` output type)

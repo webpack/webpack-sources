@@ -32,9 +32,9 @@ declare class SourceMapSource extends Source {
 	 */
 	_valueAsString: undefined | string;
 	/**
-	 * @type {undefined | Uint8Array}
+	 * @type {undefined | Buffer}
 	 */
-	_valueAsBuffer: undefined | Uint8Array;
+	_valueAsBuffer: undefined | Buffer;
 	_name: string;
 	_hasSourceMap: boolean;
 	/**
@@ -46,12 +46,12 @@ declare class SourceMapSource extends Source {
 	 */
 	_sourceMapAsString: undefined | string;
 	/**
-	 * @type {undefined | Uint8Array}
+	 * @type {undefined | Buffer}
 	 */
-	_sourceMapAsBuffer: undefined | Uint8Array;
+	_sourceMapAsBuffer: undefined | Buffer;
 	_hasOriginalSource: boolean;
 	_originalSourceAsString: string | undefined;
-	_originalSourceAsBuffer: Uint8Array<ArrayBufferLike> | undefined;
+	_originalSourceAsBuffer: Buffer<ArrayBufferLike> | undefined;
 	_hasInnerSourceMap: boolean;
 	/**
 	 * @type {undefined | RawSourceMap}
@@ -62,9 +62,9 @@ declare class SourceMapSource extends Source {
 	 */
 	_innerSourceMapAsString: undefined | string;
 	/**
-	 * @type {undefined | Uint8Array}
+	 * @type {undefined | Buffer}
 	 */
-	_innerSourceMapAsBuffer: undefined | Uint8Array;
+	_innerSourceMapAsBuffer: undefined | Buffer;
 	_removeOriginalSource: boolean | undefined;
 	/**
 	 * @returns {[Buffer, string, Buffer, Buffer | undefined, Buffer | undefined, boolean | undefined]} args
@@ -79,19 +79,18 @@ declare class SourceMapSource extends Source {
 	];
 	_cachedSize: number | undefined;
 	/**
-	 * @returns {undefined | Uint8Array} buffer
+	 * @returns {undefined | Buffer} buffer
 	 */
-	_originalSourceBuffer(): undefined | Uint8Array;
+	_originalSourceBuffer(): undefined | Buffer;
 	_originalSourceString(): string | undefined;
 	_innerSourceMapObject(): any;
-	_innerSourceMapBuffer():
-		Uint8Array<ArrayBufferLike> | Buffer<ArrayBufferLike> | undefined;
+	_innerSourceMapBuffer(): Buffer<ArrayBufferLike> | undefined;
 	/**
 	 * @returns {string} result
 	 */
 	_innerSourceMapString(): string;
 	_sourceMapObject(): any;
-	_sourceMapBuffer(): Uint8Array<ArrayBufferLike> | Buffer<ArrayBufferLike>;
+	_sourceMapBuffer(): Buffer<ArrayBufferLike>;
 	_sourceMapString(): string;
 	/**
 	 * @param {Options} options options
