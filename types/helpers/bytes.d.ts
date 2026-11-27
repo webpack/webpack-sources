@@ -52,6 +52,22 @@ export function getBufferOutputType(): BufferOutputType;
  */
 export function isBytes(value: unknown): value is Uint8Array;
 /**
+ * The class whose instances are already in the output form, so hot
+ * constructors can store them after one `instanceof`, without calling
+ * `toOutputBytes`: `Buffer` for the `"buffer"` output type, `Uint8Array` when
+ * `Buffer` does not exist (every `Uint8Array` is then a plain one), and none
+ * for `"uint8array"` with `Buffer` (a `Buffer` input needs a plain view).
+ *
+ * `buffer` is true for the `"buffer"` output type, so hot paths can call
+ * `Buffer.from` / `Buffer.concat` inline (no extra call layer) and only touch
+ * `Buffer` when it exists.
+ * @type {{ Bytes: abstract new (...args: never[]) => unknown, buffer: boolean }}
+ */
+export const output: {
+	Bytes: abstract new (...args: never[]) => unknown;
+	buffer: boolean;
+};
+/**
  * Chooses what `buffer()` / `buffers()` (and the other byte-returning methods,
  * including the bytes passed to `hash.update()`) hand out. Internally bytes
  * are always kept as `Uint8Array`.

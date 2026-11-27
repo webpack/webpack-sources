@@ -1,15 +1,4 @@
 export = SourceMapSource;
-/** @typedef {import("./Source").ClearCacheOptions} ClearCacheOptions */
-/** @typedef {import("./Source").HashLike} HashLike */
-/** @typedef {import("./Source").MapOptions} MapOptions */
-/** @typedef {import("./Source").RawSourceMap} RawSourceMap */
-/** @typedef {import("./Source").SourceAndMap} SourceAndMap */
-/** @typedef {import("./Source").SourceValue} SourceValue */
-/** @typedef {import("./helpers/getGeneratedSourceInfo").GeneratedSourceInfo} GeneratedSourceInfo */
-/** @typedef {import("./helpers/streamChunks").OnChunk} OnChunk */
-/** @typedef {import("./helpers/streamChunks").OnName} OnName */
-/** @typedef {import("./helpers/streamChunks").OnSource} OnSource */
-/** @typedef {import("./helpers/streamChunks").Options} Options */
 declare class SourceMapSource extends Source {
 	/**
 	 * @param {string | Uint8Array} value value
