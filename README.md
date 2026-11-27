@@ -300,10 +300,13 @@ Returns where a generated position came from: the closest mapping at or before `
 
 ## `util.stringBufferUtils`
 
-Bytes are kept as `Uint8Array` internally: strings are encoded with
-`TextEncoder` and decoded with `TextDecoder`, falling back to Node.js `Buffer`
-where those APIs are missing (old Node.js versions). Any `Uint8Array` (a
-`Buffer` is one) is accepted wherever bytes are accepted.
+Any `Uint8Array` (a `Buffer` is one) is accepted wherever bytes are accepted,
+and nothing requires `Buffer`, so the package runs in browsers without
+polyfills. Where `Buffer` exists and the output type is `"buffer"` (the
+default in Node.js), `Buffer` is used for encoding, byte length and
+concatenation, as it is faster there. Otherwise strings are encoded with
+`TextEncoder` and decoded with `TextDecoder`, with a `Buffer` fallback where
+those APIs are missing (old Node.js versions).
 
 ### `setBufferOutputType` / `getBufferOutputType`
 

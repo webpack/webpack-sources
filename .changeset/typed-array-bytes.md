@@ -2,4 +2,4 @@
 "webpack-sources": minor
 ---
 
-Use typed arrays internally instead of `Buffer`. Strings are encoded with `TextEncoder` and decoded with `TextDecoder`, with a `Buffer` fallback for Node.js versions that lack them. Every source now also accepts a plain `Uint8Array` wherever a `Buffer` was accepted. A new `util.stringBufferUtils.setBufferOutputType("buffer" | "uint8array")` option chooses what `buffer()`, `buffers()` and related methods return. The default stays `"buffer"`, so existing consumers are unaffected.
+Accept `Uint8Array` everywhere a `Buffer` was accepted, and run without `Buffer` (e.g. in browsers, no polyfills needed). A new `util.stringBufferUtils.setBufferOutputType("buffer" | "uint8array")` option chooses what `buffer()`, `buffers()` and related methods return. The default stays `"buffer"` in Node.js, which keeps using `Buffer` for its fast paths, so CPU and memory use are unchanged for existing consumers.
