@@ -36,6 +36,7 @@ export function enterStringInterningRange(): void;
  * @returns {void}
  */
 export function exitStringInterningRange(): void;
+import { getBufferOutputType } from "./bytes";
 /**
  * Saves the string in a map to ensure that only one copy of the string exists
  * in memory at a given time. This is controlled by {@link enableStringInterning}
@@ -53,3 +54,5 @@ export function internString(str: string): string;
  * stored twice.
  */
 export function isDualStringBufferCachingEnabled(): boolean;
+import { setBufferOutputType } from "./bytes";
+export { getBufferOutputType, setBufferOutputType };

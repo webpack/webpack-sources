@@ -12,19 +12,19 @@ export = SourceMapSource;
 /** @typedef {import("./helpers/streamChunks").Options} Options */
 declare class SourceMapSource extends Source {
 	/**
-	 * @param {string | Buffer} value value
+	 * @param {string | Uint8Array} value value
 	 * @param {string} name name
-	 * @param {string | Buffer | RawSourceMap=} sourceMap source map
-	 * @param {SourceValue=} originalSource original source
-	 * @param {(null | string | Buffer | RawSourceMap)=} innerSourceMap inner source map
+	 * @param {string | Uint8Array | RawSourceMap=} sourceMap source map
+	 * @param {string | Uint8Array=} originalSource original source
+	 * @param {(null | string | Uint8Array | RawSourceMap)=} innerSourceMap inner source map
 	 * @param {boolean=} removeOriginalSource do remove original source
 	 */
 	constructor(
-		value: string | Buffer,
+		value: string | Uint8Array,
 		name: string,
-		sourceMap?: (string | Buffer | RawSourceMap) | undefined,
-		originalSource?: SourceValue | undefined,
-		innerSourceMap?: (null | string | Buffer | RawSourceMap) | undefined,
+		sourceMap?: (string | Uint8Array | RawSourceMap) | undefined,
+		originalSource?: (string | Uint8Array) | undefined,
+		innerSourceMap?: (null | string | Uint8Array | RawSourceMap) | undefined,
 		removeOriginalSource?: boolean | undefined,
 	);
 	/**
@@ -32,9 +32,9 @@ declare class SourceMapSource extends Source {
 	 */
 	_valueAsString: undefined | string;
 	/**
-	 * @type {undefined | Buffer}
+	 * @type {undefined | Uint8Array}
 	 */
-	_valueAsBuffer: undefined | Buffer;
+	_valueAsBuffer: undefined | Uint8Array;
 	_name: string;
 	_hasSourceMap: boolean;
 	/**
@@ -46,12 +46,12 @@ declare class SourceMapSource extends Source {
 	 */
 	_sourceMapAsString: undefined | string;
 	/**
-	 * @type {undefined | Buffer}
+	 * @type {undefined | Uint8Array}
 	 */
-	_sourceMapAsBuffer: undefined | Buffer;
+	_sourceMapAsBuffer: undefined | Uint8Array;
 	_hasOriginalSource: boolean;
 	_originalSourceAsString: string | undefined;
-	_originalSourceAsBuffer: Buffer<ArrayBufferLike> | undefined;
+	_originalSourceAsBuffer: Uint8Array<ArrayBufferLike> | undefined;
 	_hasInnerSourceMap: boolean;
 	/**
 	 * @type {undefined | RawSourceMap}
@@ -62,9 +62,9 @@ declare class SourceMapSource extends Source {
 	 */
 	_innerSourceMapAsString: undefined | string;
 	/**
-	 * @type {undefined | Buffer}
+	 * @type {undefined | Uint8Array}
 	 */
-	_innerSourceMapAsBuffer: undefined | Buffer;
+	_innerSourceMapAsBuffer: undefined | Uint8Array;
 	_removeOriginalSource: boolean | undefined;
 	/**
 	 * @returns {[Buffer, string, Buffer, Buffer | undefined, Buffer | undefined, boolean | undefined]} args
@@ -79,18 +79,19 @@ declare class SourceMapSource extends Source {
 	];
 	_cachedSize: number | undefined;
 	/**
-	 * @returns {undefined | Buffer} buffer
+	 * @returns {undefined | Uint8Array} buffer
 	 */
-	_originalSourceBuffer(): undefined | Buffer;
+	_originalSourceBuffer(): undefined | Uint8Array;
 	_originalSourceString(): string | undefined;
 	_innerSourceMapObject(): any;
-	_innerSourceMapBuffer(): Buffer<ArrayBufferLike> | undefined;
+	_innerSourceMapBuffer():
+		Uint8Array<ArrayBufferLike> | Buffer<ArrayBufferLike> | undefined;
 	/**
 	 * @returns {string} result
 	 */
 	_innerSourceMapString(): string;
 	_sourceMapObject(): any;
-	_sourceMapBuffer(): Buffer<ArrayBufferLike>;
+	_sourceMapBuffer(): Uint8Array<ArrayBufferLike> | Buffer<ArrayBufferLike>;
 	_sourceMapString(): string;
 	/**
 	 * @param {Options} options options

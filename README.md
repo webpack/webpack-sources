@@ -29,6 +29,8 @@ Source.prototype.buffer() -> Buffer
 ```
 
 Returns the represented source code as Buffer. Strings are converted to utf-8.
+The result is a plain `Uint8Array` instead when the buffer output type is set to
+`"uint8array"` (see [`util.stringBufferUtils`](#utilstringbufferutils)).
 
 #### `buffers`
 
@@ -103,7 +105,7 @@ Represents source code without SourceMap.
 <!-- eslint-skip -->
 
 ```typescript
-new RawSource(sourceCode: String | Buffer)
+new RawSource(sourceCode: String | Buffer | Uint8Array)
 ```
 
 ## `OriginalSource`
@@ -114,7 +116,7 @@ Represents source code, which is a copy of the original file.
 
 ```typescript
 new OriginalSource(
-	sourceCode: String | Buffer,
+	sourceCode: String | Buffer | Uint8Array,
 	name: String,
 	scopeBindings?: Map<String, String>
 )
@@ -134,11 +136,11 @@ Represents source code with SourceMap, optionally having an additional SourceMap
 
 ```typescript
 new SourceMapSource(
-	sourceCode: String | Buffer,
+	sourceCode: String | Buffer | Uint8Array,
 	name: String,
-	sourceMap: Object | String | Buffer,
-	originalSource?: String | Buffer,
-	innerSourceMap?: Object | String | Buffer,
+	sourceMap: Object | String | Buffer | Uint8Array,
+	originalSource?: String | Buffer | Uint8Array,
+	innerSourceMap?: Object | String | Buffer | Uint8Array,
 	removeOriginalSource?: boolean
 )
 ```
@@ -190,7 +192,7 @@ Prefix every line of the decorated `Source` with a provided string.
 ```typescript
 new PrefixSource(
 	prefix: String,
-	source: Source | String | Buffer
+	source: Source | String | Buffer | Uint8Array
 )
 ```
 
@@ -288,10 +290,38 @@ Helpers for reading a source map.
 
 ```typescript
 util.sourceMap.originalPositionFor(
-	sourceMap: RawSourceMap | string | Buffer,
+	sourceMap: RawSourceMap | string | Buffer | Uint8Array,
 	line: number,
 	column: number,
 ): { source: string, line: number, column: number, name: string | null } | null
 ```
 
 Returns where a generated position came from: the closest mapping at or before `column` on `line`, or `null` when nothing maps there. Lines count from one and columns from zero, on both sides. `source` is joined with the map's `sourceRoot`. It decodes the whole map, so it suits a one-off lookup such as an error location.
+
+## `util.stringBufferUtils`
+
+Bytes are kept as `Uint8Array` internally: strings are encoded with
+`TextEncoder` and decoded with `TextDecoder`, falling back to Node.js `Buffer`
+where those APIs are missing (old Node.js versions). Any `Uint8Array` (a
+`Buffer` is one) is accepted wherever bytes are accepted.
+
+### `setBufferOutputType` / `getBufferOutputType`
+
+<!-- eslint-skip -->
+
+```typescript
+setBufferOutputType(type: "buffer" | "uint8array") -> void
+getBufferOutputType() -> "buffer" | "uint8array"
+```
+
+Chooses what `buffer()`, `buffers()`, `source()` of binary sources,
+`CachedSource#getCachedData()`, `SourceMapSource#getArgsAsBuffers()` and the
+bytes passed to `hash.update()` hand out:
+
+- `"buffer"` (default when `Buffer` exists): a Node.js `Buffer`. A plain
+  `Uint8Array` passed in is wrapped without copying.
+- `"uint8array"` (default when `Buffer` does not exist): a plain `Uint8Array`.
+  A `Buffer` passed in is handed out as a plain view, without copying. Hashes
+  passed to `updateHash` must accept `Uint8Array`.
+
+The setting is global, so set it once before creating sources.

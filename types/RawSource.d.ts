@@ -1,22 +1,25 @@
 export = RawSource;
 declare class RawSource extends Source {
 	/**
-	 * @param {string | Buffer} value value
+	 * @param {string | Uint8Array} value value
 	 * @param {boolean=} convertToString convert to string
 	 */
-	constructor(value: string | Buffer, convertToString?: boolean | undefined);
+	constructor(
+		value: string | Uint8Array,
+		convertToString?: boolean | undefined,
+	);
 	/**
 	 * @type {boolean}
 	 */
 	_valueIsBuffer: boolean;
 	/**
-	 * @type {undefined | string | Buffer}
+	 * @type {undefined | string | Uint8Array}
 	 */
-	_value: undefined | string | Buffer;
+	_value: undefined | string | Uint8Array;
 	/**
-	 * @type {undefined | Buffer}
+	 * @type {undefined | Uint8Array}
 	 */
-	_valueAsBuffer: undefined | Buffer;
+	_valueAsBuffer: undefined | Uint8Array;
 	/**
 	 * @type {undefined | string}
 	 */
