@@ -1,10 +1,13 @@
 export = RawSource;
 declare class RawSource extends Source {
 	/**
-	 * @param {string | Buffer} value value
+	 * @param {string | Uint8Array} value value
 	 * @param {boolean=} convertToString convert to string
 	 */
-	constructor(value: string | Buffer, convertToString?: boolean | undefined);
+	constructor(
+		value: string | Uint8Array,
+		convertToString?: boolean | undefined,
+	);
 	/**
 	 * @type {boolean}
 	 */

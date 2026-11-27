@@ -13,13 +13,13 @@ export = OriginalSource;
 /** @typedef {import("./helpers/streamChunks").ScopeBindings} ScopeBindings */
 declare class OriginalSource extends Source {
 	/**
-	 * @param {string | Buffer} value value
+	 * @param {string | Uint8Array} value value
 	 * @param {string} name name
 	 * @param {ScopeBindings=} scopeBindings what each name this source declares
 	 * evaluates to in the generated code, for the map's `scopes` field
 	 */
 	constructor(
-		value: string | Buffer,
+		value: string | Uint8Array,
 		name: string,
 		scopeBindings?: ScopeBindings | undefined,
 	);

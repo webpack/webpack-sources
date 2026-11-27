@@ -2,9 +2,9 @@ export = PrefixSource;
 declare class PrefixSource extends Source {
 	/**
 	 * @param {string} prefix prefix
-	 * @param {string | Buffer | Source} source source
+	 * @param {string | Uint8Array | Source} source source
 	 */
-	constructor(prefix: string, source: string | Buffer | Source);
+	constructor(prefix: string, source: string | Uint8Array | Source);
 	/**
 	 * @type {string}
 	 */

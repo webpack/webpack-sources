@@ -35,13 +35,13 @@ export type OriginalPosition = {
  * Finds the original position of a generated one: the closest mapping at or
  * before `column` on `line`. Decodes the whole map, so it suits a one-off
  * lookup (an error location), not a loop over many positions.
- * @param {RawSourceMap | string | Buffer} sourceMap source map, or its JSON
+ * @param {RawSourceMap | string | Uint8Array} sourceMap source map, or its JSON
  * @param {number} line generated line, counting from one
  * @param {number} column generated column, counting from zero
  * @returns {OriginalPosition | null} original position, or `null` when nothing maps there
  */
 export function originalPositionFor(
-	sourceMap: RawSourceMap | string | Buffer,
+	sourceMap: RawSourceMap | string | Uint8Array,
 	line: number,
 	column: number,
 ): OriginalPosition | null;

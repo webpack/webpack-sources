@@ -1,30 +1,19 @@
 export = SourceMapSource;
-/** @typedef {import("./Source").ClearCacheOptions} ClearCacheOptions */
-/** @typedef {import("./Source").HashLike} HashLike */
-/** @typedef {import("./Source").MapOptions} MapOptions */
-/** @typedef {import("./Source").RawSourceMap} RawSourceMap */
-/** @typedef {import("./Source").SourceAndMap} SourceAndMap */
-/** @typedef {import("./Source").SourceValue} SourceValue */
-/** @typedef {import("./helpers/getGeneratedSourceInfo").GeneratedSourceInfo} GeneratedSourceInfo */
-/** @typedef {import("./helpers/streamChunks").OnChunk} OnChunk */
-/** @typedef {import("./helpers/streamChunks").OnName} OnName */
-/** @typedef {import("./helpers/streamChunks").OnSource} OnSource */
-/** @typedef {import("./helpers/streamChunks").Options} Options */
 declare class SourceMapSource extends Source {
 	/**
-	 * @param {string | Buffer} value value
+	 * @param {string | Uint8Array} value value
 	 * @param {string} name name
-	 * @param {string | Buffer | RawSourceMap=} sourceMap source map
-	 * @param {SourceValue=} originalSource original source
-	 * @param {(null | string | Buffer | RawSourceMap)=} innerSourceMap inner source map
+	 * @param {string | Uint8Array | RawSourceMap=} sourceMap source map
+	 * @param {string | Uint8Array=} originalSource original source
+	 * @param {(null | string | Uint8Array | RawSourceMap)=} innerSourceMap inner source map
 	 * @param {boolean=} removeOriginalSource do remove original source
 	 */
 	constructor(
-		value: string | Buffer,
+		value: string | Uint8Array,
 		name: string,
-		sourceMap?: (string | Buffer | RawSourceMap) | undefined,
-		originalSource?: SourceValue | undefined,
-		innerSourceMap?: (null | string | Buffer | RawSourceMap) | undefined,
+		sourceMap?: (string | Uint8Array | RawSourceMap) | undefined,
+		originalSource?: (string | Uint8Array) | undefined,
+		innerSourceMap?: (null | string | Uint8Array | RawSourceMap) | undefined,
 		removeOriginalSource?: boolean | undefined,
 	);
 	/**
